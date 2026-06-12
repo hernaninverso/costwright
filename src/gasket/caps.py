@@ -143,6 +143,11 @@ def scan_path(root: Path, max_files: int = 5000):
     for py in sorted(root.rglob("*.py")):
         if any(part in EXCLUDE_DIRS for part in py.parts):
             continue
+        # NO seguir symlinks — un repo hostil podría apuntar fuera del árbol escaneado
+        # (path traversal del scanner). Mismo guard que cli._find_units y pack.build_tarball.
+        if py.is_symlink() or any(p.is_symlink() for p in py.parents
+                                  if root in p.parents or p == root):
+            continue
         n += 1
         if n > max_files:
             break
