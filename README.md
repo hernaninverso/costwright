@@ -1,11 +1,13 @@
 # gasket
 
+[![Paper DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20661093.svg)](https://doi.org/10.5281/zenodo.20661093)
+
 **Static budget certificates for LLM-agent workflows.** Point it at your LangGraph / CrewAI /
 OpenAI-Agents-SDK repo and it tells you — *before anything runs* — the worst-case budget ceiling of
 every workflow graph, where that ceiling comes from, and when it is effectively vacuous.
 
 Backed by a machine-checked (Lean 4) cost-soundness theorem:
-[*A Potential-Based Calculus for Resource Bounds of LLM-Agent Workflows*](https://github.com/hernaninverso/typed-resources)
+[*A Potential-Based Calculus for Resource Bounds of LLM-Agent Workflows*](https://doi.org/10.5281/zenodo.20661093) ([repo](https://github.com/hernaninverso/typed-resources))
 — well-typed ⟹ spend ≤ declared budget, on every trace. gasket is the static frontend of that
 calculus. It **never executes your code** (pure AST analysis, zero dependencies).
 
