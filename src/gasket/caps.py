@@ -59,9 +59,19 @@ def scan_file(path: Path):
         if name not in PROVIDER_CAPS:
             continue
         kwargs_present = {k.arg for k in node.keywords if k.arg}
+        provider, kwarg, note = PROVIDER_CAPS[name]
+        # detección best-effort de reasoning model por el kwarg `model` (audit-3 gpt-5.5 P0):
+        # en Chat API los o-series/GPT-5 ignoran max_tokens; el cap real es max_completion_tokens
+        model_val = next((k.value.value for k in node.keywords
+                          if k.arg == "model" and isinstance(k.value, ast.Constant)
+                          and isinstance(k.value.value, str)), "")
+        reasoning = any(model_val.startswith(p) for p in
+                        ("o1", "o3", "o4", "gpt-5")) if model_val else False
+        if provider in ("openai", "azure") and reasoning:
+            kwarg = "max_completion_tokens"
+            note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
         if kwargs_present & CAP_KWARGS:
-            # tiene algún cap — chequear degradaciones conocidas
-            provider, kwarg, note = PROVIDER_CAPS[name]
+            # tiene algún cap — chequear degradaciones conocidas (§3.2)
             if provider == "gemini" and "thinking_budget" not in kwargs_present:
                 findings.append({
                     "kind": "degraded", "constructor": name, "provider": provider,
@@ -69,8 +79,22 @@ def scan_file(path: Path):
                     "suggest_kwarg": "thinking_budget",
                     "why": "Gemini: maxOutputTokens NO acota thinking tokens (se facturan como output); fijar thinking_budget",
                 })
+            elif provider in ("anthropic", "bedrock"):
+                # audit-3 (gemini P0): Anthropic con cap igual degrada bajo interleaved/adaptive
+                findings.append({
+                    "kind": "degraded", "constructor": name, "provider": provider,
+                    "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS),
+                    "suggest_kwarg": None,
+                    "why": "Anthropic: con interleaved/adaptive thinking el budget puede EXCEDER max_tokens — el techo solo vale en modo standard (budget_tokens < max_tokens)",
+                })
+            elif provider in ("openai", "azure") and reasoning and "max_completion_tokens" not in kwargs_present:
+                findings.append({
+                    "kind": "degraded", "constructor": name, "provider": provider,
+                    "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS),
+                    "suggest_kwarg": "max_completion_tokens",
+                    "why": "reasoning model: max_tokens es ignorado en Chat API; el techo real es max_completion_tokens",
+                })
             continue
-        provider, kwarg, note = PROVIDER_CAPS[name]
         findings.append({
             "kind": "missing", "constructor": name, "provider": provider,
             "line": node.lineno, "suggest_kwarg": kwarg, "note": note,
@@ -92,9 +116,13 @@ def make_patch(path: Path, src: str, findings, cap_value: int) -> str:
             continue
         line = new_lines[i]
         ctor = f["constructor"]
+        # audit-3 (gemini P0): si hay >1 ocurrencia del constructor en la línea, NO parchear
+        # (la inserción textual no sabe cuál es cuál) — conservador, el hallazgo igual se reporta
+        if line.count(ctor + "(") != 1:
+            continue
         idx = line.find(ctor + "(")
         if idx < 0:
-            continue  # constructor multilínea raro: skip (conservador)
+            continue  # constructor multilínea: skip (conservador)
         insert_at = idx + len(ctor) + 1
         rest = line[insert_at:]
         sep = "" if rest.lstrip().startswith(")") else ", "

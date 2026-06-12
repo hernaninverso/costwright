@@ -104,6 +104,57 @@ def test_no_units():
         r = run("check", td)
         assert r.returncode == 0 and "no graph units" in r.stdout
 
+
+# ── fixes audit-3 ──
+def test_bound_no_subreporta():
+    # ciclo → aggregation=sum → el ceiling real (supersteps×nodos) DEBE estar en el JSON y pretty
+    code = FIX_DEFAULT
+    with tempfile.TemporaryDirectory() as td:
+        make(td, "wf.py", code)
+        r = run("check", td, "--json")
+        u = json.loads(r.stdout)["units"][0]
+        assert u["bound"]["aggregation"] == "sum"
+        assert u["bound"]["node_executions_ceiling"] == u["bound"]["supersteps"] * 2, u["bound"]
+        r2 = run("check", td)
+        assert "node-executions" in r2.stdout, r2.stdout
+
+def test_anthropic_degraded_warning():
+    code = '''
+from langchain_anthropic import ChatAnthropic
+llm = ChatAnthropic(model="claude-sonnet-4-6", max_tokens=2048)
+'''
+    with tempfile.TemporaryDirectory() as td:
+        make(td, "a.py", code)
+        r = run("caps", td)
+        assert "interleaved" in r.stdout, r.stdout
+
+def test_reasoning_model_sugiere_completion_tokens():
+    code = '''
+from langchain_openai import ChatOpenAI
+llm = ChatOpenAI(model="o3-mini")
+'''
+    with tempfile.TemporaryDirectory() as td:
+        make(td, "r.py", code)
+        r = run("caps", td)
+        assert "max_completion_tokens" in r.stdout, r.stdout
+
+def test_patch_same_line_doble_no_corrompe():
+    code = 'from langchain_openai import ChatOpenAI\na = ChatOpenAI(model="x"); b = ChatOpenAI(model="y")\n'
+    with tempfile.TemporaryDirectory() as td:
+        p = make(td, "d.py", code)
+        r = run("caps", td, "--patch", "-")
+        # 2 hallazgos pero 0 parches (misma línea, conservador): el diff debe estar VACÍO
+        assert "ChatOpenAI" in run("caps", td).stdout
+        assert r.stdout.count("+++") == 0, r.stdout
+        assert p.read_text() == code
+
+def test_symlink_no_se_sigue():
+    with tempfile.TemporaryDirectory() as td, tempfile.TemporaryDirectory() as outside:
+        make(outside, "evil.py", FIX_RUNAWAY)
+        (Path(td) / "link").symlink_to(outside)
+        r = run("check", td, "--json")
+        assert json.loads(r.stdout)["summary"]["total"] == 0 if r.stdout.strip().startswith("{") else "no graph units" in r.stdout
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     bad = 0

@@ -27,6 +27,11 @@ def _find_units(root: Path, max_files: int):
     for py in sorted(root.rglob("*.py")):
         if any(part in EXCLUDE_DIRS for part in py.parts):
             continue
+        # audit-3 (deepseek P0): NO seguir symlinks — un repo hostil podría apuntar
+        # fuera del árbol escaneado (path traversal del scanner)
+        if py.is_symlink() or any(p.is_symlink() for p in py.parents
+                                  if root in p.parents or p == root):
+            continue
         n += 1
         if n > max_files:
             break
@@ -34,7 +39,8 @@ def _find_units(root: Path, max_files: int):
             src = py.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        if not any(k in src for k in ("StateGraph", "Crew(", "Runner.run")):
+        # precheck laxo (audit-3: "Crew (" con espacio se perdía con "Crew(")
+        if not any(k in src for k in ("StateGraph", "Crew", "Runner.run")):
             continue
         try:
             tree = _ast.parse(src)
@@ -163,7 +169,8 @@ def main(argv=None) -> int:
     c.add_argument("--json", action="store_true", help="emit gasket.v1 JSON")
     c.add_argument("--verbose", action="store_true", help="also list certifiable units")
     c.add_argument("--fail-on", choices=["reject", "default-dependent", "non-certifiable"],
-                   help="exit 1 if the policy is violated (default: never fail)")
+                   help="severity threshold: exit 1 on findings of this severity OR WORSE "
+                        "(reject ⊂ default-dependent ⊂ non-certifiable). Default: never fail")
     c.add_argument("--max-files", type=int, default=5000)
     c.set_defaults(fn=cmd_check)
 

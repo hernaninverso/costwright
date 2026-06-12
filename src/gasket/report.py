@@ -52,6 +52,9 @@ def to_v1(mapped_units: list[dict]) -> dict:
             "category": cat,
             "bound": {
                 "supersteps": r.get("supersteps"),
+                # techo REAL (audit-3 gpt-5.5 P0): con aggregation=sum el ceiling es
+                # supersteps × nodos (node-executions); con max es supersteps. NUNCA subreportar.
+                "node_executions_ceiling": r.get("bound_factor"),
                 "aggregation": r.get("aggregation"),
                 "provenance": prov,
             },
@@ -86,8 +89,13 @@ def pretty(report: dict, verbose: bool = False) -> str:
         w = max((len(u["file"] or "?") for u in rows), default=10)
         for u in rows:
             b = u["bound"]
-            bound = (f"≤{b['supersteps']} supersteps ({b['provenance']})"
-                     if b["supersteps"] is not None else ", ".join(u["reasons"]) or "—")
+            if b["supersteps"] is not None:
+                ceil = b.get("node_executions_ceiling")
+                extra = (f" ×{ceil // b['supersteps']} nodes = ≤{ceil} node-executions"
+                         if b.get("aggregation") == "sum" and ceil and b["supersteps"] else "")
+                bound = f"≤{b['supersteps']} supersteps{extra} ({b['provenance']})"
+            else:
+                bound = ", ".join(u["reasons"]) or "—"
             out.append(f"  {_BADGE[u['category']]} {u['file']:<{w}} :{u['span']['line']:<5}"
                        f" {u['category']:<18} {bound}")
         out.append("")
