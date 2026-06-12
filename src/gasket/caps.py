@@ -67,7 +67,9 @@ def scan_file(path: Path):
                           and isinstance(k.value.value, str)), "")
         reasoning = any(model_val.startswith(p) for p in
                         ("o1", "o3", "o4", "gpt-5")) if model_val else False
-        if provider in ("openai", "azure") and reasoning:
+        # SOLO Chat-API constructors (audit-3 R2 gpt-5.5): el constructor `OpenAI` es
+        # Responses API y su cap correcto sigue siendo max_output_tokens, reasoning o no
+        if name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
             kwarg = "max_completion_tokens"
             note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
         if kwargs_present & CAP_KWARGS:
@@ -87,7 +89,7 @@ def scan_file(path: Path):
                     "suggest_kwarg": None,
                     "why": "Anthropic: con interleaved/adaptive thinking el budget puede EXCEDER max_tokens — el techo solo vale en modo standard (budget_tokens < max_tokens)",
                 })
-            elif provider in ("openai", "azure") and reasoning and "max_completion_tokens" not in kwargs_present:
+            elif name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning and "max_completion_tokens" not in kwargs_present:
                 findings.append({
                     "kind": "degraded", "constructor": name, "provider": provider,
                     "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS),
