@@ -1,9 +1,12 @@
+LICENSE
+README.md
 pyproject.toml
 src/gasket/__init__.py
 src/gasket/caps.py
 src/gasket/cli.py
 src/gasket/extract.py
 src/gasket/mapper.py
+src/gasket/pack.py
 src/gasket/report.py
 src/gasket_check.egg-info/PKG-INFO
 src/gasket_check.egg-info/SOURCES.txt

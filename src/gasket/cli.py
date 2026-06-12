@@ -182,6 +182,12 @@ def main(argv=None) -> int:
     k.add_argument("--max-files", type=int, default=5000)
     k.set_defaults(fn=cmd_caps)
 
+    from gasket.pack import cmd_pack
+    pk = sub.add_parser("pack", help="build a deterministic .py-only tarball for server-side certification")
+    pk.add_argument("path", nargs="?", default=".")
+    pk.add_argument("-o", "--output", default="gasket-artifact.tgz")
+    pk.set_defaults(fn=cmd_pack)
+
     args = p.parse_args(argv)
     return args.fn(args)
 
