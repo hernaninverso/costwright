@@ -1,0 +1,92 @@
+{
+ "n_units": 254,
+ "categories": {
+  "tipa:framework-default": 172,
+  "tipa:explicit": 14,
+  "extractor-failure": 32,
+  "no-mapeable:interrupt-human-in-loop": 17,
+  "rechaza-con-razon": 6,
+  "no-mapeable:dynamic-goto": 3,
+  "no-mapeable:send-fanout": 5,
+  "no-mapeable:hierarchical-manager": 5
+ },
+ "categories_major": {
+  "tipa": 186,
+  "extractor-failure": 32,
+  "no-mapeable": 30,
+  "rechaza-con-razon": 6
+ },
+ "pct_mapeable": 75.6,
+ "tipa_explicit": 14,
+ "tipa_framework_default": 172,
+ "rechaza_con_razon": 6,
+ "no_mapeable": 30,
+ "extractor_failure": 32,
+ "runaway": {
+  "pct": 88.6,
+  "numer": 39,
+  "denom_cyclic_units": 44
+ },
+ "certifiability": {
+  "total_llm_constructors": 123,
+  "total_caps_finite": 50,
+  "units_with_llm": 59,
+  "units_fully_capped": 7,
+  "pct_units_fully_capped": 11.9
+ },
+ "gaps_ranking": [
+  [
+   "interrupt-human-in-loop",
+   18
+  ],
+  [
+   "extractor:all-nodes-dynamic",
+   17
+  ],
+  [
+   "extractor:unresolved-bound",
+   15
+  ],
+  [
+   "send-fanout",
+   8
+  ],
+  [
+   "hierarchical-manager",
+   5
+  ],
+  [
+   "dynamic-goto",
+   3
+  ]
+ ],
+ "bounds_distribution": {
+  "≤25": 53,
+  "≥1000 (vacuo)": 131,
+  "26-100": 2
+ },
+ "by_kind": {
+  "crewai": {
+   "tipa": 18,
+   "no-mapeable": 4
+  },
+  "langgraph": {
+   "tipa": 142,
+   "extractor-failure": 32,
+   "no-mapeable": 26,
+   "rechaza-con-razon": 4
+  },
+  "agents_sdk": {
+   "tipa": 26,
+   "rechaza-con-razon": 2
+  }
+ },
+ "sc_eval": {
+  "SC-001_go_fuerte_cobertura": true,
+  "SC-002_rango_condicional": false,
+  "SC-003_nogo_cobertura": false,
+  "SC-004_runaway_valueprop": true
+ },
+ "verdict_coverage": "GO-fuerte(cobertura)",
+ "verdict_final": "PENDIENTE F4 (falso-rechazo manual) — cobertura: GO-fuerte(cobertura)"
+}

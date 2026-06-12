@@ -1,0 +1,3975 @@
+[
+ {
+  "unit_id": "u001",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u002",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u003",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u004",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u005",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u006",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u007",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u008",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u009",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u010",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u011",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u012",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u013",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u014",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u015",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u016",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u017",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u018",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u019",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u020",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u021",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_6))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 6000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u022",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u023",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_4))",
+  "supersteps": 25,
+  "aggregation": "sum",
+  "bound_factor": 100,
+  "bound_source": "explicit",
+  "cyclic": true,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u024",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_3))",
+  "supersteps": 25,
+  "aggregation": "max",
+  "bound_factor": 25,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u025",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u026",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u027",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u028",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u029",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_4))",
+  "supersteps": 25,
+  "aggregation": "max",
+  "bound_factor": 25,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u030",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u031",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u032",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_5))",
+  "supersteps": 25,
+  "aggregation": "sum",
+  "bound_factor": 125,
+  "bound_source": "explicit",
+  "cyclic": true,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u033",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u034",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 5000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u035",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u036",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u037",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u038",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_3))",
+  "supersteps": 25,
+  "aggregation": "max",
+  "bound_factor": 25,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u039",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u040",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u041",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u042",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u043",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u044",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(60, if(n₁..n_4))",
+  "supersteps": 60,
+  "aggregation": "sum",
+  "bound_factor": 240,
+  "bound_source": "explicit",
+  "cyclic": true,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u045",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u046",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u047",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u048",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u049",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 5000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u050",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_2))",
+  "supersteps": 25,
+  "aggregation": "max",
+  "bound_factor": 25,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u051",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_4))",
+  "supersteps": 25,
+  "aggregation": "max",
+  "bound_factor": 25,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u052",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_5))",
+  "supersteps": 25,
+  "aggregation": "sum",
+  "bound_factor": 125,
+  "bound_source": "explicit",
+  "cyclic": true,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u053",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(30, if(n₁..n_5))",
+  "supersteps": 30,
+  "aggregation": "max",
+  "bound_factor": 30,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u054",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u055",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "unresolved-bound",
+  "params": [
+   "recursion_limit"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u056",
+  "kind": "langgraph",
+  "category": "tipa:explicit",
+  "term": "loop(25, if(n₁..n_5))",
+  "supersteps": 25,
+  "aggregation": "sum",
+  "bound_factor": 125,
+  "bound_source": "explicit",
+  "cyclic": true,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u057",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u058",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 5000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u059",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u060",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u061",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u062",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u063",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u064",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u065",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u066",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u067",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 2,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u068",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 7000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u069",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u070",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u071",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u072",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u073",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_18))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 18000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 13,
+   "caps_found": 13,
+   "caps_finite": 13
+  }
+ },
+ {
+  "unit_id": "u074",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_18))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 18000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 13,
+   "caps_found": 13,
+   "caps_finite": 13
+  }
+ },
+ {
+  "unit_id": "u075",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_18))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 18000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 13,
+   "caps_found": 13,
+   "caps_finite": 13
+  }
+ },
+ {
+  "unit_id": "u076",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 3,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u077",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u078",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u079",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 2,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u080",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u081",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u082",
+  "kind": "agents_sdk",
+  "category": "rechaza-con-razon",
+  "reason": "while-true-driver",
+  "lines": [
+   176
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u083",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u084",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u085",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u086",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u087",
+  "kind": "agents_sdk",
+  "category": "rechaza-con-razon",
+  "reason": "max-turns-none",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u088",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u089",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u090",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u091",
+  "kind": "langgraph",
+  "category": "no-mapeable:dynamic-goto",
+  "all_blocking": [
+   "dynamic-goto",
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u092",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u093",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u094",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u095",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u096",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_10))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 10000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u097",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u098",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u099",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u100",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u101",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u102",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u103",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u104",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u105",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 5000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u106",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u107",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u108",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u109",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u110",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u111",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u112",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u113",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u114",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u115",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u116",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 7,
+   "caps_finite": 1
+  }
+ },
+ {
+  "unit_id": "u117",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u118",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u119",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u120",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 2,
+   "caps_finite": 2
+  }
+ },
+ {
+  "unit_id": "u121",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u122",
+  "kind": "crewai",
+  "category": "tipa:explicit",
+  "term": "loop(1, if(n₁..n_1))",
+  "supersteps": 1,
+  "aggregation": "max",
+  "bound_factor": 1,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 1,
+   "caps_finite": 1
+  }
+ },
+ {
+  "unit_id": "u123",
+  "kind": "crewai",
+  "category": "tipa:explicit",
+  "term": "loop(1, if(n₁..n_1))",
+  "supersteps": 1,
+  "aggregation": "max",
+  "bound_factor": 1,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 3,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u124",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 1,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u125",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u126",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_9))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 9000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u127",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 7000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u128",
+  "kind": "langgraph",
+  "category": "no-mapeable:dynamic-goto",
+  "all_blocking": [
+   "dynamic-goto"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u129",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_8))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 8000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u130",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u131",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u132",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u133",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u134",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u135",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u136",
+  "kind": "langgraph",
+  "category": "no-mapeable:send-fanout",
+  "all_blocking": [
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u137",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u138",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop",
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u139",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u140",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u141",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u142",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u143",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u144",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u145",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u146",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 2,
+   "caps_finite": 2
+  }
+ },
+ {
+  "unit_id": "u147",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u148",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u149",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u150",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u151",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u152",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u153",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u154",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u155",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u156",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u157",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u158",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u159",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u160",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u161",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u162",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u163",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u164",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u165",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u166",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u167",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u168",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u169",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u170",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u171",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u172",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u173",
+  "kind": "langgraph",
+  "category": "no-mapeable:dynamic-goto",
+  "all_blocking": [
+   "dynamic-goto"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u174",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u175",
+  "kind": "langgraph",
+  "category": "no-mapeable:send-fanout",
+  "all_blocking": [
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u176",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u177",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u178",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u179",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u180",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u181",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u182",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u183",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u184",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u185",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u186",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u187",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u188",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 1,
+   "caps_finite": 1
+  }
+ },
+ {
+  "unit_id": "u189",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 1,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u190",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u191",
+  "kind": "crewai",
+  "category": "no-mapeable:hierarchical-manager",
+  "all_blocking": [
+   "hierarchical-manager"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u192",
+  "kind": "crewai",
+  "category": "no-mapeable:hierarchical-manager",
+  "all_blocking": [
+   "hierarchical-manager"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u193",
+  "kind": "crewai",
+  "category": "no-mapeable:hierarchical-manager",
+  "all_blocking": [
+   "hierarchical-manager"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u194",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_6))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 6000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 5,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u195",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 7000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 5,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u196",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 5,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u197",
+  "kind": "crewai",
+  "category": "no-mapeable:hierarchical-manager",
+  "all_blocking": [
+   "hierarchical-manager"
+  ],
+  "certifiability": {
+   "llm_constructors": 5,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u198",
+  "kind": "langgraph",
+  "category": "no-mapeable:hierarchical-manager",
+  "all_blocking": [
+   "hierarchical-manager"
+  ],
+  "certifiability": {
+   "llm_constructors": 5,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u199",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_21))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 21000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u200",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_21))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 21000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u201",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 3,
+   "caps_finite": 3
+  }
+ },
+ {
+  "unit_id": "u202",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u203",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop",
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u204",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u205",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u206",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u207",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 2,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u208",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 3000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 4,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u209",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 2,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u210",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u211",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u212",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u213",
+  "kind": "langgraph",
+  "category": "no-mapeable:send-fanout",
+  "all_blocking": [
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u214",
+  "kind": "langgraph",
+  "category": "no-mapeable:send-fanout",
+  "all_blocking": [
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u215",
+  "kind": "langgraph",
+  "category": "rechaza-con-razon",
+  "reason": "recursion-limit-huge",
+  "value": 20000000000,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u216",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u217",
+  "kind": "langgraph",
+  "category": "rechaza-con-razon",
+  "reason": "recursion-limit-huge",
+  "value": 20000000000,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u218",
+  "kind": "langgraph",
+  "category": "rechaza-con-razon",
+  "reason": "recursion-limit-huge",
+  "value": 20000000000,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u219",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop",
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u220",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_1))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u221",
+  "kind": "langgraph",
+  "category": "no-mapeable:interrupt-human-in-loop",
+  "all_blocking": [
+   "interrupt-human-in-loop"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u222",
+  "kind": "langgraph",
+  "category": "no-mapeable:send-fanout",
+  "all_blocking": [
+   "send-fanout"
+  ],
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u223",
+  "kind": "langgraph",
+  "category": "extractor-failure",
+  "reason": "all-nodes-dynamic",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u224",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_8))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 8000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u225",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u226",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u227",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u228",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_2))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 2000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u229",
+  "kind": "langgraph",
+  "category": "rechaza-con-razon",
+  "reason": "while-true-driver",
+  "lines": [
+   293
+  ],
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u230",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u231",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 2,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u232",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u233",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 5000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u234",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_8))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 8000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u235",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_8))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 8000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u236",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u237",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_4))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 4000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u238",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u239",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u240",
+  "kind": "agents_sdk",
+  "category": "tipa:explicit",
+  "term": "loop(5, if(n₁..n_1))",
+  "supersteps": 5,
+  "aggregation": "max",
+  "bound_factor": 5,
+  "bound_source": "explicit",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u241",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_5))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u242",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u243",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_6))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 6000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u244",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u245",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u246",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_3))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u247",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u248",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_11))",
+  "supersteps": 1000,
+  "aggregation": "sum",
+  "bound_factor": 11000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": true,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u249",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u250",
+  "kind": "crewai",
+  "category": "tipa:framework-default",
+  "term": "loop(20, if(n₁..n_1))",
+  "supersteps": 20,
+  "aggregation": "max",
+  "bound_factor": 20,
+  "bound_source": "framework-default(20)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u251",
+  "kind": "agents_sdk",
+  "category": "tipa:framework-default",
+  "term": "loop(10, if(n₁..n_1))",
+  "supersteps": 10,
+  "aggregation": "max",
+  "bound_factor": 10,
+  "bound_source": "framework-default(10)",
+  "cyclic": false,
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u252",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_13))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ },
+ {
+  "unit_id": "u253",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_9))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 1,
+   "caps_found": 1,
+   "caps_finite": 1
+  }
+ },
+ {
+  "unit_id": "u254",
+  "kind": "langgraph",
+  "category": "tipa:framework-default",
+  "term": "loop(1000, if(n₁..n_7))",
+  "supersteps": 1000,
+  "aggregation": "max",
+  "bound_factor": 1000,
+  "bound_source": "framework-default(1000 moderno; 25 legacy)",
+  "cyclic": false,
+  "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+  "certifiability": {
+   "llm_constructors": 0,
+   "caps_found": 0,
+   "caps_finite": 0
+  }
+ }
+]

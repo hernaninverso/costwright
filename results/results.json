@@ -1,0 +1,4872 @@
+{
+ "mapping": [
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "AgentOps-AI_agentops/examples/crewai/job_posting.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u001"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "AgentOps-AI_agentops/examples/langgraph/langgraph_example.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u002"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_guardrails.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u003"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_guardrails.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u004"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u005"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u006"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u007"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u008"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u009"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u010"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u011"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u012"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u013"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u014"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agent_patterns.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u015"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agents_tools.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u016"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agents_tools.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u017"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agents_tools.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u018"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/agents_tools.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u019"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "AgentOps-AI_agentops/examples/openai_agents/customer_service_agent.py",
+   "repo": "AgentOps-AI/agentops",
+   "stars": 5624,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u020"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 6000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "Arvo-AI_aurora/server/chat/backend/agent/workflow.py",
+   "repo": "Arvo-AI/aurora",
+   "stars": 286,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_6))",
+   "unit_id": "u021"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "Azure-Samples_ai-foundry-agents-samples/examples/mcp/filesystem_example/main_azure_ai_foundry.py",
+   "repo": "Azure-Samples/ai-foundry-agents-samples",
+   "stars": 30,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u022"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 100,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/adaptive_rag.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_4))",
+   "unit_id": "u023"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 25,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/agent_workflow_memory.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_3))",
+   "unit_id": "u024"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/agentic_rag.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u025"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/blackboard.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u026"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/browser_agent.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u027"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/cellular_automata.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u028"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 25,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/chain_of_verification.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_4))",
+   "unit_id": "u029"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/computer_use.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u030"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/constitutional_ai.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u031"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 125,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/corrective_rag.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_5))",
+   "unit_id": "u032"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/debate.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u033"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 5000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/dry_run.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u034"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/ensemble.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u035"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/episodic_semantic.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u036"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/graph_memory.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u037"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 25,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/graph_rag.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_3))",
+   "unit_id": "u038"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/lats.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u039"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/memgpt.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u040"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/mental_loop.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u041"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/meta_controller.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u042"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/multi_agent.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u043"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 240,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/pev.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 60,
+   "term": "loop(60, if(n₁..n_4))",
+   "unit_id": "u044"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/planning.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u045"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/react.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u046"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/reflection.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u047"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/reflexion.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u048"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 5000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/reflexive_metacognitive.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u049"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 25,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/self_consistency.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_2))",
+   "unit_id": "u050"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 25,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/self_discover.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_4))",
+   "unit_id": "u051"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 125,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/self_rag.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_5))",
+   "unit_id": "u052"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 30,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/storm.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 30,
+   "term": "loop(30, if(n₁..n_5))",
+   "unit_id": "u053"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/tool_use.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u054"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "params": [
+    "recursion_limit"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/tree_of_thoughts.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "unit_id": "u055"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 125,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_all-agentic-architectures/src/agentic_architectures/architectures/voyager.py",
+   "repo": "FareedKhan-dev/all-agentic-architectures",
+   "stars": 3582,
+   "supersteps": 25,
+   "term": "loop(25, if(n₁..n_5))",
+   "unit_id": "u056"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "FareedKhan-dev_scalable-rag-pipeline/services/api/app/agents/graph.py",
+   "repo": "FareedKhan-dev/scalable-rag-pipeline",
+   "stars": 144,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u057"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 5000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "Haohao-end_openagent/api/internal/core/agent/agents/deep_thinking_agent.py",
+   "repo": "Haohao-end/openagent",
+   "stars": 820,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u058"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "Haohao-end_openagent/api/internal/core/agent/agents/function_call_agent.py",
+   "repo": "Haohao-end/openagent",
+   "stars": 820,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u059"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "Haohao-end_openagent/api/internal/core/workflow/workflow.py",
+   "repo": "Haohao-end/openagent",
+   "stars": 820,
+   "unit_id": "u060"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/bg_task_agent/bg_task_agent.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u061"
+  },
+  {
+   "all_blocking": [
+    "dynamic-goto"
+   ],
+   "category": "no-mapeable:dynamic-goto",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/command_agent.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "unit_id": "u062"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/interrupt_agent.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "unit_id": "u063"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/knowledge_base_agent.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u064"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/rag_assistant.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u065"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "JoshuaC215_agent-service-toolkit/src/agents/research_assistant.py",
+   "repo": "JoshuaC215/agent-service-toolkit",
+   "stars": 4332,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u066"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 2,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "LangConfig_langconfig/backend/core/workflows/executor.py",
+   "repo": "LangConfig/langconfig",
+   "stars": 44,
+   "unit_id": "u067"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 7000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "LangConfig_langconfig/backend/core/workflows/graph.py",
+   "repo": "LangConfig/langconfig",
+   "stars": 44,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u068"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "LangConfig_langconfig/backend/examples/workflows/deep_research.py",
+   "repo": "LangConfig/langconfig",
+   "stars": 44,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u069"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "MODSetter_SurfSense/surfsense_backend/app/agents/video_presentation/graph.py",
+   "repo": "MODSetter/SurfSense",
+   "stars": 14439,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u070"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "MODSetter_SurfSense/surfsense_backend/app/podcasts/generation/brief/graph.py",
+   "repo": "MODSetter/SurfSense",
+   "stars": 14439,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u071"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "MODSetter_SurfSense/surfsense_backend/app/podcasts/generation/transcript/graph.py",
+   "repo": "MODSetter/SurfSense",
+   "stars": 14439,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u072"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 18000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 13,
+    "caps_found": 13,
+    "llm_constructors": 13
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "NirDiamant_Controllable-RAG-Agent/functions_for_pipeline.py",
+   "repo": "NirDiamant/Controllable-RAG-Agent",
+   "stars": 1615,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_18))",
+   "unit_id": "u073"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 18000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 13,
+    "caps_found": 13,
+    "llm_constructors": 13
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "NirDiamant_Controllable-RAG-Agent/functions_for_pipeline.py",
+   "repo": "NirDiamant/Controllable-RAG-Agent",
+   "stars": 1615,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_18))",
+   "unit_id": "u074"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 18000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 13,
+    "caps_found": 13,
+    "llm_constructors": 13
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "NirDiamant_Controllable-RAG-Agent/functions_for_pipeline.py",
+   "repo": "NirDiamant/Controllable-RAG-Agent",
+   "stars": 1615,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_18))",
+   "unit_id": "u075"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 3,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "OpenDCAI_Paper2Any/dataflow_agent/agentroles/cores/base_agent.py",
+   "repo": "OpenDCAI/Paper2Any",
+   "stars": 2595,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u076"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "OpenDCAI_Paper2Any/dataflow_agent/graphbuilder/graph_builder.py",
+   "repo": "OpenDCAI/Paper2Any",
+   "stars": 2595,
+   "unit_id": "u077"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "OpenDCAI_Paper2Any/dataflow_agent/toolkits/postertool/src/workflow/pipeline.py",
+   "repo": "OpenDCAI/Paper2Any",
+   "stars": 2595,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u078"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 2
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "Repello-AI_Agent-Wiz/examples/code/crewai/echo_synth/crews/audio_crew.py",
+   "repo": "Repello-AI/Agent-Wiz",
+   "stars": 378,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u079"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "Repello-AI_Agent-Wiz/examples/code/crewai/echo_synth/crews/json_crew.py",
+   "repo": "Repello-AI/Agent-Wiz",
+   "stars": 378,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u080"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "Repello-AI_Agent-Wiz/examples/code/langgraph/lg.py",
+   "repo": "Repello-AI/Agent-Wiz",
+   "stars": 378,
+   "unit_id": "u081"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "Repello-AI_Agent-Wiz/examples/code/openai_agents/agent.py",
+   "repo": "Repello-AI/Agent-Wiz",
+   "stars": 378,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u082"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "RyjoxTechnologies_Octopoda-OS/synrix_runtime/demo/openai_agents_demo.py",
+   "repo": "RyjoxTechnologies/Octopoda-OS",
+   "stars": 342,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u083"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "RyjoxTechnologies_Octopoda-OS/synrix_runtime/demo/openai_agents_demo.py",
+   "repo": "RyjoxTechnologies/Octopoda-OS",
+   "stars": 342,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u084"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "RyjoxTechnologies_Octopoda-OS/synrix_runtime/demo/openai_agents_demo.py",
+   "repo": "RyjoxTechnologies/Octopoda-OS",
+   "stars": 342,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u085"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "RyjoxTechnologies_Octopoda-OS/synrix_runtime/demo/openai_agents_demo.py",
+   "repo": "RyjoxTechnologies/Octopoda-OS",
+   "stars": 342,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u086"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "agents_sdk",
+   "params": [
+    "max_turns"
+   ],
+   "reason": "unresolved-bound",
+   "rel_path": "Shaurya-Sethi_circuitron/circuitron/debug.py",
+   "repo": "Shaurya-Sethi/circuitron",
+   "stars": 103,
+   "unit_id": "u087"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "Shaurya-Sethi_circuitron/circuitron/guardrails.py",
+   "repo": "Shaurya-Sethi/circuitron",
+   "stars": 103,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u088"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "StreetLamb_tribe/backend/app/core/graph/build.py",
+   "repo": "StreetLamb/tribe",
+   "stars": 1078,
+   "unit_id": "u089"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "StreetLamb_tribe/backend/app/core/graph/build.py",
+   "repo": "StreetLamb/tribe",
+   "stars": 1078,
+   "unit_id": "u090"
+  },
+  {
+   "all_blocking": [
+    "dynamic-goto",
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:dynamic-goto",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/RAG-quiz-generator/src/agents/quiz-generator-RAG-agent.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u091"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/RAG-quiz-generator/src/agents/researcher-RAG-agent.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u092"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/bring-your-own-model/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u093"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/calculator-agent/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u094"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/company-research-agent/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u095"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 10000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/debug-agent/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_10))",
+   "unit_id": "u096"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/debug-parallel-interrupts-agents/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u097"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/email-organizer-agent/src/email_organizer/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u098"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/email-triage-agent/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u099"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/joke-agent/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u100"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/joke-agent-decorator/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u101"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/multi-agent-planner-researcher-coder-distributed/src/multi-agent-distributed/coder.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u102"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/multi-agent-planner-researcher-coder-distributed/src/multi-agent-distributed/planner.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u103"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/multi-agent-planner-researcher-coder-distributed/src/multi-agent-distributed/researcher.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u104"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 5000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/multi-agent-supervisor-researcher-coder/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u105"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/oauth-external-apps-agent/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u106"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/simple-remote-mcp/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u107"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/ticket-classification/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u108"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/tool-calling-suspend-resume/agent-basic.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u109"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/samples/tool-calling-suspend-resume/agent-simple.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u110"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "UiPath_uipath-langchain-python/src/uipath_langchain/agent/react/agent.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u111"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "UiPath_uipath-langchain-python/src/uipath_langchain/agent/react/guardrails/guardrails_subgraph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u112"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "UiPath_uipath-langchain-python/src/uipath_langchain/agent/react/guardrails/guardrails_subgraph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u113"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/src/uipath_langchain/agent/tools/datafabric_tool/datafabric_subgraph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u114"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/template/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u115"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 1,
+    "caps_found": 7,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/chat-models/src/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u116"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/company-research-agent/src/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u117"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/debug-breakpoints/src/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u118"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/dev-console/src/graph.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u119"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 2,
+    "caps_found": 2,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/multimodal-invoke/src/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u120"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "UiPath_uipath-langchain-python/testcases/ticket-classification/src/main.py",
+   "repo": "UiPath/uipath-langchain-python",
+   "stars": 71,
+   "unit_id": "u121"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 1,
+    "caps_found": 1,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "alexfazio_OpenPlexity-Pages/openplexity_pages/agent_writer.py",
+   "repo": "alexfazio/OpenPlexity-Pages",
+   "stars": 253,
+   "supersteps": 1,
+   "term": "loop(1, if(n₁..n_1))",
+   "unit_id": "u122"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 3
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "alexfazio_viral-clips-crew/crew.py",
+   "repo": "alexfazio/viral-clips-crew",
+   "stars": 757,
+   "supersteps": 1,
+   "term": "loop(1, if(n₁..n_1))",
+   "unit_id": "u123"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 1,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_langgraph-agents-with-amazon-bedrock/Lab_6/helper.py",
+   "repo": "aws-samples/langgraph-agents-with-amazon-bedrock",
+   "stars": 188,
+   "unit_id": "u124"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/a2a-protocol/A2A-Protocol-Bedrock-Agents/samples/python/agents/websearchagent/agent.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u125"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 9000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/customer_support/cs_cust_support_flow.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_9))",
+   "unit_id": "u126"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 7000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/cybersecurity-ai-platform/core/langgraph_orchestrator.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u127"
+  },
+  {
+   "all_blocking": [
+    "dynamic-goto"
+   ],
+   "category": "no-mapeable:dynamic-goto",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/deep-research/src/agent/graph.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u128"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 8000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/financial-agent/py-backend/app/libs/graph.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_8))",
+   "unit_id": "u129"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-1/studio/agent.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u130"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-1/studio/router.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u131"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-1/studio/simple.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u132"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-2/studio/chatbot.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u133"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-3/studio/agent.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u134"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-3/studio/dynamic_breakpoints.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u135"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-4/studio/map_reduce.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u136"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-4/studio/parallelization.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u137"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop",
+    "send-fanout",
+    "subgraph-node"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-4/studio/research_assistant.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u138"
+  },
+  {
+   "all_blocking": [
+    "subgraph-node"
+   ],
+   "category": "no-mapeable:subgraph-node",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-4/studio/sub_graphs.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u139"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-5/studio/memory_agent.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u140"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-5/studio/memory_store.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u141"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-5/studio/memoryschema_collection.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u142"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-5/studio/memoryschema_profile.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u143"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/langchain-academy-bedrock-nova/module-6/deployment/task_maistro.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u144"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/shopping-agent/agents/agent.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "unit_id": "u145"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 2,
+    "caps_found": 2,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "aws-samples_sample-agentic-frameworks-on-aws/langchain/waf-logs-in-clickhouse/main.py",
+   "repo": "aws-samples/sample-agentic-frameworks-on-aws",
+   "stars": 259,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u146"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "benman1_generative_ai_with_langchain/chapter4/rag.py",
+   "repo": "benman1/generative_ai_with_langchain",
+   "stars": 1370,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u147"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "crewAIInc_crewAI-tools/crewai_tools/tools/multion_tool/example.py",
+   "repo": "crewAIInc/crewAI-tools",
+   "stars": 1433,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u148"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "crewAIInc_crewAI-tools/crewai_tools/tools/patronus_eval_tool/example.py",
+   "repo": "crewAIInc/crewAI-tools",
+   "stars": 1433,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u149"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "crewAIInc_crewAI-tools/crewai_tools/tools/stagehand_tool/example.py",
+   "repo": "crewAIInc/crewAI-tools",
+   "stars": 1433,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u150"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/01-helloworld/LangGraphBiz.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u151"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/01-helloworld/LangGraphHello.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u152"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/01-helloworld/LangGraphLLM.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u153"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/02-graph/BuildWholeGraphSummary.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u154"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/DefState.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u155"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_AddMessages.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u156"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_Custom.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u157"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_Default.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u158"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_OperatorAdd.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u159"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_OperatorAdd2.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u160"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_OperatorAdd3.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u161"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducer_OperatorMul.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u162"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/reducers/StateReducersMyChatBot.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u163"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/03-state/schema/StateSchema.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u164"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/04-node/DefNode.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u165"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/04-node/Node_Cache.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "unit_id": "u166"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/04-node/Node_ExpErrRetry.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "unit_id": "u167"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/05-edge/Edge_Conditional.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u168"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/05-edge/Edge_ConditionalEntryPoint.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u169"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/05-edge/Edge_ConditionalV2.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u170"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/05-edge/Edge_EntryPoint.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u171"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/05-edge/Edge_Normal.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u172"
+  },
+  {
+   "all_blocking": [
+    "dynamic-goto"
+   ],
+   "category": "no-mapeable:dynamic-goto",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/06-specialApi/CommandDemo.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "unit_id": "u173"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/06-specialApi/RuntimeContextDemo.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u174"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/06-specialApi/SendDemo.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "unit_id": "u175"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/state_persistence/MemoryPersistence.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u176"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/state_persistence/SqlitePersistence.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u177"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/streaming/StreamCustomData.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u178"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/streaming/StreamCustomDataSimple.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u179"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/streaming/StreamGraphState.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u180"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/streaming/StreamLLMTokens.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u181"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/streaming/StreamMultipleModes.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u182"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/subgraph/SubGraphHello.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u183"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/subgraph/SubGraphPro.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u184"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/subgraph/SubGraphPro.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u185"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/subgraph/SubGraphSimple.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u186"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/07-senior/time_travel/TimeTravel.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u187"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 1,
+    "caps_found": 1,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "didilili_ai-agents-from-zero/案例与源码-3-LangGraph框架/08-multi_agent/SupervisorHandoff.py",
+   "repo": "didilili/ai-agents-from-zero",
+   "stars": 1899,
+   "unit_id": "u188"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 1,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/advance-rag/agentic-rag/agentic_rag_system.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u189"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/advance-rag/graph-rag/agentic_router.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u190"
+  },
+  {
+   "all_blocking": [
+    "hierarchical-manager"
+   ],
+   "category": "no-mapeable:hierarchical-manager",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "crewai",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/crewai/code_review_crew/code_review_crew.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "unit_id": "u191"
+  },
+  {
+   "all_blocking": [
+    "hierarchical-manager"
+   ],
+   "category": "no-mapeable:hierarchical-manager",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "crewai",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/crewai/content_creation_crew/content_creation_crew.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "unit_id": "u192"
+  },
+  {
+   "all_blocking": [
+    "hierarchical-manager"
+   ],
+   "category": "no-mapeable:hierarchical-manager",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "crewai",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/crewai/data_analysis_crew/data_analysis_crew.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "unit_id": "u193"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 6000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 5
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/langgraph/customer_support_agent.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_6))",
+   "unit_id": "u194"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 7000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 5
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/langgraph/document_processing_pipeline.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u195"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 5
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/agentic_frameworks/langgraph/task_planning_system.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u196"
+  },
+  {
+   "all_blocking": [
+    "hierarchical-manager"
+   ],
+   "category": "no-mapeable:hierarchical-manager",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 5
+   },
+   "kind": "crewai",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/multi_agent_orchestration/multi_agent_orchestration.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "unit_id": "u197"
+  },
+  {
+   "all_blocking": [
+    "hierarchical-manager"
+   ],
+   "category": "no-mapeable:hierarchical-manager",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 5
+   },
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/agentic-ai/multi_agent_orchestration/multi_agent_orchestration.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "unit_id": "u198"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 21000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/content-moderation-system/backend/src/agents/workflow.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_21))",
+   "unit_id": "u199"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 21000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/content-moderation-system/backend/src/agents/workflow.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_21))",
+   "unit_id": "u200"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 3,
+    "caps_found": 3,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "genieincodebottle_generative-ai/genai-usecases/llama-4-multi-function-app/app.py",
+   "repo": "genieincodebottle/generative-ai",
+   "stars": 2354,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u201"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "iniwap_AIWriteX/src/ai_write_x/core/content_generation.py",
+   "repo": "iniwap/AIWriteX",
+   "stars": 1174,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u202"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop",
+    "send-fanout"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langchain/libs/langchain_v1/langchain/agents/factory.py",
+   "repo": "langchain-ai/langchain",
+   "stars": 139088,
+   "unit_id": "u203"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/examples/chatbot-simulation-evaluation/simulation_utils.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u204"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/examples/graph_prerelease_reqs/agent.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u205"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/examples/graph_prerelease_reqs_fail/agent.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u206"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 2
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/examples/graphs/agent.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u207"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 4
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/examples/graphs/storm.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u208"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 2
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/examples/graphs_reqs_a/graphs_submod/agent.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u209"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/python-monorepo-example/apps/agent/src/agent/graph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u210"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/uv-examples/monorepo/apps/agent/src/agent/graph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u211"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/cli/uv-examples/simple/src/agent/graph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u212"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/fanout_to_subgraph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u213"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/fanout_to_subgraph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u214"
+  },
+  {
+   "category": "rechaza-con-razon",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "recursion-limit-huge",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/pydantic_state.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u215",
+   "value": 20000000000
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/sequential.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u216"
+  },
+  {
+   "category": "rechaza-con-razon",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "recursion-limit-huge",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/wide_dict.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u217",
+   "value": 20000000000
+  },
+  {
+   "category": "rechaza-con-razon",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "recursion-limit-huge",
+   "rel_path": "langchain-ai_langgraph/libs/langgraph/bench/wide_state.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u218",
+   "value": 20000000000
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop",
+    "send-fanout"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/prebuilt/langgraph/prebuilt/chat_agent_executor.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u219"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/sdk-py/integration/graph/factory_graph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_1))",
+   "unit_id": "u220"
+  },
+  {
+   "all_blocking": [
+    "interrupt-human-in-loop"
+   ],
+   "category": "no-mapeable:interrupt-human-in-loop",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph/libs/sdk-py/integration/graph/streaming_graph.py",
+   "repo": "langchain-ai/langgraph",
+   "stars": 34490,
+   "unit_id": "u221"
+  },
+  {
+   "all_blocking": [
+    "send-fanout"
+   ],
+   "category": "no-mapeable:send-fanout",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "rel_path": "langchain-ai_langgraph-bigtool/langgraph_bigtool/graph.py",
+   "repo": "langchain-ai/langgraph-bigtool",
+   "stars": 542,
+   "unit_id": "u222"
+  },
+  {
+   "category": "extractor-failure",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "kind": "langgraph",
+   "reason": "all-nodes-dynamic",
+   "rel_path": "langchain-ai_langgraph-swarm-py/langgraph_swarm/swarm.py",
+   "repo": "langchain-ai/langgraph-swarm-py",
+   "stars": 1510,
+   "unit_id": "u223"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 8000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "minitap-ai_mobile-use/minitap/mobile_use/graph/graph.py",
+   "repo": "minitap-ai/mobile-use",
+   "stars": 2589,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_8))",
+   "unit_id": "u224"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "moorcheh-ai_memanto/examples/crewai-memory/crew.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u225"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "moorcheh-ai_memanto/examples/crewai-memory/crew.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u226"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/basic_integration/agent.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u227"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 2000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/cross_session_recall/graph.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_2))",
+   "unit_id": "u228"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 3000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/custom_memory_saver/agent.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u229"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/custom_memory_saver/langgraph_agent.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u230"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 2,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/memanto_base_store/graph.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u231"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "moorcheh-ai_memanto/examples/langgraph-memanto/research_pipeline/langgraph_memanto/graph.py",
+   "repo": "moorcheh-ai/memanto",
+   "stars": 776,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u232"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 5000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "pipeshub-ai_pipeshub-ai/backend/python/app/modules/agents/deep/graph.py",
+   "repo": "pipeshub-ai/pipeshub-ai",
+   "stars": 2977,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u233"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 8000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "pipeshub-ai_pipeshub-ai/backend/python/app/modules/agents/qna/graph.py",
+   "repo": "pipeshub-ai/pipeshub-ai",
+   "stars": 2977,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_8))",
+   "unit_id": "u234"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 8000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "pipeshub-ai_pipeshub-ai/backend/python/app/modules/agents/qna/graph.py",
+   "repo": "pipeshub-ai/pipeshub-ai",
+   "stars": 2977,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_8))",
+   "unit_id": "u235"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "qdrant_webinar-crewai-qdrant-obsidian/src/email_assistant/crew.py",
+   "repo": "qdrant/webinar-crewai-qdrant-obsidian",
+   "stars": 28,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u236"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 4000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "rnadigital_agentcloud/agent-backend/src/chat/agents/open_ai.py",
+   "repo": "rnadigital/agentcloud",
+   "stars": 684,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_4))",
+   "unit_id": "u237"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "rnadigital_agentcloud/agent-backend/src/crew/build_crew.py",
+   "repo": "rnadigital/agentcloud",
+   "stars": 684,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u238"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "rnadigital_agentcloud/agent-backend/src/mongo/queries.py",
+   "repo": "rnadigital/agentcloud",
+   "stars": 684,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u239"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 5,
+   "bound_source": "explicit",
+   "category": "tipa:explicit",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "sadiuysal_crawl4ai-mcp-server/crawler_agent/agents_example.py",
+   "repo": "sadiuysal/crawl4ai-mcp-server",
+   "stars": 91,
+   "supersteps": 5,
+   "term": "loop(5, if(n₁..n_1))",
+   "unit_id": "u240"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/embedding_service/agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_5))",
+   "unit_id": "u241"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/hungry_services/agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u242"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 6000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/multipurpose_bot/agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_6))",
+   "unit_id": "u243"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/multipurpose_bot/subagents/chitchat_agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u244"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/multipurpose_bot/subagents/headphones_agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u245"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "shamspias_langgraph-agents/agents/multipurpose_bot/subagents/math_agent.py",
+   "repo": "shamspias/langgraph-agents",
+   "stars": 37,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_3))",
+   "unit_id": "u246"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "sinanuozdemir_oreilly-ai-agents/streamlit/app.py",
+   "repo": "sinanuozdemir/oreilly-ai-agents",
+   "stars": 280,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u247"
+  },
+  {
+   "aggregation": "sum",
+   "bound_factor": 11000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": true,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "starpig1129_DATAGEN/src/core/workflow.py",
+   "repo": "starpig1129/DATAGEN",
+   "stars": 1750,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_11))",
+   "unit_id": "u248"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "strnad_CrewAI-Studio/app/my_crew.py",
+   "repo": "strnad/CrewAI-Studio",
+   "stars": 1292,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u249"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 20,
+   "bound_source": "framework-default(20)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "crewai",
+   "rel_path": "youdotcom-oss_agent-skills/skills/ydc-crewai-mcp-integration/assets/path_a_basic_dsl.py",
+   "repo": "youdotcom-oss/agent-skills",
+   "stars": 37,
+   "supersteps": 20,
+   "term": "loop(20, if(n₁..n_1))",
+   "unit_id": "u250"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 10,
+   "bound_source": "framework-default(10)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "kind": "agents_sdk",
+   "rel_path": "youdotcom-oss_agent-skills/skills/ydc-openai-agent-sdk-integration/assets/path_a_hosted.py",
+   "repo": "youdotcom-oss/agent-skills",
+   "stars": 37,
+   "supersteps": 10,
+   "term": "loop(10, if(n₁..n_1))",
+   "unit_id": "u251"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "zamalali_DeepGit/agent.py",
+   "repo": "zamalali/DeepGit",
+   "stars": 880,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_13))",
+   "unit_id": "u252"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 1,
+    "caps_found": 1,
+    "llm_constructors": 1
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "zamalali_DeepGit/tools/evaluation.py",
+   "repo": "zamalali/DeepGit",
+   "stars": 880,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_9))",
+   "unit_id": "u253"
+  },
+  {
+   "aggregation": "max",
+   "bound_factor": 1000,
+   "bound_source": "framework-default(1000 moderno; 25 legacy)",
+   "category": "tipa:framework-default",
+   "certifiability": {
+    "caps_finite": 0,
+    "caps_found": 0,
+    "llm_constructors": 0
+   },
+   "cyclic": false,
+   "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)",
+   "kind": "langgraph",
+   "rel_path": "zamalali_DeepGit/tools/rank.py",
+   "repo": "zamalali/DeepGit",
+   "stars": 880,
+   "supersteps": 1000,
+   "term": "loop(1000, if(n₁..n_7))",
+   "unit_id": "u254"
+  }
+ ],
+ "metrics": {
+  "bounds_distribution": {
+   "26-100": 2,
+   "≤25": 54,
+   "≥1000 (vacuo)": 135
+  },
+  "by_kind": {
+   "agents_sdk": {
+    "extractor-failure": 1,
+    "tipa": 27
+   },
+   "crewai": {
+    "no-mapeable": 4,
+    "tipa": 18
+   },
+   "langgraph": {
+    "extractor-failure": 25,
+    "no-mapeable": 30,
+    "rechaza-con-razon": 3,
+    "tipa": 146
+   }
+  },
+  "categories": {
+   "extractor-failure": 26,
+   "no-mapeable:dynamic-goto": 4,
+   "no-mapeable:hierarchical-manager": 5,
+   "no-mapeable:interrupt-human-in-loop": 18,
+   "no-mapeable:send-fanout": 6,
+   "no-mapeable:subgraph-node": 1,
+   "rechaza-con-razon": 3,
+   "tipa:explicit": 14,
+   "tipa:framework-default": 177
+  },
+  "categories_major": {
+   "extractor-failure": 26,
+   "no-mapeable": 34,
+   "rechaza-con-razon": 3,
+   "tipa": 191
+  },
+  "certifiability": {
+   "pct_units_fully_capped": 11.9,
+   "total_caps_finite": 50,
+   "total_llm_constructors": 123,
+   "units_fully_capped": 7,
+   "units_with_llm": 59
+  },
+  "extractor_failure": 26,
+  "gaps_ranking": [
+   [
+    "interrupt-human-in-loop",
+    19
+   ],
+   [
+    "extractor:unresolved-bound",
+    16
+   ],
+   [
+    "extractor:all-nodes-dynamic",
+    10
+   ],
+   [
+    "send-fanout",
+    9
+   ],
+   [
+    "hierarchical-manager",
+    5
+   ],
+   [
+    "dynamic-goto",
+    4
+   ],
+   [
+    "subgraph-node",
+    2
+   ]
+  ],
+  "n_units": 254,
+  "no_mapeable": 34,
+  "pct_mapeable": 76.4,
+  "rechaza_con_razon": 3,
+  "runaway": {
+   "denom_cyclic_units": 42,
+   "numer": 37,
+   "pct": 88.1
+  },
+  "sc_eval": {
+   "SC-001_go_fuerte_cobertura": true,
+   "SC-002_rango_condicional": false,
+   "SC-003_nogo_cobertura": false,
+   "SC-004_runaway_valueprop": true
+  },
+  "tipa_explicit": 14,
+  "tipa_framework_default": 177,
+  "verdict_coverage": "GO-fuerte(cobertura)",
+  "verdict_final": "PENDIENTE F4 (falso-rechazo manual) — cobertura: GO-fuerte(cobertura)"
+ },
+ "seed": 20260612
+}
