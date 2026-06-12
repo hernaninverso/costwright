@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: gasket-check
+Version: 0.1.0
+Summary: Static budget certificates for LLM-agent workflows (LangGraph / CrewAI / OpenAI Agents SDK). Backed by a machine-checked (Lean 4) cost-soundness theorem.
+Author: Hernán Inverso
+License: Apache-2.0
+Project-URL: Homepage, https://github.com/hernaninverso/gasket
+Project-URL: Paper, https://github.com/hernaninverso/typed-resources
+Keywords: llm,agents,budget,static-analysis,langgraph,crewai,cost
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Quality Assurance
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown

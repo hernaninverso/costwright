@@ -1,0 +1,2 @@
+[console_scripts]
+gasket = gasket.cli:main

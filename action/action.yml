@@ -1,0 +1,20 @@
+name: "gasket check"
+description: "Static budget certificates for LLM-agent workflows (LangGraph/CrewAI/Agents SDK)"
+inputs:
+  path:
+    description: "Path to scan"
+    default: "."
+  fail-on:
+    description: "Policy: reject | default-dependent | non-certifiable | none"
+    default: "reject"
+runs:
+  using: "composite"
+  steps:
+    - shell: bash
+      run: |
+        pip install gasket-check
+        if [ "${{ inputs.fail-on }}" = "none" ]; then
+          gasket check "${{ inputs.path }}"
+        else
+          gasket check "${{ inputs.path }}" --fail-on "${{ inputs.fail-on }}"
+        fi
