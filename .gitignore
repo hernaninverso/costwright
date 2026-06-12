@@ -5,3 +5,4 @@ dist/
 # los 45 repos clonados NO van al repo público (son de terceros; el manifest con SHAs basta
 # para reproducir); el dataset CONGELADO sí va (provenance + reproducibilidad del experimento)
 dataset/repos/
+dataset/raw/
