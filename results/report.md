@@ -57,3 +57,17 @@
   diferir (sesgo de visibilidad inherente, mitigado por stars/CI/recency, no eliminado).
 - Detección de versión de langgraph por repo no implementada: se asume default moderno (1000);
   con el legacy (25) el hallazgo de vacuidad se atenúa pero el de dependencia-del-default no.
+
+## Audit de resultados (F5 — 6 frontera, 2026-06-12): 6/6 `yes_with_caveats`
+- 6/6: re-run tras bugfix de extractor = LEGÍTIMO (fixes de instrumento con tests, umbrales intactos).
+- 6/6: veredicto GO-fuerte SOPORTADO por los datos.
+- **Disclosure OBLIGATORIA en cualquier claim público de estos números**:
+  1. LangGraph domina el dataset (204/254 = 80%) — el veredicto es primariamente un veredicto
+     LangGraph; CrewAI (n=22) y Agents-SDK (n=28) están sub-potenciados.
+  2. Clustering: 254 units de 41-45 repos (~5.6/repo). Cobertura **repo-weighted: 78.2%** vs
+     unit-weighted 76.4% — consistentes, el clustering no altera el veredicto. Top clustering:
+     didilili (38), FareedKhan (34), UiPath (31), aws-samples (22), AgentOps (20).
+  3. Versión de LangGraph ASUMIDA moderna (default 1000) sin detección per-repo.
+  4. Sesgo de visibilidad: GitHub público filtrado ≠ workflows privados de producción.
+  5. Falso-rechazo 0% es sobre N=3 — por regla-de-tres el IC 95% llega a ~63%; NO citar "0%" pelado.
+  6. Falso-aceptado residual 1/10 (subgraph-por-variable; límite documentado del estático v1).
