@@ -1,5 +1,6 @@
 # costwright
 
+[![PyPI](https://img.shields.io/pypi/v/costwright.svg)](https://pypi.org/project/costwright/)
 [![Paper DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20661092.svg)](https://doi.org/10.5281/zenodo.20661092)
 
 **Static budget certificates for LLM-agent workflows.** Point it at your LangGraph / CrewAI /

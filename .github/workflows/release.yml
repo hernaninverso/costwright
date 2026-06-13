@@ -1,0 +1,53 @@
+name: release
+
+# Cut a release by pushing a version tag:  git tag v0.2.0 && git push origin v0.2.0
+# Publishes to PyPI via Trusted Publishing (OIDC) — NO token stored anywhere.
+# One-time PyPI setup required: see RELEASING.md.
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # scipy lets the CP-conservatism regression run; eleata-verify is private, so its e2e
+      # tests importorskip (skip cleanly). The pure-stdlib suite is the gate.
+      - run: pip install -e . pytest scipy
+      - run: pytest tests_pkg tests -q
+      - run: costwright check src --fail-on reject   # dogfood: must find no runaways in our own code
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build
+      - run: python -m build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write          # OIDC token for Trusted Publishing (the ONLY elevated permission)
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
