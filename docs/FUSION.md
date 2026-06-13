@@ -96,6 +96,20 @@ gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID" \
   default_dependent > certifiable`), or `no_graph_units`.
 - `risk.status` = `uncertified` (calibrator carries no SGR guarantee), else `abstained`, else `answered`.
 
+### Optional `conditional_analyses` (additive in v1; spec 004 — the certified agent run)
+
+`gasket.fusion.v1` gained one **optional** top-level key, `conditional_analyses` (null when absent →
+the bundle is the pure cartesian product, unchanged). When present, it carries a **single-channel,
+conditional, possibly-vacuous** ε-interference analysis — *how much can the budget cap degrade the risk
+SLA?* — computed from `eleata_verify.epsilon.interference_risk_bound()` (a black box) and **re-checked**
+by `gasket.fusion` in pure stdlib. It lives **beside** `composition`, not inside it: `composition.
+joint_guarantee` stays `false` and the analysis is **not** a joint guarantee. See
+**[CERTIFIED-RUN.md](./CERTIFIED-RUN.md)** for the full data model, the honesty machinery (status
+derived by fusion, never the caller; the word `bounded` is not a valid status; assumptions are
+self-asserted and never promote the status to a guarantee; `open_channels` is non-exhaustive), and the
+demo. Build one with `fusion.conditional_analysis_from_epsilon(...)` → `fusion.fuse(...,
+conditional_analyses=...)`.
+
 ## Demo
 
 `examples/fusion_demo.py` runs the full pipeline offline and deterministically (`demonstration_only`):
