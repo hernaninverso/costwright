@@ -1,15 +1,15 @@
-"""Schema gasket.v1 (CONGELADO — council 002 P0-3) + salida humana.
+"""Schema costwright.v1 (CONGELADO — council 002 P0-3) + salida humana.
 
 Enums cerrados:
   category   ∈ {certifiable, default_dependent, non_certifiable, runaway, parse_error}
   provenance ∈ {explicit, framework_default, absent}
   aggregation∈ {max, sum}
-Campos nuevos: solo aditivos en gasket.v2. `signature` reservado (null en OSS; capa E1 lo firma).
+Campos nuevos: solo aditivos en costwright.v2. `signature` reservado (null en OSS; capa E1 lo firma).
 """
 import hashlib
 import json
 
-SCHEMA = "gasket.v1"
+SCHEMA = "costwright.v1"
 
 # mapeo taxonomía-001 → enum público v1
 _CAT = {
@@ -81,7 +81,7 @@ _BADGE = {"certifiable": "✓", "default_dependent": "▲", "non_certifiable": "
 def pretty(report: dict, verbose: bool = False) -> str:
     s = report["summary"]
     out = []
-    out.append(f"gasket — budget certificate check  (schema {report['schema']})")
+    out.append(f"costwright — budget certificate check  (schema {report['schema']})")
     out.append("")
     rows = [u for u in report["units"]
             if verbose or u["category"] != "certifiable"]

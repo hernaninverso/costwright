@@ -3,14 +3,14 @@
 **Spec**: `spec.md` (this dir) · **Branch**: `004-certified-agent-run` · **Created**: 2026-06-13
 
 ## Technical context
-- **Repo**: `gasket` (pure-stdlib cost certificates for LLM-agent workflows; zero runtime deps).
+- **Repo**: `costwright` (pure-stdlib cost certificates for LLM-agent workflows; zero runtime deps).
 - **Dep (black box)**: `eleata-verify` pinned to origin/main @ `b7a2c71` (the additive contract +
   `eleata_verify.epsilon.interference_risk_bound`). Consumed ONLY in the demo/tests, never in the core.
-- **Schema**: `gasket.fusion.v1` extended ADDITIVELY with an optional top-level `conditional_analyses`
+- **Schema**: `costwright.fusion.v1` extended ADDITIVELY with an optional top-level `conditional_analyses`
   key (council 004 decision: v1-additive, not v2).
 
 ## Constitution check
-- **Zero-dep core preserved**: `gasket.fusion` stays pure-stdlib. The (ii) bound recompute, the
+- **Zero-dep core preserved**: `costwright.fusion` stays pure-stdlib. The (ii) bound recompute, the
   Clopper-Pearson upper (regularized incomplete beta via `_betacf`/`_betai`), and `1−eta^(1/m)` are all
   `math`/builtins — no `eleata_verify`/`numpy` import. Verified by the existing import test + a new one.
 - **Conservative by construction**: every honesty invariant (council P0-1..P0-7) is enforced by `fusion`,

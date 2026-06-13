@@ -1,6 +1,6 @@
 """Tests del bundler de fusión (spec 003): schema golden, validación estricta del contrato risk,
 tamper-evidence, INVARIANTES DE HONESTIDAD (joint_guarantee siempre false, disclaimer presente, sin
-booleano agregado de seguridad, sin "agente seguro"), y el CLI `gasket fuse` e2e."""
+booleano agregado de seguridad, sin "agente seguro"), y el CLI `costwright fuse` e2e."""
 import json
 import subprocess
 import sys
@@ -9,13 +9,13 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
-from gasket import fusion  # noqa: E402
+from costwright import fusion  # noqa: E402
 
 PY = sys.executable
 
 
 def _report(*categories, vacuous=0):
-    """A minimal valid gasket.v1 report with one unit per category given."""
+    """A minimal valid costwright.v1 report with one unit per category given."""
     units, counts = [], {"certifiable": 0, "default_dependent": 0, "non_certifiable": 0,
                          "runaway": 0, "parse_error": 0}
     for i, c in enumerate(categories):
@@ -25,7 +25,7 @@ def _report(*categories, vacuous=0):
                       "bound": {"supersteps": 1000, "node_executions_ceiling": 1000,
                                 "aggregation": "max", "provenance": "framework_default"},
                       "reasons": []})
-    return {"schema": "gasket.v1", "units": units,
+    return {"schema": "costwright.v1", "units": units,
             "summary": {"total": len(units), **counts, "vacuous_default_bounds": vacuous},
             "signature": None}
 
@@ -41,7 +41,7 @@ def _vr(**over):
 
 def _fuse(report=None, vr=None, **kw):
     kw.setdefault("run_id", "R")
-    kw.setdefault("gasket_version", "0.1.0")
+    kw.setdefault("costwright_version", "0.1.0")
     kw.setdefault("verify_version", "0.1.0")
     return fusion.fuse(report or _report("certifiable"), vr or _vr(), **kw)
 
@@ -50,22 +50,22 @@ def _fuse(report=None, vr=None, **kw):
 def test_cost_worst_category_conservative():
     # peor categoría presente (severidad runaway > non_certifiable > parse_error > default > certifiable)
     assert fusion.cost_certificate(_report("certifiable", "runaway"),
-                                   gasket_version="0.1.0")["worst_category"] == "runaway"
+                                   costwright_version="0.1.0")["worst_category"] == "runaway"
     assert fusion.cost_certificate(_report("certifiable", "default_dependent"),
-                                   gasket_version="0.1.0")["status"] == "default_dependent"
+                                   costwright_version="0.1.0")["status"] == "default_dependent"
     assert fusion.cost_certificate(_report("certifiable"),
-                                   gasket_version="0.1.0")["status"] == "certifiable"
+                                   costwright_version="0.1.0")["status"] == "certifiable"
 
 
 def test_cost_no_units():
-    c = fusion.cost_certificate(_report(), gasket_version="0.1.0")
+    c = fusion.cost_certificate(_report(), costwright_version="0.1.0")
     assert c["worst_category"] is None and c["status"] == "no_graph_units"
 
 
-def test_cost_rejects_non_gasket_v1():
-    for bad in ({"schema": "gasket.v2"}, {"units": [], "summary": {}}, [], "x"):
+def test_cost_rejects_non_costwright_v1():
+    for bad in ({"schema": "costwright.v2"}, {"units": [], "summary": {}}, [], "x"):
         try:
-            fusion.cost_certificate(bad, gasket_version="0.1.0")
+            fusion.cost_certificate(bad, costwright_version="0.1.0")
             assert False, f"should have rejected {bad!r}"
         except ValueError:
             pass
@@ -74,15 +74,15 @@ def test_cost_rejects_non_gasket_v1():
 def test_cost_rejects_unknown_or_malformed_category():
     # audit-3 (codex BLOCKER): una categoría desconocida NO debe colarse y degradar el status.
     bad_reports = [
-        {"schema": "gasket.v1", "units": [{"category": "certifiable"}, {"category": "runaway_typo"}],
+        {"schema": "costwright.v1", "units": [{"category": "certifiable"}, {"category": "runaway_typo"}],
          "summary": {"total": 2}},
-        {"schema": "gasket.v1", "units": [{"category": "certifiable"}, "not-a-dict"],
+        {"schema": "costwright.v1", "units": [{"category": "certifiable"}, "not-a-dict"],
          "summary": {"total": 2}},
-        {"schema": "gasket.v1", "units": [{"no_category": True}], "summary": {"total": 1}},
+        {"schema": "costwright.v1", "units": [{"no_category": True}], "summary": {"total": 1}},
     ]
     for rep in bad_reports:
         try:
-            fusion.cost_certificate(rep, gasket_version="0.1.0")
+            fusion.cost_certificate(rep, costwright_version="0.1.0")
             assert False, f"should reject {rep['units']}"
         except ValueError:
             pass
@@ -91,7 +91,7 @@ def test_cost_rejects_unknown_or_malformed_category():
 def test_cost_rejects_bad_workflow_digest():
     for bad in ("", 123, b"x"):
         try:
-            fusion.cost_certificate(_report("certifiable"), gasket_version="0.1.0", workflow_digest=bad)
+            fusion.cost_certificate(_report("certifiable"), costwright_version="0.1.0", workflow_digest=bad)
             assert False, f"should reject workflow_digest={bad!r}"
         except ValueError:
             pass
@@ -150,9 +150,9 @@ def test_risk_adversarial_inputs_raise_valueerror_not_typeerror():
 
 
 def test_cost_unhashable_category_raises_valueerror():
-    rep = {"schema": "gasket.v1", "units": [{"category": ["certifiable"]}], "summary": {"total": 1}}
+    rep = {"schema": "costwright.v1", "units": [{"category": ["certifiable"]}], "summary": {"total": 1}}
     try:
-        fusion.cost_certificate(rep, gasket_version="0.1.0")
+        fusion.cost_certificate(rep, costwright_version="0.1.0")
         assert False, "unhashable category must raise ValueError"
     except ValueError:
         pass
@@ -196,12 +196,12 @@ def test_risk_binding_digests():
 # --- fuse: schema + honesty invariants --------------------------------------------------------------
 def test_fuse_schema_keys():
     b = _fuse()
-    assert b["schema"] == "gasket.fusion.v1"
+    assert b["schema"] == "costwright.fusion.v1"
     assert set(b) == {"schema", "run", "cost", "risk", "composition", "conditional_analyses", "signature"}
     assert set(b["run"]) == {"run_id", "created_unix", "fusion_digest"}
     assert b["signature"] is None
     assert b["conditional_analyses"] is None          # null unless the caller provides the ε-analysis (spec 004)
-    assert b["cost"]["source"] == "gasket.v1" and b["risk"]["source"] == "eleata-verify.verify"
+    assert b["cost"]["source"] == "costwright.v1" and b["risk"]["source"] == "eleata-verify.verify"
     assert "theorem" in b["cost"] and "guarantee" in b["risk"]
     assert b["cost"]["scope"] and b["risk"]["scope"]  # scopes temporales explícitos
 
@@ -272,9 +272,9 @@ def test_pretty_surfaces_disclaimer_and_two_statuses():
     assert "CARTESIAN PRODUCT" in out and "NOT a composed guarantee" in out
 
 
-# --- CLI `gasket fuse` e2e ---------------------------------------------------------------------------
+# --- CLI `costwright fuse` e2e ---------------------------------------------------------------------------
 def _run_fuse(*args):
-    return subprocess.run([PY, "-m", "gasket.cli", "fuse", *args], capture_output=True, text=True,
+    return subprocess.run([PY, "-m", "costwright.cli", "fuse", *args], capture_output=True, text=True,
                           env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"})
 
 
@@ -287,7 +287,7 @@ def test_cli_fuse_golden_and_exit0():
                       "--verify-version", "0.1.0", "--json")
         assert r.returncode == 0, (r.returncode, r.stderr)
         b = json.loads(r.stdout)
-        assert b["schema"] == "gasket.fusion.v1"
+        assert b["schema"] == "costwright.fusion.v1"
         assert b["composition"]["joint_guarantee"] is False
         assert b["cost"]["status"] == "certifiable" and b["risk"]["status"] == "answered"
         assert b["run"]["run_id"] == "R1"
@@ -309,9 +309,9 @@ def test_cli_fuse_bad_path_exit2():
 
 
 def test_fusion_is_zero_dep():
-    # importar gasket.fusion NO debe arrastrar eleata_verify ni numpy (core zero-dep preservado)
+    # importar costwright.fusion NO debe arrastrar eleata_verify ni numpy (core zero-dep preservado)
     r = subprocess.run(
-        [PY, "-c", "import gasket.fusion, sys; "
+        [PY, "-c", "import costwright.fusion, sys; "
                    "assert 'eleata_verify' not in sys.modules, 'fusion imported eleata_verify'; "
                    "assert 'numpy' not in sys.modules, 'fusion imported numpy'; print('ok')"],
         capture_output=True, text=True, env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"})

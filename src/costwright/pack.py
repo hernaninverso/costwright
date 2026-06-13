@@ -1,7 +1,7 @@
-"""gasket pack — empaqueta un repo en un tarball REPRODUCIBLE para certificación server-side.
+"""costwright pack — empaqueta un repo en un tarball REPRODUCIBLE para certificación server-side.
 
 Determinista: mismo árbol .py → mismo tarball byte-idéntico (orden estable, mtime/uid/gid fijos,
-solo .py, exclusiones estándar). El servicio de certificación corre gasket sobre ESTO, no sobre un
+solo .py, exclusiones estándar). El servicio de certificación corre costwright sobre ESTO, no sobre un
 reporte que el cliente podría fabricar.
 """
 import io
@@ -54,16 +54,16 @@ def cmd_pack(args) -> int:
     import sys
     root = Path(args.path).resolve()
     if not root.exists():
-        print(f"gasket: path not found: {root}", file=sys.stderr)
+        print(f"costwright: path not found: {root}", file=sys.stderr)
         return 2
     try:
         tgz = build_tarball(root)
     except ValueError as e:
-        print(f"gasket pack: {e}", file=sys.stderr)
+        print(f"costwright pack: {e}", file=sys.stderr)
         return 2
     out = Path(args.output)
     out.write_bytes(tgz)
     import hashlib
-    print(f"gasket pack: wrote {out} ({len(tgz)} bytes, sha256 {hashlib.sha256(tgz).hexdigest()[:16]}…)")
-    print("  upload this artifact to the certification service; it re-runs gasket server-side.")
+    print(f"costwright pack: wrote {out} ({len(tgz)} bytes, sha256 {hashlib.sha256(tgz).hexdigest()[:16]}…)")
+    print("  upload this artifact to the certification service; it re-runs costwright server-side.")
     return 0

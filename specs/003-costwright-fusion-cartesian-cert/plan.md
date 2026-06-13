@@ -1,19 +1,19 @@
-# Implementation Plan: gasket fusion (003)
+# Implementation Plan: costwright fusion (003)
 
-**Branch**: `003-gasket-fusion-cartesian-cert` | **Spec**: `./spec.md` | **Date**: 2026-06-13
+**Branch**: `003-costwright-fusion-cartesian-cert` | **Spec**: `./spec.md` | **Date**: 2026-06-13
 
 ## Constitution Check
 
-gasket no tiene constitución ratificada (template vacío). Principios de facto heredados (spec 001/002),
+costwright no tiene constitución ratificada (template vacío). Principios de facto heredados (spec 001/002),
 verificados contra esta feature:
 
-- **Library-First / CLI**: la fusión es un módulo `gasket.fusion` + un subcomando `gasket fuse`. ✓
+- **Library-First / CLI**: la fusión es un módulo `costwright.fusion` + un subcomando `costwright fuse`. ✓
 - **Zero runtime deps (load-bearing)**: el bundler es stdlib puro; NUNCA importa `eleata_verify`. La
   única cosa que toca `eleata_verify` es el `examples/` (no-runtime). ✓ — VERIFICADO por test (FR-002).
 - **Test-First / golden**: tests script-style stdlib con golden del schema + invariantes de honestidad. ✓
 - **Conservadurismo > cobertura**: el bundle se diseña para ser difícil de malinterpretar (sin booleano
   agregado, disclaimer siempre visible, `joint_guarantee=false`). ✓
-- **Schema versionado, additive-only**: `gasket.fusion.v1` con enums cerrados; campos nuevos solo en v2. ✓
+- **Schema versionado, additive-only**: `costwright.fusion.v1` con enums cerrados; campos nuevos solo en v2. ✓
 - **No ejecuta código del usuario**: la fusión solo lee dos `dict` JSON. ✓
 
 Sin violaciones. No requiere "Complexity Tracking".
@@ -21,12 +21,12 @@ Sin violaciones. No requiere "Complexity Tracking".
 ## Arquitectura
 
 ```
-gasket check . --json ───► cost.json (gasket.v1)
+costwright check . --json ───► cost.json (costwright.v1)
                                          │
 eleata_verify.verify() ──► risk.json (VerifyResult.to_dict())   [solo el DEMO/CI del usuario importa eleata_verify]
                                          │
-                          gasket fuse --cost --risk ──► gasket.fusion.v1
-                          (src/gasket/fusion.py — STDLIB PURO, no importa eleata_verify)
+                          costwright fuse --cost --risk ──► costwright.fusion.v1
+                          (src/costwright/fusion.py — STDLIB PURO, no importa eleata_verify)
 ```
 
 **Frontera de honestidad** (el corazón de la feature): vive en `composition` — `joint_guarantee=false`,
@@ -36,9 +36,9 @@ eleata_verify.verify() ──► risk.json (VerifyResult.to_dict())   [solo el D
 
 | Archivo | Qué | Deps |
 |---|---|---|
-| `src/gasket/fusion.py` | `cost_certificate`, `risk_certificate` (con validación stdlib), `fuse`, `canonical`, `digest`, `pretty`, `SCHEMA` | stdlib (hashlib, json) |
-| `src/gasket/cli.py` (+) | subcomando `gasket fuse` | stdlib |
-| `examples/fusion_demo.py` | e2e: gasket check + verify() real (base sintética) + fuse; opt-in `--base nli` | `eleata_verify`, `numpy` |
+| `src/costwright/fusion.py` | `cost_certificate`, `risk_certificate` (con validación stdlib), `fuse`, `canonical`, `digest`, `pretty`, `SCHEMA` | stdlib (hashlib, json) |
+| `src/costwright/cli.py` (+) | subcomando `costwright fuse` | stdlib |
+| `examples/fusion_demo.py` | e2e: costwright check + verify() real (base sintética) + fuse; opt-in `--base nli` | `eleata_verify`, `numpy` |
 | `examples/requirements.txt` | pin de `eleata-verify` (git sha) + numpy | — |
 | `examples/workflows/certifiable_graph.py` | fixture LangGraph con `recursion_limit` explícito | — (texto) |
 | `tests_pkg/test_fusion.py` | golden + invariantes honestidad + tamper-evidence + validación + CLI e2e | stdlib |
@@ -47,11 +47,11 @@ eleata_verify.verify() ──► risk.json (VerifyResult.to_dict())   [solo el D
 | `README.md` (+) | sección "Fusion (experimental)" | — |
 | `.github/workflows/ci.yml` (+) | correr `test_fusion.py` | — |
 
-## Schema `gasket.fusion.v1` (congelado en esta spec; additive-only en v2)
+## Schema `costwright.fusion.v1` (congelado en esta spec; additive-only en v2)
 
 ```
 { schema, run:{run_id, created_unix|null, fusion_digest},
-  cost:{ source:"gasket.v1", gasket_version, report_digest, workflow_digest|null,
+  cost:{ source:"costwright.v1", costwright_version, report_digest, workflow_digest|null,
          scope:"ahead-of-time; static; every-trace", summary, worst_category, status,
          theorem:{name, mechanized, doi, scope} },
   risk:{ source:"eleata-verify.verify", verify_version, result_digest, claim_digest|null,

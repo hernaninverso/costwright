@@ -1,13 +1,13 @@
-"""gasket.fusion — the "cartesian product of certificates" (spec 003, Exp #4).
+"""costwright.fusion — the "cartesian product of certificates" (spec 003, Exp #4).
 
 A run of an LLM agent can carry TWO INDEPENDENT certificates:
 
-  1. a COST certificate (this repo, gasket.v1): static, ahead-of-time, holds on EVERY trace,
+  1. a COST certificate (this repo, costwright.v1): static, ahead-of-time, holds on EVERY trace,
      backed by the Lean 4 cost-soundness theorem (typed-resources, vsteps_sound, no sorry);
   2. a RISK certificate (eleata-verify `verify()`): per-output, a population selective-risk SLA
      (Geifman & El-Yaniv 2017) on i.i.d. data from the calibration domain, or an abstention.
 
-This module BUNDLES the two into a single `gasket.fusion.v1` audit record — their CARTESIAN
+This module BUNDLES the two into a single `costwright.fusion.v1` audit record — their CARTESIAN
 PRODUCT — and is deliberately conservative about what that bundle is ALLOWED to claim:
 
   * it is NOT a composed/joint guarantee (`composition.joint_guarantee` is ALWAYS false);
@@ -15,9 +15,9 @@ PRODUCT — and is deliberately conservative about what that bundle is ALLOWED t
   * the honesty disclaimer + the non-interference caveat ship INSIDE every bundle.
 
 ZERO runtime deps + ZERO knowledge of eleata-verify internals: this module is pure stdlib and only
-ever reads the SHAPE of `gasket check --json` and of `eleata_verify.VerifyResult.to_dict()` (the
+ever reads the SHAPE of `costwright check --json` and of `eleata_verify.VerifyResult.to_dict()` (the
 frozen, additive-only contract in eleata-verify/docs/API-CONTRACT.md). It NEVER imports eleata_verify
-— so adding fusion keeps gasket's "no runtime dependencies" guarantee intact (verified by tests).
+— so adding fusion keeps costwright's "no runtime dependencies" guarantee intact (verified by tests).
 
 The non-interference theorem (budget ⊥ risk, Hoare-style) that WOULD justify composing the two is
 explicitly FUTURE WORK — see docs/NON-INTERFERENCE.md. Do not sell this bundle as a joint guarantee.
@@ -26,7 +26,7 @@ import hashlib
 import json
 import math
 
-SCHEMA = "gasket.fusion.v1"
+SCHEMA = "costwright.fusion.v1"
 
 # --- provenance of the formal backing (NOT a runtime proof; it is the static cost theorem) ----------
 THEOREM = {
@@ -69,7 +69,7 @@ NON_INTERFERENCE = (
 
 # cost severity, worst → best (the bundle reports the WORST unit category, conservatively).
 _COST_SEVERITY = ["runaway", "non_certifiable", "parse_error", "default_dependent", "certifiable"]
-_COST_CATEGORIES = set(_COST_SEVERITY)                     # the closed gasket.v1 category enum
+_COST_CATEGORIES = set(_COST_SEVERITY)                     # the closed costwright.v1 category enum
 _RISK_VERDICTS = {"Supported", "Refuted", "Not Enough Evidence", "Conflicting"}
 _SLA_MODES = {"strict", "balanced"}
 
@@ -166,7 +166,7 @@ def _betai(a: float, b: float, x: float) -> float:
 
 def _cp_upper(k: int, m: int, eta: float) -> float:
     """One-sided (1−eta) Clopper-Pearson UPPER bound on a Binomial(m, p) proportion with k successes —
-    recomputed in PURE STDLIB so gasket NEVER trusts a caller-reported ε (audit-3 2026-06-13 BLOCKER).
+    recomputed in PURE STDLIB so costwright NEVER trusts a caller-reported ε (audit-3 2026-06-13 BLOCKER).
     p_U solves the tail equation `P(Binom(m, p_U) ≤ k) = eta`, computed in the TAIL domain as
     `I_{1−p}(m−k, k+1)` vs `eta` directly (NOT `1−eta` — that rounds to 1.0 and understates for δ_eps<2^-53).
     Bisection on `_betai` (cost INDEPENDENT of k/m — no DoS). Verified conservative (≥ true CP) vs scipy
@@ -255,39 +255,39 @@ def _is_opt_str(x) -> bool:
     return x is None or (isinstance(x, str) and x != "")
 
 
-# --- cost certificate (from a gasket.v1 report dict) ------------------------------------------------
-def cost_certificate(gasket_v1_report: dict, *, gasket_version: str, workflow_digest=None) -> dict:
-    """Derive the `cost` block from a gasket.v1 report dict (the output of `gasket check --json`).
+# --- cost certificate (from a costwright.v1 report dict) ------------------------------------------------
+def cost_certificate(costwright_v1_report: dict, *, costwright_version: str, workflow_digest=None) -> dict:
+    """Derive the `cost` block from a costwright.v1 report dict (the output of `costwright check --json`).
 
-    `gasket_version` is the caller's assertion of which gasket produced the report (gasket.v1 does
-    not embed it — a known limitation; gasket.v2 may). `workflow_digest` binds the report to the
+    `costwright_version` is the caller's assertion of which costwright produced the report (costwright.v1 does
+    not embed it — a known limitation; costwright.v2 may). `workflow_digest` binds the report to the
     actual analyzed artifact (anti-substitution); None when the caller did not provide it.
     """
-    if not isinstance(gasket_v1_report, dict):
-        raise ValueError("gasket_v1_report must be a dict")
-    if gasket_v1_report.get("schema") != "gasket.v1":
-        raise ValueError(f"expected schema 'gasket.v1', got {gasket_v1_report.get('schema')!r}")
+    if not isinstance(costwright_v1_report, dict):
+        raise ValueError("costwright_v1_report must be a dict")
+    if costwright_v1_report.get("schema") != "costwright.v1":
+        raise ValueError(f"expected schema 'costwright.v1', got {costwright_v1_report.get('schema')!r}")
     if not _is_opt_str(workflow_digest):
         raise ValueError("workflow_digest must be a non-empty string or None")
-    units = gasket_v1_report.get("units")
-    summary = gasket_v1_report.get("summary")
+    units = costwright_v1_report.get("units")
+    summary = costwright_v1_report.get("summary")
     if not isinstance(units, list) or not isinstance(summary, dict):
-        raise ValueError("gasket.v1 report must have list 'units' and dict 'summary'")
-    # gasket.v1 has a CLOSED category enum — reject malformed/unknown units instead of silently
+        raise ValueError("costwright.v1 report must have list 'units' and dict 'summary'")
+    # costwright.v1 has a CLOSED category enum — reject malformed/unknown units instead of silently
     # dropping them (an unknown category could otherwise hide a runaway and downgrade the status).
     for u in units:
         cat = u.get("category") if isinstance(u, dict) else None
         # isinstance(str) guards the `in set` membership (an unhashable category would raise TypeError).
         if not isinstance(cat, str) or cat not in _COST_CATEGORIES:
             got = cat if isinstance(u, dict) else type(u).__name__
-            raise ValueError(f"gasket.v1 unit has missing/unknown category: {got!r}")
+            raise ValueError(f"costwright.v1 unit has missing/unknown category: {got!r}")
     cats = {u["category"] for u in units}
     worst = next((c for c in _COST_SEVERITY if c in cats), None)
     status = worst if worst is not None else "no_graph_units"   # worst is None only when units == []
     return {
-        "source": "gasket.v1",
-        "gasket_version": str(gasket_version),
-        "report_digest": digest(gasket_v1_report),
+        "source": "costwright.v1",
+        "costwright_version": str(costwright_version),
+        "report_digest": digest(costwright_v1_report),
         "workflow_digest": workflow_digest,
         "scope": COST_SCOPE,
         "summary": summary,
@@ -455,7 +455,7 @@ _C1_REQUIRED = {
     "k": lambda v: isinstance(v, int) and not isinstance(v, bool) and v >= 0,
     "delta": lambda v: _is_num(v) and 0.0 < v < 1.0,
     # delta_eps floored at 1e-6 (audit-3 codex R6): below ~1e-12 the extreme-tail CP upper is not
-    # reliably computable in float64 (1−eta saturates) and could UNDERSTATE ε. gasket is verified
+    # reliably computable in float64 (1−eta saturates) and could UNDERSTATE ε. costwright is verified
     # conservative for delta_eps ≥ 1e-8; the 1e-6 floor gives 100× headroom and is non-restrictive
     # (real ε-confidence is 1−δ_eps ∈ [0.9, 0.999]). Below the floor ⇒ ValueError, never an understatement.
     "delta_eps": lambda v: _is_num(v) and 1e-6 <= v < 1.0,
@@ -508,12 +508,12 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
         raise ValueError(f"channel1_budget_cap_risk: alpha_base={alpha} != risk.sla_alpha={sla_alpha}")
 
     # --- audit-3 BLOCKER fix: RECOMPUTE every derived number from the PRIMITIVES in pure stdlib and SHIP
-    #     the recomputed values (authoritative). gasket NEVER trusts a caller-reported ε / bound /
+    #     the recomputed values (authoritative). costwright NEVER trusts a caller-reported ε / bound /
     #     confidence — a caller can only influence via the measured primitives (k, m, delta_eps, α, c, δ),
-    #     which gasket cannot understate arithmetically. (Closes the k>0 understatement + the
+    #     which costwright cannot understate arithmetically. (Closes the k>0 understatement + the
     #     self-declared-confidence holes; the underlying spend sample is still the caller's to measure.)
     eps_auth = _cp_upper(k, m, delta_eps)             # Clopper-Pearson UPPER, recomputed (all k)
-    # NOTE: the caller's reported eps_upper/bound/confidence are NOT trusted and NOT cross-checked — gasket
+    # NOTE: the caller's reported eps_upper/bound/confidence are NOT trusted and NOT cross-checked — costwright
     # OVERWRITES them with the values it recomputes here (below), so a reported number cannot understate
     # risk in the signed bundle. (audit-3 2026-06-13: no asymmetric-tolerance cross-check; ship authoritative.)
     bound_auth = _inflate_alpha(alpha, eps_auth, cov)
@@ -521,7 +521,7 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
     if not (math.isfinite(bound_auth) and math.isfinite(eps_auth) and 0.0 < jc_auth < 1.0):
         raise ValueError("channel1_budget_cap_risk: recomputed values are not finite / in range")
     bound_verification = ("recomputed: eps_upper via Clopper-Pearson(k,m,delta_eps); bound via TV-coupling "
-                          "(ii); confidence 1−delta−delta_eps. gasket does NOT verify the spend sample itself.")
+                          "(ii); confidence 1−delta−delta_eps. costwright does NOT verify the spend sample itself.")
 
     # --- DERIVE status from the AUTHORITATIVE recomputed values; the caller cannot self-declare it ---
     assumptions_complete = _ASSUMPTIONS <= set(d["assumptions_attested"])
@@ -546,11 +546,11 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
 
 
 # --- the cartesian product (+ optional conditional analyses) -----------------------------------------
-def fuse(gasket_v1_report: dict, verify_result_dict: dict, *, run_id: str,
-         gasket_version: str, verify_version: str, created_unix=None,
+def fuse(costwright_v1_report: dict, verify_result_dict: dict, *, run_id: str,
+         costwright_version: str, verify_version: str, created_unix=None,
          workflow_digest=None, calibrator_digest=None, claim=None,
          conditional_analyses=None) -> dict:
-    """Bundle a cost certificate and a risk certificate into a `gasket.fusion.v1` audit record.
+    """Bundle a cost certificate and a risk certificate into a `costwright.fusion.v1` audit record.
 
     The two are an independent CARTESIAN PRODUCT — there is NO joint guarantee and NO aggregate
     "both passed" boolean (council 003 P0). `composition.joint_guarantee` is ALWAYS false and the
@@ -575,7 +575,7 @@ def fuse(gasket_v1_report: dict, verify_result_dict: dict, *, run_id: str,
     bundle = {
         "schema": SCHEMA,
         "run": {"run_id": run_id, "created_unix": created_unix, "fusion_digest": None},
-        "cost": cost_certificate(gasket_v1_report, gasket_version=gasket_version,
+        "cost": cost_certificate(costwright_v1_report, costwright_version=costwright_version,
                                  workflow_digest=workflow_digest),
         "risk": risk,
         "composition": {
@@ -645,12 +645,12 @@ def pretty(bundle: dict) -> str:
     s = c.get("summary", {})
     vac = s.get("vacuous_default_bounds", 0)
     out = [
-        "⚠ NO JOINT GUARANTEE — gasket fusion bundles SEPARATELY-SCOPED certificates; it is an AUDIT "
+        "⚠ NO JOINT GUARANTEE — costwright fusion bundles SEPARATELY-SCOPED certificates; it is an AUDIT "
         "RECORD, not a composed safety verdict.",
-        f"gasket fusion (schema {bundle['schema']})",
+        f"costwright fusion (schema {bundle['schema']})",
         f"  run: {bundle['run']['run_id']}",
         "",
-        f"  {_COST_BADGE.get(c['status'], '?')} COST  ({c['source']}, v{c['gasket_version']})  "
+        f"  {_COST_BADGE.get(c['status'], '?')} COST  ({c['source']}, v{c['costwright_version']})  "
         f"status={c['status']}"
         + (f"  [{vac} vacuous default bound(s)]" if vac else ""),
         f"      scope: {c['scope']}",
@@ -672,5 +672,5 @@ def pretty(bundle: dict) -> str:
 
 
 def dumps(bundle: dict) -> str:
-    """Pretty-but-stable JSON for CLI/tooling (matches gasket.report.dumps style); NO NaN/Infinity."""
+    """Pretty-but-stable JSON for CLI/tooling (matches costwright.report.dumps style); NO NaN/Infinity."""
     return json.dumps(bundle, indent=1, ensure_ascii=False, sort_keys=True, allow_nan=False)

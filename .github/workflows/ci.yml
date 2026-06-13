@@ -15,5 +15,5 @@ jobs:
       - run: python tests_pkg/test_cli.py
       - run: python tests_pkg/test_fusion.py
       - run: python tests/test_harness.py
-      # dogfood: gasket sobre sí mismo no debe encontrar runaways
-      - run: gasket check src --fail-on reject
+      # dogfood: costwright sobre sí mismo no debe encontrar runaways
+      - run: costwright check src --fail-on reject

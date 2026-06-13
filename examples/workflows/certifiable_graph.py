@@ -1,8 +1,8 @@
 """Demo fixture (NOT executed) — a LangGraph workflow with an EXPLICIT recursion_limit.
 
-gasket analyzes this statically: a linear, acyclic StateGraph with an explicit `recursion_limit`
+costwright analyzes this statically: a linear, acyclic StateGraph with an explicit `recursion_limit`
 maps to `certifiable` (tipa:explicit) — an explicit ahead-of-time budget ceiling, not a vacuous
-framework default. The fusion demo runs `gasket check` over this file to obtain the COST certificate.
+framework default. The fusion demo runs `costwright check` over this file to obtain the COST certificate.
 """
 from langgraph.graph import StateGraph, START, END
 

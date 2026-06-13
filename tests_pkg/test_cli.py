@@ -1,4 +1,4 @@
-"""Tests e2e del CLI gasket (spec 002 FR-004): exit codes, JSON schema golden, caps, patch."""
+"""Tests e2e del CLI costwright (spec 002 FR-004): exit codes, JSON schema golden, caps, patch."""
 import json, subprocess, sys, tempfile
 from pathlib import Path
 
@@ -6,7 +6,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PY = sys.executable
 
 def run(*args, cwd=None):
-    return subprocess.run([PY, "-m", "gasket.cli", *args], capture_output=True,
+    return subprocess.run([PY, "-m", "costwright.cli", *args], capture_output=True,
                           text=True, cwd=cwd, env={"PYTHONPATH": str(ROOT / "src"), "PATH": "/usr/bin:/bin"})
 
 FIX_DEFAULT = '''
@@ -63,7 +63,7 @@ def test_json_schema_golden():
         make(td, "wf.py", FIX_DEFAULT)
         r = run("check", td, "--json")
         rep = json.loads(r.stdout)
-        assert rep["schema"] == "gasket.v1"
+        assert rep["schema"] == "costwright.v1"
         assert set(rep["summary"]) == {"total", "certifiable", "default_dependent",
                                        "non_certifiable", "runaway", "parse_error",
                                        "vacuous_default_bounds"}

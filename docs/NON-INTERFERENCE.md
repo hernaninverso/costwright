@@ -1,15 +1,15 @@
 # Non-interference of cost and risk certificates — FUTURE WORK (unproven)
 
-> **Status: open problem. This document states a theorem we have NOT proved.** `gasket fusion` ships
+> **Status: open problem. This document states a theorem we have NOT proved.** `costwright fusion` ships
 > the two certificates as a *cartesian product* (a single audit record) and deliberately makes **no
 > joint claim**. Do not read a fused bundle as a composed guarantee. This file explains exactly what
 > would have to be true for composition to be sound, and why it is not free.
 
 ## 1. The two certificates and their scopes
 
-A fused `gasket.fusion.v1` bundle carries two facts about one agent run:
+A fused `costwright.fusion.v1` bundle carries two facts about one agent run:
 
-- **Cost certificate (gasket / Lean).** A *static, ahead-of-time* property of the workflow graph:
+- **Cost certificate (costwright / Lean).** A *static, ahead-of-time* property of the workflow graph:
   *well-typed ⟹ aggregate spend ≤ declared budget, on **every** trace.* It is a universal,
   per-trace invariant, machine-checked (`typed-resources`, Lean 4, `vsteps_sound`, no `sorry`).
 - **Risk certificate (eleata-verify / SGR).** A *per-output, statistical* property of the verifier on
@@ -33,7 +33,7 @@ own scope — the **cartesian product**, not a product *measure*.
 
 Write the agent as a program `A` operating on a state that includes a budget counter, and the verifier
 as `V` that reads the agent's output `o` and external evidence `e` and emits a calibrated, abstaining
-verdict. Let `Cost(A)` be the gasket cost predicate and `Risk(V, D_cal)` the SGR risk predicate w.r.t.
+verdict. Let `Cost(A)` be the costwright cost predicate and `Risk(V, D_cal)` the SGR risk predicate w.r.t.
 the calibration distribution `D_cal`. A Hoare-style **non-interference** statement would read,
 informally:
 
@@ -103,7 +103,7 @@ sufficient assumptions, or a counterexample to a weaker set) is the research dep
 
 ## 7. Until it is proved
 
-`gasket fusion` reports the two certificates side by side, each scoped, with `joint_guarantee: false`
+`costwright fusion` reports the two certificates side by side, each scoped, with `joint_guarantee: false`
 and the disclaimer + this caveat embedded in **every** bundle. Treat the pair as two separate facts.
 Do not multiply, do not infer one from the other, and do not market a fused bundle as a composed or
 joint safety guarantee.
@@ -111,19 +111,19 @@ joint safety guarantee.
 ## 8. What HAS shipped (spec 004): a single-channel, conditional accounting — not the joint guarantee
 
 The quantitative bound of `docs/non-interference/THEOREM.md` (ii) **is** proved, and its estimator
-(`eleata_verify.epsilon`) and the `gasket.fusion` `conditional_analyses` block now let a bundle *carry*
+(`eleata_verify.epsilon`) and the `costwright.fusion` `conditional_analyses` block now let a bundle *carry*
 it. This does **not** upgrade the bundle to a joint guarantee, and §1–§7 stand unchanged:
 
 - It quantifies **only channel 1** (the budget cap shifting the output distribution). Channels 2–4 —
   and policy-awareness / endogenous drift, adaptive caps, cross-run composition, and unknown channels —
   remain **open**, listed in `open_channels` with `open_channels_non_exhaustive: true`.
 - It is **conditional** on the operational assumptions (A,C,D), which are **caller-self-asserted** and
-  *not verifiable from data*; `gasket` records the assurance level and never promotes the status to a
+  *not verifiable from data*; `costwright` records the assurance level and never promotes the status to a
   guarantee on a self-attestation.
 - It is **possibly vacuous**: a binding cap saturates the bound to `1.0` (`status: vacuous`), and the
   bundle then says *NO USABLE BOUND* and prescribes recalibrating on the capped agent (B′).
 - `composition.joint_guarantee` stays `false`; the analysis lives **beside** `composition`, and
-  `gasket.fusion` re-checks its arithmetic (pure stdlib) rather than trusting the caller's number.
+  `costwright.fusion` re-checks its arithmetic (pure stdlib) rather than trusting the caller's number.
 
 See [../CERTIFIED-RUN.md](../CERTIFIED-RUN.md). The full joint guarantee — closing channels 2–4 and
 discharging (A)–(D) — remains the open research of §3/§6.

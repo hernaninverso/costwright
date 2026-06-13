@@ -9,7 +9,7 @@ Certifiability (ortogonal): % caps finitos.
 import json
 from pathlib import Path
 
-from gasket.extract import DEFAULTS
+from costwright.extract import DEFAULTS
 
 BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop",
             "subgraph-node")  # subgraph-node: delegate() lo cubre en teoría; harness v1 no lo mapea (rev D5)

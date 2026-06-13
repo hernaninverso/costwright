@@ -1,4 +1,4 @@
-"""gasket caps — detección de constructores LLM sin cap de tokens + sugerencia por provider.
+"""costwright caps — detección de constructores LLM sin cap de tokens + sugerencia por provider.
 
 La tabla provider→parámetro proviene de §3.2 del paper (verificada contra docs primarias jun-2026):
 el cap correcto es PARAMETER-specific, no provider-specific. NUNCA edita archivos: emite hallazgos

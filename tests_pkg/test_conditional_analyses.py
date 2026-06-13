@@ -16,12 +16,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
-from gasket import fusion  # noqa: E402
+from costwright import fusion  # noqa: E402
 
 
 # --- helpers ----------------------------------------------------------------------------------------
 def _report(category="certifiable"):
-    return {"schema": "gasket.v1",
+    return {"schema": "costwright.v1",
             "units": [{"category": category}],
             "summary": {"total": 1, "vacuous_default_bounds": 0}}
 
@@ -73,7 +73,7 @@ def _channel1(*, alpha=0.05, m=600, k=0, delta_eps=0.05, coverage=0.80, eps_uppe
 
 
 def _fuse(ca=None, vr=None):
-    return fusion.fuse(_report(), vr or _vr(), run_id="R", gasket_version="0.1.0",
+    return fusion.fuse(_report(), vr or _vr(), run_id="R", costwright_version="0.1.0",
                        verify_version="0.1.0", conditional_analyses=ca)
 
 
@@ -92,14 +92,14 @@ def test_valid_conditional_analysis_conditionally_quantified():
     assert d["status"] == "conditionally_quantified"            # P0-1: never 'bounded'
     assert d["status"] in fusion._INTERF_STATUSES               # the status enum has no value that reads as a guarantee
     assert "bounded" not in fusion._INTERF_STATUSES             # the forbidden word is not a valid status
-    assert d["bound_verification"].startswith("recomputed:")    # gasket recomputes eps/bound/confidence
+    assert d["bound_verification"].startswith("recomputed:")    # costwright recomputes eps/bound/confidence
     assert d["assumptions_complete"] is True
     assert d["open_channels_non_exhaustive"] is True            # P0-5 forced
     assert 0.05 < d["channel1_conditional_risk_upper"] < 1.0    # small inflation, not vacuous
 
 
 def test_fusion_is_pure_stdlib():
-    # P0/architecture: importing gasket.fusion must NOT pull eleata_verify or numpy (zero-dep core).
+    # P0/architecture: importing costwright.fusion must NOT pull eleata_verify or numpy (zero-dep core).
     import importlib
     for mod in ("eleata_verify", "numpy"):
         sys.modules.pop(mod, None)
@@ -164,9 +164,9 @@ def test_self_asserted_never_promotes_past_conditionally_quantified():
     assert d["assumption_assurance"] == "self_asserted"
 
 
-# --- recompute-and-overwrite (audit-3 P0-3): gasket never SHIPS a caller's derived number ------------
+# --- recompute-and-overwrite (audit-3 P0-3): costwright never SHIPS a caller's derived number ------------
 def test_caller_bound_number_is_overwritten_not_shipped():
-    # gasket recomputes the (ii) bound from the primitives and SHIPS its own value, ignoring whatever the
+    # costwright recomputes the (ii) bound from the primitives and SHIPS its own value, ignoring whatever the
     # caller put in channel1_conditional_risk_upper (understated OR overstated). No tampered number ships.
     true_bound = fusion._inflate_alpha(0.05, fusion._cp_upper(0, 600, 0.05), 0.80)
     for tampered in (0.001, 0.5):                              # understated and overstated
@@ -179,7 +179,7 @@ def test_caller_bound_number_is_overwritten_not_shipped():
 
 def test_overstated_eps_is_overwritten_with_true_cp():
     # a caller eps_upper ABOVE the true CP (conservative direction) is accepted but OVERWRITTEN with the
-    # true (smaller) CP upper — gasket ships its own authoritative ε, not the caller's.
+    # true (smaller) CP upper — costwright ships its own authoritative ε, not the caller's.
     ca = _channel1(k=0, m=600)
     ca["channel1_budget_cap_risk"]["eps_upper"] = 0.5          # way above the true CP (~0.005)
     d = _fuse(ca)["conditional_analyses"]["channel1_budget_cap_risk"]
@@ -188,7 +188,7 @@ def test_overstated_eps_is_overwritten_with_true_cp():
 
 def test_understated_eps_upper_is_overwritten_with_true_cp():
     # audit-3 (k>0 hole, FINAL design): a caller-reported eps_upper BELOW the true CP is simply OVERWRITTEN
-    # with gasket's authoritative recompute — the understated number can NEVER ship.
+    # with costwright's authoritative recompute — the understated number can NEVER ship.
     d = _fuse(_channel1(m=100, k=20, eps_upper=0.05))["conditional_analyses"]["channel1_budget_cap_risk"]
     assert d["eps_upper"] != 0.05
     assert abs(d["eps_upper"] - fusion._cp_upper(20, 100, 0.05)) < 1e-9
@@ -196,7 +196,7 @@ def test_understated_eps_upper_is_overwritten_with_true_cp():
 
 
 def test_eps_upper_is_recomputed_authoritatively():
-    # audit-3 fix: the SHIPPED eps_upper is gasket's own CP recompute, not the caller's number.
+    # audit-3 fix: the SHIPPED eps_upper is costwright's own CP recompute, not the caller's number.
     m, k, de = 200, 6, 0.05
     d = _fuse(_channel1(m=m, k=k, delta_eps=de))["conditional_analyses"]["channel1_budget_cap_risk"]
     assert abs(d["eps_upper"] - fusion._cp_upper(k, m, de)) < 1e-9
@@ -206,7 +206,7 @@ def test_eps_upper_is_recomputed_authoritatively():
 
 
 def test_cp_upper_matches_closed_form_at_k0():
-    # k=0 CP upper has the closed form 1−η^(1/m); gasket returns it CONSERVATIVELY (≥ closed form, within a
+    # k=0 CP upper has the closed form 1−η^(1/m); costwright returns it CONSERVATIVELY (≥ closed form, within a
     # ~1e-9 relative margin — never below, audit-3 codex R7).
     closed = 1.0 - 0.05 ** (1.0 / 500)
     cp0 = fusion._cp_upper(0, 500, 0.05)
@@ -254,7 +254,7 @@ def test_confidence_recomputed_not_caller_declared():
     ca = _channel1(delta_eps=0.05)                             # δ=0.05 ⇒ true jc = 1−0.05−0.05 = 0.90
     ca["channel1_budget_cap_risk"]["conditional_bound_confidence"] = 0.999999
     d = _fuse(ca)["conditional_analyses"]["channel1_budget_cap_risk"]
-    assert abs(d["conditional_bound_confidence"] - 0.90) < 1e-9   # gasket overwrote it
+    assert abs(d["conditional_bound_confidence"] - 0.90) < 1e-9   # costwright overwrote it
 
 
 def test_delta_plus_delta_eps_ge_one_rejected():

@@ -1,4 +1,4 @@
-# Pinned BLACK-BOX dependency for the example demos ONLY (NOT a runtime dep of gasket-check / fusion).
+# Pinned BLACK-BOX dependency for the example demos ONLY (NOT a runtime dep of costwright / fusion).
 # Window A owns the eleata-verify contract and guarantees it is additive-only, so pinning to the
 # current origin/main is safe (see eleata-verify/docs/API-CONTRACT.md).
 #

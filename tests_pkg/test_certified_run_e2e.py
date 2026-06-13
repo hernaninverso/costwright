@@ -1,4 +1,4 @@
-"""E2E del certified agent run (spec 004): gasket.fusion consume el estimador de ε de eleata-verify
+"""E2E del certified agent run (spec 004): costwright.fusion consume el estimador de ε de eleata-verify
 como CAJA NEGRA. Se SALTA si eleata-verify no está instalado (la suite pure-stdlib no lo requiere); en
 CI corre contra la dep pineada. Valida que el black-box → builder → fuse cierra y que fusion re-chequea
 los números que produjo un estimador REAL (no uno construido a mano)."""
@@ -9,14 +9,14 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "src"))
-from gasket import fusion  # noqa: E402
+from costwright import fusion  # noqa: E402
 
 # black-box dependency — skip the whole module if it (or numpy) is absent.
 epsilon = pytest.importorskip("eleata_verify.epsilon")
 
 
 def _report():
-    return {"schema": "gasket.v1", "units": [{"category": "certifiable"}],
+    return {"schema": "costwright.v1", "units": [{"category": "certifiable"}],
             "summary": {"total": 1, "vacuous_default_bounds": 0}}
 
 
@@ -33,17 +33,17 @@ def _certified(spends, cap, coverage, *, attested=("A", "C", "D")):
     eb = epsilon.interference_risk_bound(alpha=0.05, delta=0.05, spends=spends, cap=cap, coverage=coverage)
     ca = fusion.conditional_analysis_from_epsilon(eb, assumptions_attested=list(attested),
                                                   verify_version="0.1.0")
-    b = fusion.fuse(_report(), _vr(), run_id="e2e", gasket_version="0.1.0", verify_version="0.1.0",
+    b = fusion.fuse(_report(), _vr(), run_id="e2e", costwright_version="0.1.0", verify_version="0.1.0",
                     conditional_analyses=ca)
     return b["conditional_analyses"]["channel1_budget_cap_risk"], b
 
 
 def test_e2e_non_vacuous_k0_real_estimator():
-    # cap above every spend ⇒ k=0 ⇒ the estimator's eps_upper is the CP closed form; gasket recomputes it.
+    # cap above every spend ⇒ k=0 ⇒ the estimator's eps_upper is the CP closed form; costwright recomputes it.
     d, b = _certified([1.0, 2.0, 3.0, 2.5, 1.5] * 200, cap=10.0, coverage=0.80)
     assert d["status"] == "conditionally_quantified"
     assert d["k"] == 0 and d["bound_verification"].startswith("recomputed:")
-    # gasket's recomputed CP must AGREE with the real estimator's reported eps_upper (defense-in-depth)
+    # costwright's recomputed CP must AGREE with the real estimator's reported eps_upper (defense-in-depth)
     assert abs(d["eps_upper"] - fusion._cp_upper(0, d["m"], d["delta_eps"])) < 1e-9
     assert 0.05 <= d["channel1_conditional_risk_upper"] < 1.0
     assert b["composition"]["joint_guarantee"] is False        # never a joint guarantee
@@ -57,14 +57,14 @@ def test_e2e_vacuous_binding_cap_real_estimator():
 
 
 def test_e2e_fusion_overwrites_tampered_bound():
-    # tampering the estimator's reported bound has NO effect: gasket recomputes from primitives and ships
+    # tampering the estimator's reported bound has NO effect: costwright recomputes from primitives and ships
     # its own number (never the caller's arithmetic).
     eb = epsilon.interference_risk_bound(alpha=0.05, delta=0.05, spends=[1.0] * 500, cap=10.0,
                                          coverage=0.80)
     eb["alpha_effective"] = 0.001                              # tamper: pretend the cap barely matters
     ca = fusion.conditional_analysis_from_epsilon(eb, assumptions_attested=["A", "C", "D"],
                                                   verify_version="0.1.0")
-    d = fusion.fuse(_report(), _vr(), run_id="e2e", gasket_version="0.1.0", verify_version="0.1.0",
+    d = fusion.fuse(_report(), _vr(), run_id="e2e", costwright_version="0.1.0", verify_version="0.1.0",
                     conditional_analyses=ca)["conditional_analyses"]["channel1_budget_cap_risk"]
     assert d["channel1_conditional_risk_upper"] != 0.001       # the tampered number did NOT ship
     assert abs(d["channel1_conditional_risk_upper"]
@@ -72,7 +72,7 @@ def test_e2e_fusion_overwrites_tampered_bound():
 
 
 def test_e2e_fusion_overwrites_understated_eps():
-    # an eps_upper tampered BELOW the true CP upper is OVERWRITTEN by gasket's authoritative recompute —
+    # an eps_upper tampered BELOW the true CP upper is OVERWRITTEN by costwright's authoritative recompute —
     # the understated number can never ship (no reliance on a cross-check tolerance).
     eb = epsilon.interference_risk_bound(alpha=0.05, delta=0.05, spends=[1.0] * 480 + [99.0] * 20,
                                          cap=10.0, coverage=0.80)
@@ -80,14 +80,14 @@ def test_e2e_fusion_overwrites_understated_eps():
     eb["eps_upper"] = 0.0001                                   # tamper DOWN, below the true CP upper
     ca = fusion.conditional_analysis_from_epsilon(eb, assumptions_attested=["A", "C", "D"],
                                                   verify_version="0.1.0")
-    d = fusion.fuse(_report(), _vr(), run_id="e2e", gasket_version="0.1.0", verify_version="0.1.0",
+    d = fusion.fuse(_report(), _vr(), run_id="e2e", costwright_version="0.1.0", verify_version="0.1.0",
                     conditional_analyses=ca)["conditional_analyses"]["channel1_budget_cap_risk"]
     assert d["eps_upper"] != 0.0001
     assert abs(d["eps_upper"] - fusion._cp_upper(k, m, de)) < 1e-9
 
 
-def test_e2e_gasket_cp_matches_eleata_verify_cp_for_k_gt_0():
-    # cross-validate gasket's pure-stdlib betai CP recompute against eleata-verify's estimator (k>0 path).
+def test_e2e_costwright_cp_matches_eleata_verify_cp_for_k_gt_0():
+    # cross-validate costwright's pure-stdlib betai CP recompute against eleata-verify's estimator (k>0 path).
     eb = epsilon.interference_risk_bound(alpha=0.05, delta=0.05, spends=[1.0] * 470 + [99.0] * 30,
                                          cap=10.0, coverage=0.80)
     assert eb["k"] > 0                                          # ensure we exercise the bisection path
@@ -95,7 +95,7 @@ def test_e2e_gasket_cp_matches_eleata_verify_cp_for_k_gt_0():
 
 
 def test_cp_upper_conservative_vs_scipy_over_accepted_range():
-    # audit-3 codex R6/R7: across the ACCEPTED delta_eps range [1e-6, 0.49], gasket's CP recompute must be
+    # audit-3 codex R6/R7: across the ACCEPTED delta_eps range [1e-6, 0.49], costwright's CP recompute must be
     # conservative (≥ the true Clopper-Pearson upper) — never understated, INCLUDING the k=0 closed form.
     # Reference: scipy Beta.ppf. The threshold is exact (≥ true), not slack — the recompute is provably
     # conservative by construction (return-hi / -expm1 + a relative margin).
@@ -121,7 +121,7 @@ def test_cp_upper_k0_conservative_codex_r7_witness():
 
 def test_cp_upper_k0_underflow_never_zero_codex_r8():
     # audit-3 codex R8: k=0 with m≫1e300 and delta_eps→1 underflows the closed form to 0.0 while the true
-    # CP upper is a positive denormal — gasket must NOT ship eps_upper=0 below a positive true value.
+    # CP upper is a positive denormal — costwright must NOT ship eps_upper=0 below a positive true value.
     g = fusion._cp_upper(0, 10**308, 0.9999999999999999)
     assert g > 0.0, "k=0 underflow shipped eps_upper=0.0 (understatement of a positive true CP)"
     assert g == __import__("math").ulp(0.0)                     # the smallest positive double, conservative

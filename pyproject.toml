@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "gasket-check"
+name = "costwright"
 version = "0.1.0"
 description = "Static budget certificates for LLM-agent workflows (LangGraph / CrewAI / OpenAI Agents SDK). Backed by a machine-checked (Lean 4) cost-soundness theorem."
 readme = "README.md"
@@ -22,11 +22,11 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/hernaninverso/gasket"
+Homepage = "https://github.com/hernaninverso/costwright"
 Paper = "https://github.com/hernaninverso/typed-resources"
 
 [project.scripts]
-gasket = "gasket.cli:main"
+costwright = "costwright.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

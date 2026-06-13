@@ -1,4 +1,4 @@
-name: "gasket check"
+name: "costwright check"
 description: "Static budget certificates for LLM-agent workflows (LangGraph/CrewAI/Agents SDK)"
 inputs:
   path:
@@ -12,9 +12,9 @@ runs:
   steps:
     - shell: bash
       run: |
-        pip install gasket-check
+        pip install costwright
         if [ "${{ inputs.fail-on }}" = "none" ]; then
-          gasket check "${{ inputs.path }}"
+          costwright check "${{ inputs.path }}"
         else
-          gasket check "${{ inputs.path }}" --fail-on "${{ inputs.fail-on }}"
+          costwright check "${{ inputs.path }}" --fail-on "${{ inputs.fail-on }}"
         fi

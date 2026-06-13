@@ -8,12 +8,12 @@
   probada y atestiguada (`docs/non-interference/THEOREM.md`, witnesses `examples/noninterference/*`,
   estimador `eleata_verify.epsilon` con 19 tests + council + audit-3). **Esta feature CIERRA E3
   conectándolo al producto**, no re-deriva el teorema.
-- **P3** — *certified agent runs*: un run de agente que lleva prueba de **costo-acotado** (gasket/Lean)
+- **P3** — *certified agent runs*: un run de agente que lleva prueba de **costo-acotado** (costwright/Lean)
   Y salida con **riesgo-acotado** (eleata-verify), con el **ε de E3 contabilizando la interferencia**.
 
 ## Contexto
 
-`gasket.fusion.v1` hoy empaqueta DOS certificados como **producto cartesiano** (`joint_guarantee:
+`costwright.fusion.v1` hoy empaqueta DOS certificados como **producto cartesiano** (`joint_guarantee:
 false`): un costo (estático, toda traza, Lean) y un riesgo (SGR per-output, SLA poblacional acotado al
 dominio). Deliberadamente **no dice nada conjunto** — porque un cap de presupuesto puede correr la
 distribución de outputs fuera del dominio de calibración (canal 1), invalidando el SLA de riesgo.
@@ -57,9 +57,9 @@ Como quien recibe el bundle, leo `composition.joint_guarantee` (sigue `false`) y
 `interference` con: qué supuestos atestiguó el productor, qué canales quedan ABIERTOS, la confianza
 conjunta, y si la cota es vacua. Nunca leo un booleano verde "ambos pasaron".
 
-## Modelo de datos — `conditional_analyses.channel1_budget_cap_risk` (gasket.fusion.v1, ADITIVO)
+## Modelo de datos — `conditional_analyses.channel1_budget_cap_risk` (costwright.fusion.v1, ADITIVO)
 
-Se agrega una key **opcional** top-level `conditional_analyses` al bundle `gasket.fusion.v1` (SIBLING de
+Se agrega una key **opcional** top-level `conditional_analyses` al bundle `costwright.fusion.v1` (SIBLING de
 `composition`, NO adentro — P0-6). Si el caller no la provee → `conditional_analyses: null` (bundle
 cartesiano puro, idéntico al de hoy — backward-compatible; `composition` INTACTO). Cuando se provee,
 `fusion` la valida **por SHAPE** + **RE-CHEQUEA la aritmética** en pure-stdlib (NUNCA importa
@@ -170,7 +170,7 @@ dict a `fuse(conditional_analyses=...)`.
 - **FR-007 (P0-4)** `pretty(bundle)` empieza con `⚠ NO JOINT GUARANTEE`; si hay `conditional_analyses`,
   muestra primero `assumption_assurance` + `open_channels` (con el flag non-exhaustive), DESPUÉS el
   `status` y el número SOLO con su caveat de validez; glifo neutro, nunca verde ✓, nunca "PASS".
-- **FR-008** `gasket.fusion` sigue **pure-stdlib**: no importa `eleata_verify` ni `numpy` (el `1−x^(1/m)`
+- **FR-008** `costwright.fusion` sigue **pure-stdlib**: no importa `eleata_verify` ni `numpy` (el `1−x^(1/m)`
   y el `min(1,·)` son `math`/builtins). Verificado por el test de import existente.
 - **FR-009** Demo e2e `examples/certified_run_demo.py`: produce un certified run **no-vacuo** (cap casi
   no-binding, k=0) y uno **vacuo** (cap binding), consumiendo
@@ -180,7 +180,7 @@ dict a `fuse(conditional_analyses=...)`.
 - NO se prueba ni mecaniza nada nuevo del teorema (E3 ya está; esta feature lo CONSUME).
 - NO se cierran los canales 2/3/4 — se DECLARAN abiertos.
 - NO se agrega un `--fail-on` a `fuse`: el bundle es un audit record, no una policy de CI.
-- NO se mide ε dentro de `gasket.fusion` (vive en eleata-verify, caja negra).
+- NO se mide ε dentro de `costwright.fusion` (vive en eleata-verify, caja negra).
 
 ## Council gate — RESUELTO (council-v2, 6 voces / 4 modelos, 2026-06-13)
 

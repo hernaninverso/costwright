@@ -1,7 +1,7 @@
 # Certified agent run — cost ⊕ risk ⊕ ε-interference (E3/P3)
 
 > **Experimental** (spec `004-certified-agent-run`, Ronda 2 of the eleata-verify roadmap, Exp #4). A
-> *certified agent run* is a `gasket.fusion.v1` bundle that carries the cost certificate, the risk
+> *certified agent run* is a `costwright.fusion.v1` bundle that carries the cost certificate, the risk
 > certificate, **and** a single-channel, conditional ε-interference analysis — the product side of the
 > non-interference theorem (`docs/non-interference/THEOREM.md`). It is **NOT a joint guarantee.** Read
 > [FUSION.md](./FUSION.md) and [NON-INTERFERENCE.md](./NON-INTERFERENCE.md) first.
@@ -10,7 +10,7 @@
 
 | Question | Certificate | Kind |
 |---|---|---|
-| *Will this blow my budget?* | **cost** — `gasket check` | static, ahead-of-time, **every trace**, Lean-backed |
+| *Will this blow my budget?* | **cost** — `costwright check` | static, ahead-of-time, **every trace**, Lean-backed |
 | *Can I trust this output, or send it to a human?* | **risk** — `eleata_verify.verify()` | per-output, i.i.d. **population** SLA, domain-bounded |
 | *How much can the budget cap degrade the risk SLA?* | **ε-interference** — `eleata_verify.epsilon.interference_risk_bound()` | **conditional, single-channel, possibly vacuous** |
 
@@ -38,8 +38,8 @@ without a non-binding cap or recalibration on the capped agent, composition genu
 ## What the `conditional_analyses` block does and does NOT claim
 
 It lives **outside** `composition` (which stays `joint_guarantee: false`). It is a *reported analysis*
-that the signed bundle binds (tamper-evidence) and whose **arithmetic gasket re-checks in pure stdlib**
-— but whose operational assumptions gasket **cannot** verify.
+that the signed bundle binds (tamper-evidence) and whose **arithmetic costwright re-checks in pure stdlib**
+— but whose operational assumptions costwright **cannot** verify.
 
 **Does claim** (only when `status == conditionally_quantified`): *under the caller-attested operational
 assumptions (A,C,D) and the measured ε, the deployed selective risk for channel 1 is ≤
@@ -52,19 +52,19 @@ assumptions (A,C,D) and the measured ε, the deployed selective risk for channel
   **policy-awareness / endogenous drift** (the agent shrinking spend *because* it knows the cap),
   concept drift, adaptive caps, cross-run composition, enforcement bypass, unknown channels — and is
   flagged `open_channels_non_exhaustive: true`. **It is not an exhaustive list.**
-- The assumptions are **self-asserted** by default (`assumption_assurance`). gasket records *what* was
+- The assumptions are **self-asserted** by default (`assumption_assurance`). costwright records *what* was
   attested and *how assured* it is; **it never promotes the status to a guarantee on the strength of a
   self-attestation.** The highest status reachable with `self_asserted` is `conditionally_quantified`.
 - The number can be **vacuous**. If the cap is binding (`eps_upper ≥ c`, or the bound saturates to
   `1.0`), `status = vacuous` and the bundle says *NO USABLE BOUND* — the cap degrades the SLA to
   nothing; recalibrate on the capped agent (B′) or relax the cap.
 
-## How gasket keeps the block honest (the anti-overclaim machinery)
+## How costwright keeps the block honest (the anti-overclaim machinery)
 
-`gasket.fusion` is pure-stdlib (it never imports `eleata_verify`/`numpy`); it validates the block by
+`costwright.fusion` is pure-stdlib (it never imports `eleata_verify`/`numpy`); it validates the block by
 shape **and**:
 
-1. **Recomputes ε itself (all k).** gasket recomputes the **Clopper-Pearson upper** `eps_upper` from the
+1. **Recomputes ε itself (all k).** costwright recomputes the **Clopper-Pearson upper** `eps_upper` from the
    primitives `(k, m, delta_eps)` in pure stdlib (closed form at k=0; the regularized incomplete beta via
    a continued fraction otherwise — cost independent of the sample size) and **ships its own value**,
    discarding the caller's. The recompute is **conservative by construction**: it returns the upper
@@ -87,7 +87,7 @@ shape **and**:
 ```bash
 pip install -e ~/eleata-verify numpy        # pinned black box (origin/main @ b7a2c71: contract + epsilon)
 python examples/certified_run_demo.py        # prints a NON-VACUOUS run and a VACUOUS run, side by side
-python examples/certified_run_demo.py --json # the full gasket.fusion.v1 record
+python examples/certified_run_demo.py --json # the full costwright.fusion.v1 record
 ```
 
 `examples/noninterference/check_coupling_bound.py` (the (ii) bound, 0 violations / tight) and

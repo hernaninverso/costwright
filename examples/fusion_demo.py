@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end demo of the gasket × eleata-verify CARTESIAN PRODUCT of certificates (spec 003, Exp #4).
+"""End-to-end demo of the costwright × eleata-verify CARTESIAN PRODUCT of certificates (spec 003, Exp #4).
 
   demonstration_only — this demo proves the FUSION MECHANICS (schema, binding, abstention surfacing),
   NOT the utility of any production risk model or a production SLA. The default base verifier is a
@@ -7,13 +7,13 @@
   offline with no GPU/torch. eleata-verify is base-agnostic; an opt-in real-NLI variant is below.
 
 What it does, end to end:
-  1. COST cert  — runs `gasket check examples/workflows --json` (a LangGraph graph with an explicit
+  1. COST cert  — runs `costwright check examples/workflows --json` (a LangGraph graph with an explicit
      recursion_limit ⇒ `certifiable`), backed by the Lean cost-soundness theorem.
   2. RISK cert  — fits a deterministic eleata-verify Calibrator (synthetic data, fixed seed) and calls
      the REAL `eleata_verify.verify()` (consumed as a BLACK BOX) on two outputs:
         (a) a claim well-supported by the evidence  ⇒ status "answered";
         (b) a claim poorly supported by the evidence ⇒ status "abstained" (routed to human review).
-  3. FUSE       — bundles each (cost, risk) pair into a `gasket.fusion.v1` audit record and prints it.
+  3. FUSE       — bundles each (cost, risk) pair into a `costwright.fusion.v1` audit record and prints it.
 
 eleata-verify is a PINNED BLACK-BOX dependency (window A owns the contract; additive-only):
     pip install -e ~/eleata-verify        # local (repo is private)
@@ -35,10 +35,10 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parent.parent
 SRC = REPO / "src"
-sys.path.insert(0, str(SRC))          # so `import gasket` works when run from the repo (uninstalled)
+sys.path.insert(0, str(SRC))          # so `import costwright` works when run from the repo (uninstalled)
 
-from gasket import __version__ as GASKET_VERSION       # noqa: E402
-from gasket import fusion                               # noqa: E402
+from costwright import __version__ as COSTWRIGHT_VERSION       # noqa: E402
+from costwright import fusion                               # noqa: E402
 
 try:
     from eleata_verify import CallableVerifier, RawVerdict, fit, verify
@@ -48,13 +48,13 @@ except ImportError as e:                                # pragma: no cover
              f"pip install -e ~/eleata-verify numpy   ({e})")
 
 
-# --- COST certificate: run gasket check over the demo workflow --------------------------------------
-def gasket_cost_report(path: Path) -> dict:
+# --- COST certificate: run costwright check over the demo workflow --------------------------------------
+def costwright_cost_report(path: Path) -> dict:
     env = {**os.environ, "PYTHONPATH": str(SRC)}
-    r = subprocess.run([sys.executable, "-m", "gasket.cli", "check", str(path), "--json"],
+    r = subprocess.run([sys.executable, "-m", "costwright.cli", "check", str(path), "--json"],
                        capture_output=True, text=True, env=env)
     if r.returncode == 2:
-        sys.exit(f"gasket check failed (infra): {r.stderr}")
+        sys.exit(f"costwright check failed (infra): {r.stderr}")
     return json.loads(r.stdout)
 
 
@@ -101,7 +101,7 @@ def fuse_one(cost_report, base, calibrator, claim, evidence, run_id, calib_diges
     vr = verify(claim, evidence, base, calibrator, mode="balanced")
     return fusion.fuse(
         cost_report, vr.to_dict(), run_id=run_id,
-        gasket_version=GASKET_VERSION, verify_version=EVERIFY_VERSION,
+        costwright_version=COSTWRIGHT_VERSION, verify_version=EVERIFY_VERSION,
         workflow_digest=None, calibrator_digest=calib_digest, claim=claim,
     )
 
@@ -111,13 +111,13 @@ def main(argv=None) -> int:
     ap.add_argument("--base", choices=["synthetic", "nli"], default="synthetic",
                     help="synthetic = offline lexical-overlap stub (default); nli = real Toga legal-AR NLI (opt-in)")
     ap.add_argument("--model-dir", default=None, help="NLI model dir (required with --base nli)")
-    ap.add_argument("--json", action="store_true", help="print full gasket.fusion.v1 JSON for each output")
+    ap.add_argument("--json", action="store_true", help="print full costwright.fusion.v1 JSON for each output")
     args = ap.parse_args(argv)
 
-    print(f"# gasket × eleata-verify fusion demo  (gasket {GASKET_VERSION}, eleata-verify {EVERIFY_VERSION})")
+    print(f"# costwright × eleata-verify fusion demo  (costwright {COSTWRIGHT_VERSION}, eleata-verify {EVERIFY_VERSION})")
     print(f"# base verifier: {args.base}  —  demonstration_only\n")
 
-    cost_report = gasket_cost_report(REPO / "examples" / "workflows")
+    cost_report = costwright_cost_report(REPO / "examples" / "workflows")
     base, _ = build_base(args)
     calibrator = _synthetic_calibrator() if args.base == "synthetic" else _synthetic_calibrator()
     calib_digest = fusion.digest(json.loads(json.dumps(calibrator.__dict__, default=float)))

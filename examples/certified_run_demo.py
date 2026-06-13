@@ -6,13 +6,13 @@
   SLA. The base verifier is the trivial lexical-overlap stub from fusion_demo (offline, no GPU/torch).
 
 A "certified agent run" answers three things in one tamper-evident record:
-  1. COST  — `gasket check` proves spend ≤ b on EVERY trace (static, Lean-backed).
+  1. COST  — `costwright check` proves spend ≤ b on EVERY trace (static, Lean-backed).
   2. RISK  — eleata-verify `verify()` gives a per-output selective-risk SLA (or abstains).
   3. ε-INTERFERENCE — *how much can the budget cap degrade the risk SLA?* We measure the cap-binding
      mass ε = P(spend > b) from a sample of the UNCAPPED agent's spends and inflate α via the
      TV-coupling non-interference bound (docs/non-interference/THEOREM.md, ii), consumed as a BLACK BOX
      from `eleata_verify.epsilon.interference_risk_bound`. This is a CONDITIONAL, SINGLE-CHANNEL,
-     possibly-VACUOUS analysis — NOT a joint guarantee. `gasket.fusion` re-checks its arithmetic and
+     possibly-VACUOUS analysis — NOT a joint guarantee. `costwright.fusion` re-checks its arithmetic and
      derives its status; it lives OUTSIDE `composition`, which stays `joint_guarantee: false`.
 
 Two runs are printed, because the HONEST half of the story is the vacuous one:
@@ -41,8 +41,8 @@ REPO = Path(__file__).resolve().parent.parent
 SRC = REPO / "src"
 sys.path.insert(0, str(SRC))
 
-from gasket import __version__ as GASKET_VERSION       # noqa: E402
-from gasket import fusion                               # noqa: E402
+from costwright import __version__ as COSTWRIGHT_VERSION       # noqa: E402
+from costwright import fusion                               # noqa: E402
 
 try:
     from eleata_verify import CallableVerifier, RawVerdict, fit, verify
@@ -53,13 +53,13 @@ except ImportError as e:                                # pragma: no cover
              f"examples/requirements.txt: pip install -e ~/eleata-verify numpy   ({e})")
 
 
-# --- COST: gasket check over the demo workflow ------------------------------------------------------
-def gasket_cost_report(path: Path) -> dict:
+# --- COST: costwright check over the demo workflow ------------------------------------------------------
+def costwright_cost_report(path: Path) -> dict:
     env = {**os.environ, "PYTHONPATH": str(SRC)}
-    r = subprocess.run([sys.executable, "-m", "gasket.cli", "check", str(path), "--json"],
+    r = subprocess.run([sys.executable, "-m", "costwright.cli", "check", str(path), "--json"],
                        capture_output=True, text=True, env=env)
     if r.returncode == 2:
-        sys.exit(f"gasket check failed (infra): {r.stderr}")
+        sys.exit(f"costwright check failed (infra): {r.stderr}")
     return json.loads(r.stdout)
 
 
@@ -116,20 +116,20 @@ def certified_run(cost_report, base, calibrator, calib_digest, claim, evidence, 
     ca = fusion.conditional_analysis_from_epsilon(
         eb, assumptions_attested=["A", "C", "D"], verify_version=EVERIFY_VERSION,
         assumption_assurance="self_asserted")
-    return fusion.fuse(cost_report, vr.to_dict(), run_id=run_id, gasket_version=GASKET_VERSION,
+    return fusion.fuse(cost_report, vr.to_dict(), run_id=run_id, costwright_version=COSTWRIGHT_VERSION,
                        verify_version=EVERIFY_VERSION, calibrator_digest=calib_digest, claim=claim,
                        conditional_analyses=ca)
 
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--json", action="store_true", help="print full gasket.fusion.v1 JSON per run")
+    ap.add_argument("--json", action="store_true", help="print full costwright.fusion.v1 JSON per run")
     args = ap.parse_args(argv)
 
-    print(f"# certified agent run demo  (gasket {GASKET_VERSION}, eleata-verify {EVERIFY_VERSION})")
+    print(f"# certified agent run demo  (costwright {COSTWRIGHT_VERSION}, eleata-verify {EVERIFY_VERSION})")
     print("# cost ⊕ risk ⊕ ε-interference — a CONDITIONAL, single-channel analysis, NOT a joint guarantee\n")
 
-    cost_report = gasket_cost_report(REPO / "examples" / "workflows")
+    cost_report = costwright_cost_report(REPO / "examples" / "workflows")
     base = _overlap_base()
     calibrator = _synthetic_calibrator()
     calib_digest = fusion.digest(json.loads(json.dumps(calibrator.__dict__, default=float)))

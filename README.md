@@ -1,4 +1,4 @@
-# gasket
+# costwright
 
 [![Paper DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20661092.svg)](https://doi.org/10.5281/zenodo.20661092)
 
@@ -8,16 +8,16 @@ every workflow graph, where that ceiling comes from, and when it is effectively 
 
 Backed by a machine-checked (Lean 4) cost-soundness theorem:
 [*A Potential-Based Calculus for Resource Bounds of LLM-Agent Workflows*](https://doi.org/10.5281/zenodo.20661092) ([repo](https://github.com/hernaninverso/typed-resources))
-— well-typed ⟹ spend ≤ declared budget, on every trace. gasket is the static frontend of that
+— well-typed ⟹ spend ≤ declared budget, on every trace. costwright is the static frontend of that
 calculus. It **never executes your code** (pure AST analysis, zero dependencies).
 
 ```
-pip install gasket-check
-gasket check .
+pip install costwright
+costwright check .
 ```
 
 ```
-gasket — budget certificate check  (schema gasket.v1)
+costwright — budget certificate check  (schema costwright.v1)
 
   ▲ src/agents/researcher.py :42   default_dependent  ≤1000 supersteps (framework_default)
   ‼ scripts/run_forever.py   :17   runaway            while-true-driver
@@ -51,7 +51,7 @@ surviving rejects. Full experiment: spec, frozen dataset, and audit trail in thi
 
 ## Commands
 
-### `gasket check [path]`
+### `costwright check [path]`
 
 Maps every workflow graph to the typed-budget calculus and reports, per graph unit:
 
@@ -63,12 +63,12 @@ Maps every workflow graph to the typed-budget calculus and reports, per graph un
 | `runaway` | genuinely unbounded (`while True` driver, `max_turns=None`, astronomically large limit) |
 | `parse_error` | the analyzer could not reconstruct the graph (reported, never silent) |
 
-- `--json` → stable [`gasket.v1`](#json-schema) output for CI/tooling.
+- `--json` → stable [`costwright.v1`](#json-schema) output for CI/tooling.
 - `--fail-on reject|default-dependent|non-certifiable` → exit 1 on policy violation
   (default: **never fails** — findings are warnings; strictness is opt-in).
 - Exit codes: `0` ran fine, `1` policy violated, `2` infrastructure error. Never anything else.
 
-### `gasket caps [path]`
+### `costwright caps [path]`
 
 Finds LLM constructors without a token cap and tells you the **right parameter for that provider**
 (it is parameter-specific, not provider-specific — verified against primary provider docs):
@@ -80,51 +80,51 @@ Finds LLM constructors without a token cap and tells you the **right parameter f
 - Gemini → `max_output_tokens` **plus** `thinking_budget` (thinking is billed as output but NOT
   bounded by `maxOutputTokens`) — flagged when missing
 
-`--patch out.diff` emits a unified diff (`git apply out.diff`). **gasket never edits your files.**
+`--patch out.diff` emits a unified diff (`git apply out.diff`). **costwright never edits your files.**
 
-### `gasket fuse` (experimental)
+### `costwright fuse` (experimental)
 
-Bundles a gasket **cost** certificate with an [eleata-verify](https://github.com/hernaninverso/eleata-verify)
-**risk** certificate (a per-output selective-risk SLA) into one tamper-evident `gasket.fusion.v1`
+Bundles a costwright **cost** certificate with an [eleata-verify](https://github.com/hernaninverso/eleata-verify)
+**risk** certificate (a per-output selective-risk SLA) into one tamper-evident `costwright.fusion.v1`
 audit record per agent run — answering both *"will it blow my budget?"* and *"can I trust this
 output, or send it to a human?"*
 
 ```bash
-gasket check . --json > cost.json                 # the cost certificate
+costwright check . --json > cost.json                 # the cost certificate
 # ... your eleata-verify step writes risk.json (VerifyResult.to_dict()) ...
-gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID"
+costwright fuse --cost cost.json --risk risk.json --run-id "$RUN_ID"
 ```
 
 It is the **cartesian product** of two independently-scoped certificates — **NOT a composed
 guarantee**: it does not assert the agent is "safe", has no aggregate "both passed" boolean, and does
 not claim a bounded budget preserves the risk SLA. The non-interference theorem (budget ⊥ risk,
 Hoare-style) that would justify composition is **unproven / future work**. The bundler is pure stdlib
-and never imports eleata-verify (gasket's zero-dependency core is intact). See
+and never imports eleata-verify (costwright's zero-dependency core is intact). See
 [docs/FUSION.md](docs/FUSION.md), [docs/NON-INTERFERENCE.md](docs/NON-INTERFERENCE.md), and the
 runnable `examples/fusion_demo.py`.
 
 ### GitHub Action
 
 ```yaml
-- uses: hernaninverso/gasket/action@v0.1
+- uses: hernaninverso/costwright/action@v0.1
   with:
     fail-on: reject        # reject | default-dependent | non-certifiable | none
 ```
 
 ## JSON schema
 
-`gasket.v1` is frozen: closed enums (`category`, `provenance`, `aggregation`), stable `unit_id`,
+`costwright.v1` is frozen: closed enums (`category`, `provenance`, `aggregation`), stable `unit_id`,
 line spans only (no source code in output — CI-log safe). New fields are additive in `v2`.
 The `signature` field is reserved (`null` in OSS output): signed, independently verifiable
 certificates are a separate service — contact below.
 
-## What gasket does NOT do (honest scope)
+## What costwright does NOT do (honest scope)
 
 - It does not bound `Send` fan-out, interrupts/human-in-the-loop, CrewAI hierarchical mode,
   dynamic `goto`, or subgraphs-passed-by-variable — those map to `non_certifiable`, never to a
   fake bound. Conservative by construction: when in doubt, no certificate.
 - The bound is worst-case (deliberately over-approximate). Tightening it is roadmap.
-- A token-level dollar bound additionally needs caps on every call (`gasket caps`) and a
+- A token-level dollar bound additionally needs caps on every call (`costwright caps`) and a
   per-provider billing ceiling — see §3.2 of the paper for where that holds and degrades.
 
 ## Theory

@@ -27,7 +27,7 @@
 - [x] T023 Human "dale" → committed (a3b4c83) to branch `004-certified-agent-run` + pushed to origin (PR ready)
 
 ## Accepted input space (bounded → verified conservative-by-construction)
-`{m ∈ [0, 1e15], k ∈ [0, m], delta_eps ∈ [1e-6, 1)}` — within it, gasket's recomputed `eps_upper` is ≥ the
+`{m ∈ [0, 1e15], k ∈ [0, m], delta_eps ∈ [1e-6, 1)}` — within it, costwright's recomputed `eps_upper` is ≥ the
 true Clopper-Pearson upper for EVERY input (verified vs 80-digit Decimal, incl. the k=0 underflow corners).
 Inputs outside ⇒ ValueError (never a sub-denormal understatement). Numerical failure ⇒ 1.0 (⇒ vacuous).
 

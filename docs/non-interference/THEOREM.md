@@ -16,7 +16,7 @@
   `D` (= `D_cal`). SGR guarantees: with prob `≥ 1−δ` over the sample, `R(V; D) ≤ α`. *This is a property
   of the distribution `D` on which `V` was calibrated.*
 - **Agent.** `A` induces a distribution `P` over `(o,e,y)` (uncapped). With a budget cap `b`, the capped
-  agent `A_b` induces `P_b`. **Cost certificate (gasket/Lean):** `spend(trace) ≤ b` on every trace of
+  agent `A_b` induces `P_b`. **Cost certificate (costwright/Lean):** `spend(trace) ≤ b` on every trace of
   `A_b` (static, ahead-of-time).
 - **Deployment.** The agent actually ships from `P_dep`. The SLA "holds in deployment" means
   `R(V; P_dep) ≤ α` (with prob `≥ 1−δ`). The SLA was *certified* for `D`. The whole question is whether
@@ -118,6 +118,6 @@ cleanly + ship `check_coupling_bound.py` (the (ii) witness, done in spirit above
 `check_noninterference.py` (the (iii) counterexample) + audit-3.
 
 ## 6. Open questions (post-verdict)
-- Is `ε` (cap-binding mass) tightly recoverable from gasket's static per-trace bound, or only empirically?
+- Is `ε` (cap-binding mass) tightly recoverable from costwright's static per-trace bound, or only empirically?
 - Does relaxing (C) to "selection independent of `V` but dependent on cost" preserve a (weaker) bound?
 - A distribution-shift detector (eleata-verify's `score_outlier_warning`) as an online proxy for `ε`.

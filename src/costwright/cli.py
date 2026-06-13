@@ -1,4 +1,4 @@
-"""gasket CLI — `gasket check` y `gasket caps`.
+"""costwright CLI — `costwright check` y `costwright caps`.
 
 Exit codes (council 002 P0-1):
   0 = el tool corrió (hallazgos = warnings, salvo política)
@@ -10,11 +10,11 @@ import json
 import sys
 from pathlib import Path
 
-from gasket import __version__
-from gasket import caps as caps_mod
-from gasket import report as report_mod
-from gasket.extract import extract_unit
-from gasket.mapper import map_unit
+from costwright import __version__
+from costwright import caps as caps_mod
+from costwright import report as report_mod
+from costwright.extract import extract_unit
+from costwright.mapper import map_unit
 import ast as _ast
 
 EXCLUDE_DIRS = {".venv", "venv", "node_modules", "site-packages", ".git", "__pycache__"}
@@ -70,7 +70,7 @@ def _find_units(root: Path, max_files: int):
 def cmd_check(args) -> int:
     root = Path(args.path).resolve()
     if not root.exists():
-        print(f"gasket: path not found: {root}", file=sys.stderr)
+        print(f"costwright: path not found: {root}", file=sys.stderr)
         return 2
     try:
         found = _find_units(root, args.max_files)
@@ -92,7 +92,7 @@ def cmd_check(args) -> int:
             print(report_mod.dumps(rep))
         else:
             if not rep["units"]:
-                print("gasket: no graph units found")
+                print("costwright: no graph units found")
                 return 0
             print(report_mod.pretty(rep, verbose=args.verbose))
         # política opt-in (council 002 P0-1)
@@ -102,30 +102,30 @@ def cmd_check(args) -> int:
                 "non-certifiable": (s["runaway"] > 0 or s["default_dependent"] > 0
                                     or s["non_certifiable"] > 0)}
         if args.fail_on and viol.get(args.fail_on, False):
-            print(f"gasket: policy --fail-on {args.fail_on} violated", file=sys.stderr)
+            print(f"costwright: policy --fail-on {args.fail_on} violated", file=sys.stderr)
             return 1
         return 0
     except Exception as e:                                    # noqa: BLE001
-        print(f"gasket: internal error: {type(e).__name__}: {e}", file=sys.stderr)
+        print(f"costwright: internal error: {type(e).__name__}: {e}", file=sys.stderr)
         return 2
 
 
 def cmd_caps(args) -> int:
     root = Path(args.path).resolve()
     if not root.exists():
-        print(f"gasket: path not found: {root}", file=sys.stderr)
+        print(f"costwright: path not found: {root}", file=sys.stderr)
         return 2
     try:
         per_file, scanned = caps_mod.scan_path(root, args.max_files)
         if args.json:
-            out = {"schema": "gasket.caps.v1", "files_scanned": scanned, "findings": [
+            out = {"schema": "costwright.caps.v1", "files_scanned": scanned, "findings": [
                 {**f, "file": str(p.relative_to(root))}
                 for p, (fs, _) in sorted(per_file.items()) for f in fs]}
             print(json.dumps(out, indent=1, ensure_ascii=False, sort_keys=True))
         else:
             total = sum(len(fs) for fs, _ in per_file.values())
             if not total:
-                print(f"gasket caps: all LLM constructors capped ({scanned} files scanned)")
+                print(f"costwright caps: all LLM constructors capped ({scanned} files scanned)")
                 return 0
             for p, (fs, _) in sorted(per_file.items()):
                 rel = p.relative_to(root)
@@ -152,7 +152,7 @@ def cmd_caps(args) -> int:
                 print(f"  patch written to {args.patch} (apply with: git apply {args.patch})")
         return 0
     except Exception as e:                                    # noqa: BLE001
-        print(f"gasket: internal error: {type(e).__name__}: {e}", file=sys.stderr)
+        print(f"costwright: internal error: {type(e).__name__}: {e}", file=sys.stderr)
         return 2
 
 
@@ -164,7 +164,7 @@ def _workflow_digest(path: Path) -> str:
     """Bind the bundle to the analyzed artifact (anti-substitution). Hash the EXACT file bytes (not
     decoded text — `errors='ignore'` could let two byte-distinct files collide). A single file →
     digest its bytes; a directory → a deterministic manifest {rel_path: sha256(bytes)} over the *.py."""
-    from gasket import fusion
+    from costwright import fusion
     if path.is_dir():
         manifest = {}
         for py in sorted(path.rglob("*.py")):
@@ -176,36 +176,36 @@ def _workflow_digest(path: Path) -> str:
 
 
 def cmd_fuse(args) -> int:
-    from gasket import __version__, fusion
+    from costwright import __version__, fusion
     try:
         cost = _load_json(args.cost)
         risk = _load_json(args.risk)
     except (OSError, ValueError) as e:   # ValueError covers json.JSONDecodeError
-        print(f"gasket: cannot read input JSON: {type(e).__name__}: {e}", file=sys.stderr)
+        print(f"costwright: cannot read input JSON: {type(e).__name__}: {e}", file=sys.stderr)
         return 2
     claim = None
     if args.claim_file:
         try:
             claim = Path(args.claim_file).read_text(encoding="utf-8")
         except OSError as e:
-            print(f"gasket: cannot read --claim-file: {e}", file=sys.stderr)
+            print(f"costwright: cannot read --claim-file: {e}", file=sys.stderr)
             return 2
     wf_digest = None
     if args.workflow:
         try:
             wf_digest = _workflow_digest(Path(args.workflow))
         except OSError as e:
-            print(f"gasket: cannot read --workflow: {e}", file=sys.stderr)
+            print(f"costwright: cannot read --workflow: {e}", file=sys.stderr)
             return 2
     try:
         bundle = fusion.fuse(cost, risk, run_id=args.run_id,
-                             gasket_version=args.gasket_version or __version__,
+                             costwright_version=args.costwright_version or __version__,
                              verify_version=args.verify_version,
                              created_unix=args.created_unix,
                              workflow_digest=wf_digest,
                              calibrator_digest=args.calibrator_digest, claim=claim)
     except ValueError as e:
-        print(f"gasket: invalid certificate input: {e}", file=sys.stderr)
+        print(f"costwright: invalid certificate input: {e}", file=sys.stderr)
         return 2
     print(fusion.dumps(bundle) if args.json else fusion.pretty(bundle))
     return 0
@@ -213,15 +213,15 @@ def cmd_fuse(args) -> int:
 
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
-        prog="gasket",
+        prog="costwright",
         description="Static budget certificates for LLM-agent workflows "
                     "(LangGraph / CrewAI / OpenAI Agents SDK). Never executes your code.")
-    p.add_argument("--version", action="version", version=f"gasket {__version__}")
+    p.add_argument("--version", action="version", version=f"costwright {__version__}")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     c = sub.add_parser("check", help="map workflows to the typed-budget calculus and report bounds")
     c.add_argument("path", nargs="?", default=".")
-    c.add_argument("--json", action="store_true", help="emit gasket.v1 JSON")
+    c.add_argument("--json", action="store_true", help="emit costwright.v1 JSON")
     c.add_argument("--verbose", action="store_true", help="also list certifiable units")
     c.add_argument("--fail-on", choices=["reject", "default-dependent", "non-certifiable"],
                    help="severity threshold: exit 1 on findings of this severity OR WORSE "
@@ -237,24 +237,24 @@ def main(argv=None) -> int:
     k.add_argument("--max-files", type=int, default=5000)
     k.set_defaults(fn=cmd_caps)
 
-    from gasket.pack import cmd_pack
+    from costwright.pack import cmd_pack
     pk = sub.add_parser("pack", help="build a deterministic .py-only tarball for server-side certification")
     pk.add_argument("path", nargs="?", default=".")
-    pk.add_argument("-o", "--output", default="gasket-artifact.tgz")
+    pk.add_argument("-o", "--output", default="costwright-artifact.tgz")
     pk.set_defaults(fn=cmd_pack)
 
-    fz = sub.add_parser("fuse", help="bundle a gasket.v1 cost cert + an eleata-verify risk cert into a "
-                                     "gasket.fusion.v1 audit record (the cartesian product — NOT a joint guarantee)")
-    fz.add_argument("--cost", required=True, metavar="FILE", help="gasket.v1 JSON (from `gasket check --json`)")
+    fz = sub.add_parser("fuse", help="bundle a costwright.v1 cost cert + an eleata-verify risk cert into a "
+                                     "costwright.fusion.v1 audit record (the cartesian product — NOT a joint guarantee)")
+    fz.add_argument("--cost", required=True, metavar="FILE", help="costwright.v1 JSON (from `costwright check --json`)")
     fz.add_argument("--risk", required=True, metavar="FILE", help="eleata-verify VerifyResult.to_dict() JSON")
     fz.add_argument("--run-id", required=True, help="binds both certificates to the same run")
-    fz.add_argument("--gasket-version", default=None, help="gasket that produced --cost (default: this gasket)")
+    fz.add_argument("--costwright-version", default=None, help="costwright that produced --cost (default: this costwright)")
     fz.add_argument("--verify-version", default="unknown", help="pinned eleata-verify version that produced --risk")
     fz.add_argument("--workflow", metavar="PATH", help="file/dir of the analyzed workflow → workflow_digest (binding)")
     fz.add_argument("--claim-file", metavar="FILE", help="the verified claim text → claim_digest (binding)")
     fz.add_argument("--calibrator-digest", default=None, help="digest/id of the calibrator used (binding)")
     fz.add_argument("--created-unix", type=int, default=None, help="caller-stamped run timestamp (optional)")
-    fz.add_argument("--json", action="store_true", help="emit gasket.fusion.v1 JSON")
+    fz.add_argument("--json", action="store_true", help="emit costwright.fusion.v1 JSON")
     fz.set_defaults(fn=cmd_fuse)
 
     args = p.parse_args(argv)

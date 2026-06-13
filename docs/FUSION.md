@@ -1,7 +1,7 @@
-# gasket fusion — the cartesian product of certificates (experimental)
+# costwright fusion — the cartesian product of certificates (experimental)
 
-> **Experimental** (spec `003-gasket-fusion-cartesian-cert`, Exp #4 of the eleata-verify roadmap).
-> A `gasket.fusion.v1` bundle pairs gasket's **cost** certificate with an [eleata-verify](https://github.com/hernaninverso/eleata-verify)
+> **Experimental** (spec `003-costwright-fusion-cartesian-cert`, Exp #4 of the eleata-verify roadmap).
+> A `costwright.fusion.v1` bundle pairs costwright's **cost** certificate with an [eleata-verify](https://github.com/hernaninverso/eleata-verify)
 > **risk** certificate into one audit record. It is their **cartesian product**, **NOT a composed
 > guarantee** — see [NON-INTERFERENCE.md](./NON-INTERFERENCE.md).
 
@@ -11,10 +11,10 @@ A "trustworthy agent run" answers two orthogonal questions:
 
 | Question | Certificate | Kind |
 |---|---|---|
-| *Will this blow my budget?* | **cost** — `gasket check` (gasket.v1), backed by the Lean cost-soundness theorem | static, ahead-of-time, **every trace** |
+| *Will this blow my budget?* | **cost** — `costwright check` (costwright.v1), backed by the Lean cost-soundness theorem | static, ahead-of-time, **every trace** |
 | *Can I trust this output, or send it to a human?* | **risk** — `eleata_verify.verify()` (SGR selective-risk SLA) | per-output, **i.i.d. population** SLA, domain-bounded |
 
-`gasket fuse` records both in one tamper-evident artifact per run. That is operationally useful as an
+`costwright fuse` records both in one tamper-evident artifact per run. That is operationally useful as an
 **audit record** — without claiming the two compose into a single "safe" verdict.
 
 ## Honesty boundary (what a bundle does NOT claim)
@@ -30,22 +30,22 @@ caveat. The bundle:
   [non-interference theorem](./NON-INTERFERENCE.md), which is **unproven / future work**).
 
 Digests in a bundle are **tamper-evidence, not proof of authorship** — authenticity is the job of the
-signed certification layer (`signature` is reserved `null` in the OSS bundle, exactly as in gasket.v1).
+signed certification layer (`signature` is reserved `null` in the OSS bundle, exactly as in costwright.v1).
 
 ## Architecture (zero-dep core preserved)
 
 ```
-gasket check . --json ─────────► cost.json   (gasket.v1)
+costwright check . --json ─────────► cost.json   (costwright.v1)
 eleata_verify.verify(...) ─────► risk.json   (VerifyResult.to_dict())   ← only YOUR code imports eleata-verify
                                       │
-            gasket fuse --cost cost.json --risk risk.json --run-id <id> ─► gasket.fusion.v1
+            costwright fuse --cost cost.json --risk risk.json --run-id <id> ─► costwright.fusion.v1
                                       │
-                          src/gasket/fusion.py  — PURE STDLIB; never imports eleata_verify
+                          src/costwright/fusion.py  — PURE STDLIB; never imports eleata_verify
 ```
 
-`gasket.fusion` only knows the *shape* of the two JSON dicts (eleata-verify's frozen, additive-only
+`costwright.fusion` only knows the *shape* of the two JSON dicts (eleata-verify's frozen, additive-only
 [contract](https://github.com/hernaninverso/eleata-verify/blob/main/docs/API-CONTRACT.md)). Adding
-fusion keeps gasket's **zero runtime dependencies** guarantee — verified by the test that the bundler
+fusion keeps costwright's **zero runtime dependencies** guarantee — verified by the test that the bundler
 imports cleanly with nothing but the stdlib. The bundler **strictly validates** the risk dict (required
 keys, types, enums) and tolerates only *extra* fields, so an upstream breaking change surfaces as an
 error instead of corrupting a bundle.
@@ -53,9 +53,9 @@ error instead of corrupting a bundle.
 ## CLI
 
 ```bash
-gasket check . --json > cost.json          # your existing CI step
+costwright check . --json > cost.json          # your existing CI step
 # ... your eleata-verify step writes risk.json (VerifyResult.to_dict()) ...
-gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID" \
+costwright fuse --cost cost.json --risk risk.json --run-id "$RUN_ID" \
             --verify-version 0.1.0 \
             --workflow .          # optional: digest the analyzed workflow (anti-substitution binding)
             # --claim-file claim.txt --calibrator-digest sha256:... --created-unix 1750000000 --json
@@ -63,17 +63,17 @@ gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID" \
 
 - exit `0` = the bundle was produced; exit `2` = infrastructure error (missing file, bad JSON, invalid
   certificate input). There is no `--fail-on`: **a bundle is an audit record, not a CI policy** — gate
-  on the two component checks (`gasket check --fail-on …` and your verify step), not on the fusion.
+  on the two component checks (`costwright check --fail-on …` and your verify step), not on the fusion.
 
-## Schema `gasket.fusion.v1` (frozen here; additive-only in v2)
+## Schema `costwright.fusion.v1` (frozen here; additive-only in v2)
 
 ```jsonc
 {
-  "schema": "gasket.fusion.v1",
+  "schema": "costwright.fusion.v1",
   "run":  { "run_id": "...", "created_unix": 1750000000 | null,
             "fusion_digest": "sha256:..." },            // over the bundle with fusion_digest+signature null
-  "cost": { "source": "gasket.v1", "gasket_version": "0.1.0",
-            "report_digest": "sha256:...",              // canonical-JSON digest of the gasket.v1 report
+  "cost": { "source": "costwright.v1", "costwright_version": "0.1.0",
+            "report_digest": "sha256:...",              // canonical-JSON digest of the costwright.v1 report
             "workflow_digest": "sha256:..." | null,     // binding to the analyzed artifact
             "scope": "ahead-of-time; static; every trace",
             "summary": { ... }, "worst_category": "...", "status": "...",
@@ -98,11 +98,11 @@ gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID" \
 
 ### Optional `conditional_analyses` (additive in v1; spec 004 — the certified agent run)
 
-`gasket.fusion.v1` gained one **optional** top-level key, `conditional_analyses` (null when absent →
+`costwright.fusion.v1` gained one **optional** top-level key, `conditional_analyses` (null when absent →
 the bundle is the pure cartesian product, unchanged). When present, it carries a **single-channel,
 conditional, possibly-vacuous** ε-interference analysis — *how much can the budget cap degrade the risk
 SLA?* — computed from `eleata_verify.epsilon.interference_risk_bound()` (a black box) and **re-checked**
-by `gasket.fusion` in pure stdlib. It lives **beside** `composition`, not inside it: `composition.
+by `costwright.fusion` in pure stdlib. It lives **beside** `composition`, not inside it: `composition.
 joint_guarantee` stays `false` and the analysis is **not** a joint guarantee. See
 **[CERTIFIED-RUN.md](./CERTIFIED-RUN.md)** for the full data model, the honesty machinery (status
 derived by fusion, never the caller; the word `bounded` is not a valid status; assumptions are
@@ -113,7 +113,7 @@ conditional_analyses=...)`.
 ## Demo
 
 `examples/fusion_demo.py` runs the full pipeline offline and deterministically (`demonstration_only`):
-`gasket check` over a certifiable LangGraph fixture → a **real** `eleata_verify.verify()` call over a
+`costwright check` over a certifiable LangGraph fixture → a **real** `eleata_verify.verify()` call over a
 synthetic lexical-overlap base → `fuse()`, printing both an **answered** and an **abstained** bundle.
 
 ```bash
