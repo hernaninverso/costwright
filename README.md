@@ -12,7 +12,7 @@ Backed by a machine-checked (Lean 4) cost-soundness theorem:
 calculus. It **never executes your code** (pure AST analysis, zero dependencies).
 
 ```
-pip install costwright
+pip install git+https://github.com/hernaninverso/costwright.git   # PyPI release coming soon
 costwright check .
 ```
 
