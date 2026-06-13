@@ -17,7 +17,7 @@ What it does, end to end:
 
 eleata-verify is a PINNED BLACK-BOX dependency (window A owns the contract; additive-only):
     pip install -e ~/eleata-verify        # local (repo is private)
-    # or, pinned:  pip install "eleata-verify @ git+https://github.com/hernaninverso/eleata-verify.git@aa411e9"
+    # or, pinned:  pip install "eleata-verify @ git+https://github.com/hernaninverso/eleata-verify.git@b7a2c71"
     pip install numpy
 See examples/requirements.txt.
 

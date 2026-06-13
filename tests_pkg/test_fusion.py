@@ -197,9 +197,10 @@ def test_risk_binding_digests():
 def test_fuse_schema_keys():
     b = _fuse()
     assert b["schema"] == "gasket.fusion.v1"
-    assert set(b) == {"schema", "run", "cost", "risk", "composition", "signature"}
+    assert set(b) == {"schema", "run", "cost", "risk", "composition", "conditional_analyses", "signature"}
     assert set(b["run"]) == {"run_id", "created_unix", "fusion_digest"}
     assert b["signature"] is None
+    assert b["conditional_analyses"] is None          # null unless the caller provides the ε-analysis (spec 004)
     assert b["cost"]["source"] == "gasket.v1" and b["risk"]["source"] == "eleata-verify.verify"
     assert "theorem" in b["cost"] and "guarantee" in b["risk"]
     assert b["cost"]["scope"] and b["risk"]["scope"]  # scopes temporales explícitos
