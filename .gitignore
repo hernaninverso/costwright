@@ -6,3 +6,4 @@ dist/
 # para reproducir); el dataset CONGELADO sí va (provenance + reproducibilidad del experimento)
 dataset/repos/
 dataset/raw/
+.venv-demo/

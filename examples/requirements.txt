@@ -1,0 +1,9 @@
+# Pinned BLACK-BOX dependency for examples/fusion_demo.py only (NOT a runtime dep of gasket-check).
+# Window A owns the eleata-verify contract and guarantees it is additive-only, so pinning to the
+# current main is safe (see eleata-verify/docs/API-CONTRACT.md).
+#
+# eleata-verify is a private repo. Use the local editable install:
+#     pip install -e ~/eleata-verify
+# or, when published / for a pinned git install:
+#     eleata-verify @ git+https://github.com/hernaninverso/eleata-verify.git@aa411e9
+numpy>=1.24

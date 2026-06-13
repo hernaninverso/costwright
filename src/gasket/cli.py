@@ -156,6 +156,61 @@ def cmd_caps(args) -> int:
         return 2
 
 
+def _load_json(path: str):
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def _workflow_digest(path: Path) -> str:
+    """Bind the bundle to the analyzed artifact (anti-substitution). Hash the EXACT file bytes (not
+    decoded text — `errors='ignore'` could let two byte-distinct files collide). A single file →
+    digest its bytes; a directory → a deterministic manifest {rel_path: sha256(bytes)} over the *.py."""
+    from gasket import fusion
+    if path.is_dir():
+        manifest = {}
+        for py in sorted(path.rglob("*.py")):
+            if any(part in EXCLUDE_DIRS for part in py.parts):
+                continue
+            manifest[str(py.relative_to(path))] = fusion.digest_bytes(py.read_bytes())
+        return fusion.digest(manifest)
+    return fusion.digest_bytes(path.read_bytes())
+
+
+def cmd_fuse(args) -> int:
+    from gasket import __version__, fusion
+    try:
+        cost = _load_json(args.cost)
+        risk = _load_json(args.risk)
+    except (OSError, ValueError) as e:   # ValueError covers json.JSONDecodeError
+        print(f"gasket: cannot read input JSON: {type(e).__name__}: {e}", file=sys.stderr)
+        return 2
+    claim = None
+    if args.claim_file:
+        try:
+            claim = Path(args.claim_file).read_text(encoding="utf-8")
+        except OSError as e:
+            print(f"gasket: cannot read --claim-file: {e}", file=sys.stderr)
+            return 2
+    wf_digest = None
+    if args.workflow:
+        try:
+            wf_digest = _workflow_digest(Path(args.workflow))
+        except OSError as e:
+            print(f"gasket: cannot read --workflow: {e}", file=sys.stderr)
+            return 2
+    try:
+        bundle = fusion.fuse(cost, risk, run_id=args.run_id,
+                             gasket_version=args.gasket_version or __version__,
+                             verify_version=args.verify_version,
+                             created_unix=args.created_unix,
+                             workflow_digest=wf_digest,
+                             calibrator_digest=args.calibrator_digest, claim=claim)
+    except ValueError as e:
+        print(f"gasket: invalid certificate input: {e}", file=sys.stderr)
+        return 2
+    print(fusion.dumps(bundle) if args.json else fusion.pretty(bundle))
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
         prog="gasket",
@@ -187,6 +242,20 @@ def main(argv=None) -> int:
     pk.add_argument("path", nargs="?", default=".")
     pk.add_argument("-o", "--output", default="gasket-artifact.tgz")
     pk.set_defaults(fn=cmd_pack)
+
+    fz = sub.add_parser("fuse", help="bundle a gasket.v1 cost cert + an eleata-verify risk cert into a "
+                                     "gasket.fusion.v1 audit record (the cartesian product — NOT a joint guarantee)")
+    fz.add_argument("--cost", required=True, metavar="FILE", help="gasket.v1 JSON (from `gasket check --json`)")
+    fz.add_argument("--risk", required=True, metavar="FILE", help="eleata-verify VerifyResult.to_dict() JSON")
+    fz.add_argument("--run-id", required=True, help="binds both certificates to the same run")
+    fz.add_argument("--gasket-version", default=None, help="gasket that produced --cost (default: this gasket)")
+    fz.add_argument("--verify-version", default="unknown", help="pinned eleata-verify version that produced --risk")
+    fz.add_argument("--workflow", metavar="PATH", help="file/dir of the analyzed workflow → workflow_digest (binding)")
+    fz.add_argument("--claim-file", metavar="FILE", help="the verified claim text → claim_digest (binding)")
+    fz.add_argument("--calibrator-digest", default=None, help="digest/id of the calibrator used (binding)")
+    fz.add_argument("--created-unix", type=int, default=None, help="caller-stamped run timestamp (optional)")
+    fz.add_argument("--json", action="store_true", help="emit gasket.fusion.v1 JSON")
+    fz.set_defaults(fn=cmd_fuse)
 
     args = p.parse_args(argv)
     return args.fn(args)

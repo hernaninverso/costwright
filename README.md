@@ -82,6 +82,27 @@ Finds LLM constructors without a token cap and tells you the **right parameter f
 
 `--patch out.diff` emits a unified diff (`git apply out.diff`). **gasket never edits your files.**
 
+### `gasket fuse` (experimental)
+
+Bundles a gasket **cost** certificate with an [eleata-verify](https://github.com/hernaninverso/eleata-verify)
+**risk** certificate (a per-output selective-risk SLA) into one tamper-evident `gasket.fusion.v1`
+audit record per agent run — answering both *"will it blow my budget?"* and *"can I trust this
+output, or send it to a human?"*
+
+```bash
+gasket check . --json > cost.json                 # the cost certificate
+# ... your eleata-verify step writes risk.json (VerifyResult.to_dict()) ...
+gasket fuse --cost cost.json --risk risk.json --run-id "$RUN_ID"
+```
+
+It is the **cartesian product** of two independently-scoped certificates — **NOT a composed
+guarantee**: it does not assert the agent is "safe", has no aggregate "both passed" boolean, and does
+not claim a bounded budget preserves the risk SLA. The non-interference theorem (budget ⊥ risk,
+Hoare-style) that would justify composition is **unproven / future work**. The bundler is pure stdlib
+and never imports eleata-verify (gasket's zero-dependency core is intact). See
+[docs/FUSION.md](docs/FUSION.md), [docs/NON-INTERFERENCE.md](docs/NON-INTERFERENCE.md), and the
+runnable `examples/fusion_demo.py`.
+
 ### GitHub Action
 
 ```yaml
