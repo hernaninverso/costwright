@@ -358,6 +358,30 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_multi_invoke_uses_max_limit(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-15 WITNESS: the outer graph is invoked at TWO call sites with
+    # recursion_limit 100 and 5. Each invoke is a separate run; the per-run worst case is the MAX (100).
+    # last-wins stored 5 → composed bound 20 vs true 400. invoke_limit must aggregate as max.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def nfn(s): return s\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i1', nfn)\n"
+        "inner.add_edge(START, 'i1'); inner.add_edge('i1', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 2})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('a', nfn)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'a'); outer.add_edge('a', 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app.invoke({}, config={'recursion_limit': 100})\n"
+        "app.invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit"
+    assert r["bound_factor"] == 100 * (2 + 2)   # max(100,5)=100 × (n_total outer 2 + inner 2×1) = 400, not 20
+
+
 def test_e2e_cursor_container_receiver_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-14 WITNESS: the subgraph is added on a CONTAINER receiver
     # (`box[0].add_node("sub", inner.compile())`); the receiver is a Subscript, not a Name, so the per-graph

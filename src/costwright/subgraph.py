@@ -186,6 +186,18 @@ class _GraphReceivers(ast.NodeVisitor):
         f = n.func
         return f.value.id if isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name) else None
 
+    def _merge_invoke_limit(self, src, val):
+        # a graph invoked at SEVERAL call sites with different recursion_limits → the per-run worst case is the
+        # MAX (each invoke is a separate run); last-wins would understate (Cursor codex r15). "unresolved"
+        # (a non-constant limit at any site) is absorbing → fail closed.
+        cur = self.invoke_limit.get(src)
+        if cur == "unresolved" or val == "unresolved":
+            self.invoke_limit[src] = "unresolved"
+        elif cur is None:
+            self.invoke_limit[src] = val
+        else:
+            self.invoke_limit[src] = max(cur, val)
+
     def visit_Call(self, n):
         last = call_name(n).split(".")[-1]
         recv = self._recv(n)
@@ -255,7 +267,8 @@ class _GraphReceivers(ast.NodeVisitor):
                     if k.arg == "config" and isinstance(k.value, ast.Dict):
                         for kk, vv in zip(k.value.keys, k.value.values):
                             if const_of(kk) == "recursion_limit":
-                                self.invoke_limit[src] = const_of(vv) if const_of(vv) is not None else "unresolved"
+                                self._merge_invoke_limit(src, const_of(vv) if const_of(vv) is not None
+                                                         else "unresolved")
         self.generic_visit(n)
 
     def to_dict(self):
