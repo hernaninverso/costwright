@@ -425,6 +425,25 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_negative_recursion_limit_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-24 WITNESS: `config={'recursion_limit': -1}` produced a nonsensical
+    # NEGATIVE composed bound (-4). A valid recursion_limit is a positive int; anything else → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 3})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': -1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT a negative bound
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_batch_invoke_limit_counted(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-23 WITNESS: `app.batch([{}], config={'recursion_limit': 5000})` was
     # ignored (only invoke/ainvoke/stream/astream were modeled) → max stayed at 50 → composed 50050. batch /

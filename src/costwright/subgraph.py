@@ -297,7 +297,11 @@ class _GraphReceivers(ast.NodeVisitor):
                     if not rl_vals:
                         self.invoke_saw_default.add(src)
                     for v in rl_vals:
-                        self._merge_invoke_limit(src, v if v is not None else "unresolved")
+                        # a valid recursion_limit is a POSITIVE int; anything else (non-constant, ≤ 0, a bool
+                        # like True, a non-int) is invalid/unreadable → unresolved → fail closed. A negative
+                        # limit would otherwise produce a nonsensical NEGATIVE bound (Cursor r24).
+                        ok = isinstance(v, int) and not isinstance(v, bool) and v >= 1
+                        self._merge_invoke_limit(src, v if ok else "unresolved")
                 else:
                     # config is a named variable / call, has a ** spread, or a non-constant key → we can't be
                     # sure of the recursion_limit; it could exceed the default → unresolved → fail closed.
