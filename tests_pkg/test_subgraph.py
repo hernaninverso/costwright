@@ -788,6 +788,46 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_subgraph_factory_function_fails_closed(tmp_path):
+    # audit-3 codex/Cursor r56: a function that RETURNS a compiled subgraph is a factory —
+    # `def make(): ...; return inner.compile()` then `outer.add_node("s", make())`. The compiled-var tracker
+    # followed only value-bindings, so the Call `make()` was flat-counted (bf understated 5 vs 5005+). Now a
+    # function whose own return carries a compiled subgraph is tainted into compiled_vars, so `make()` is
+    # flagged → the Call inner can't be attributed → fail closed. Covers return-inline-compile and return-local.
+    for ret in ("    return inner.compile()\n", "    ci = inner.compile()\n    return ci\n"):
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "def make_sub():\n"
+            "    inner = StateGraph(dict)\n"
+            "    inner.add_node('a', lambda s: s)\n"
+            "    inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            + ret +
+            "outer = StateGraph(dict)\n"
+            "outer.add_node('s', make_sub())\n"
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (ret, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_plain_factory_function_still_flat(tmp_path):
+    # COVERAGE guard: a factory that returns a PLAIN callable (no compiled subgraph) must NOT taint — the
+    # node is normal and the flat path applies.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def make_fn():\n"
+        "    return lambda s: s\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('x', make_fn())\n"
+        "g.add_edge(START, 'x'); g.add_edge('x', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_compiled_subgraph_in_container_fails_closed(tmp_path):
     # audit-3 codex r55 (also surfaced in my own probe): a compiled subgraph stashed in a CONTAINER value —
     # `d["k"] = inner.compile()` (subscript target) — then used as an add_node action `outer.add_node("s",

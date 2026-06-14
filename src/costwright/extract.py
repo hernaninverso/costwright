@@ -291,8 +291,24 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             for sub in p.patterns: out.extend(_match_names(sub))
         return out
 
+    def _own_returns(fn):
+        # Return-statement values that belong to `fn` itself (not to a nested def/lambda). A function that
+        # returns a compiled subgraph (`def make(): ... return inner.compile()`) is a subgraph FACTORY: a call
+        # `add_node("s", make())` would otherwise be flat-counted (codex/Cursor r56). Collect its returns so the
+        # fixpoint can taint the function name into compiled_vars when a return carries a compiled subgraph.
+        out, stack = [], list(fn.body)
+        while stack:
+            x = stack.pop()
+            if isinstance(x, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue   # a nested function's returns are ITS own, not fn's
+            if isinstance(x, ast.Return) and x.value is not None:
+                out.append(x.value)
+            stack.extend(ast.iter_child_nodes(x))
+        return out
+
     all_binds = []   # (target_names, value_expr) over every binding form
     container_binds = []   # (base_name, value) when a subgraph is stashed in a container/attr (codex r55)
+    func_returns = []      # (func_name, [return_value_exprs]) — subgraph factories (codex/Cursor r56)
     for nd in ast.walk(tree):
         bs = []
         if isinstance(nd, ast.Assign):
@@ -318,6 +334,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             for arg, default in zip(ar.kwonlyargs, ar.kw_defaults):
                 if default is not None:
                     all_binds.append(([arg.arg], default))
+            if isinstance(nd, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                func_returns.append((nd.name, _own_returns(nd)))   # subgraph factory? (codex/Cursor r56)
         for tgt, src in bs:
             all_binds.append((_names(tgt), src))
             if tgt is not None and not _names(tgt):
@@ -377,6 +395,14 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         for base, value in container_binds:
             if (contains_compile(value) or _loads_any(value, ex.compiled_vars)) and base not in ex.compiled_vars:
                 ex.compiled_vars.add(base)
+                changed = True
+        # a function that RETURNS a compiled subgraph is a factory: taint its name so a call `make_sub()` used as
+        # an add_node action Load-references it → flagged → the Call inner can't be attributed → fail closed
+        # (codex/Cursor r56). Over-tainting a factory only makes its uses fail closed (safe).
+        for fname, rvals in func_returns:
+            if fname not in ex.compiled_vars and any(contains_compile(rv) or _loads_any(rv, ex.compiled_vars)
+                                                     for rv in rvals):
+                ex.compiled_vars.add(fname)
                 changed = True
         for names, value in all_binds:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
