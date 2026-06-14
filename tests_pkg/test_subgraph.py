@@ -358,6 +358,28 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_tuple_unpack_compile_alias_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-19 WITNESS: `(app,) = (inner.compile(),)` aliases the compiled
+    # graph via a tuple-unpack the linker doesn't track → `app.invoke(config={recursion_limit:5000})` is not
+    # attributed to inner → inner defaulted to 1000 → composed 1001 (understated, true 5001). A compile()
+    # result captured in any untracked way → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "(app,) = (inner.compile(),)\n"
+        "app.invoke({}, config={'recursion_limit': 5000})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the defaulted undercount 1001
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_invoke_before_compile_assign_is_read(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-18 WITNESS: an `app.invoke(config={recursion_limit:5000})` inside a
     # function DEFINED before `app = inner.compile()`. Document-order linking missed inner's limit → defaulted
@@ -494,12 +516,14 @@ def test_e2e_cursor_closure_in_loop_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
-def test_e2e_factory_same_scope_composes(tmp_path):
-    # a subgraph built AND mutated entirely inside ONE function (the common factory pattern) is still fully
-    # visible → composes. Guards against the scope-split rule over-rejecting the legit case.
+def test_e2e_local_run_in_one_scope_composes(tmp_path):
+    # a subgraph built, mutated AND invoked entirely inside ONE function (a local "run") is fully visible →
+    # composes. Guards against the scope-split / escape rules over-rejecting the legit single-scope case.
+    # (Note: a factory that RETURNS the compiled graph fails closed — the caller's invoke limit is out of
+    # view — which is correct; here the graph is invoked locally with a known limit and never escapes.)
     src = (
         "from langgraph.graph import StateGraph, START, END\n"
-        "def build():\n"
+        "def run():\n"
         "    inner = StateGraph(dict)\n"
         "    inner.add_node('a', lambda s: s)\n"
         "    inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
@@ -509,11 +533,10 @@ def test_e2e_factory_same_scope_composes(tmp_path):
         "    outer.add_node('b', lambda s: s)\n"
         "    outer.add_edge(START, 'sub'); outer.add_edge('sub', 'b'); outer.add_edge('b', END)\n"
         "    outer.compile().invoke({}, config={'recursion_limit': 50})\n"
-        "    return outer.compile()\n"   # returns the COMPILED (immutable) graph — outer stays a method receiver
     )
     r = _check_file(tmp_path, src)
     assert r["category"] == "tipa:explicit"
-    assert r["bound_factor"] == 50 * (2 + 25)   # 1350 — same-scope factory composes
+    assert r["bound_factor"] == 50 * (2 + 25)   # 1350 — single-scope local run composes
 
 
 def test_e2e_cursor_container_passed_graph_is_non_certifiable(tmp_path):

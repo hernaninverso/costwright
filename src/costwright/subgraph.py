@@ -74,6 +74,7 @@ class _GraphReceivers(ast.NodeVisitor):
         self.method_escaped = set() # StateGraph vars used as anything other than a method-call receiver
         self.bind_scopes_fn = {}    # graph var -> set of FUNCTION-scope paths where its StateGraph() is bound
         self.mutate_scopes_fn = {}  # graph var -> set of function-scope paths where it is add_node'd
+        self.compile_escaped = set()# graph vars whose .compile() result is captured in an untracked way
         self._fn_path = ()          # current function-nesting path (() = module)
         self._fn_seq = [0]          # fresh-id generator for function scopes
 
@@ -291,6 +292,7 @@ class _GraphReceivers(ast.NodeVisitor):
                            "unmodeled": g.get("unmodeled"), "ambiguous": self._ambiguous(v),
                            "passed_as_arg": v in self.passed_as_arg,
                            "method_escaped": v in self.method_escaped,
+                           "compile_escaped": v in self.compile_escaped,
                            "scope_split": len(self.bind_scopes_fn.get(v, set())
                                               | self.mutate_scopes_fn.get(v, set())) > 1}
                        for v, g in self.graphs.items()},
@@ -324,6 +326,31 @@ def analyze(tree) -> dict:
                 R.compiled_from[tgt] = v.func.value.id
             elif cn == "Pregel":
                 R.pregel_vars.add(tgt)
+
+    # A graph's `g.compile()` result is only TRACKED in 3 positions: (1) `name = g.compile()` (single-Name
+    # assign/walrus → compiled_from), (2) chained `g.compile().invoke(...)`, (3) an add_node arg `add_node(...,
+    # g.compile())` (the compose use). ANY other capture — tuple/list-unpack `(app,) = (g.compile(),)`,
+    # a function arg, a container element, a subscript — means g's invocation (and its recursion_limit) is out
+    # of view, so defaulting to 1000 could UNDERSTATE (Cursor r19). Mark g compile_escaped → fail closed.
+    def _is_compile(c):
+        return (isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute) and c.func.attr == "compile"
+                and isinstance(c.func.value, ast.Name))
+    tracked = set()
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name) and _is_compile(nd.value):
+            tracked.add(id(nd.value))
+        elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and _is_compile(nd.value):
+            tracked.add(id(nd.value))
+        elif isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute):
+            if _is_compile(nd.func.value):
+                tracked.add(id(nd.func.value))                 # chained  g.compile().invoke(...)
+            if nd.func.attr == "add_node":
+                for a in list(nd.args) + [k.value for k in nd.keywords]:
+                    if _is_compile(a):
+                        tracked.add(id(a))                     # add_node arg  add_node(..., g.compile())
+    for nd in ast.walk(tree):
+        if _is_compile(nd) and id(nd) not in tracked:
+            R.compile_escaped.add(nd.func.value.id)
 
 
     def bump(name):
@@ -408,6 +435,12 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         # — so mutations/aliases are invisible to per-call attribution (Cursor codex r11/r12). Fail closed.
         return _nc(f"{var}: graph used as a value, not just a method-call receiver (may be mutated/aliased "
                    f"out of view — fail closed)")
+    if g.get("compile_escaped"):
+        # this graph's .compile() result is captured in an untracked way (tuple-unpack, container, function
+        # arg, ...), so an invoke on that alias — and its recursion_limit — is out of view; defaulting to the
+        # framework limit could understate (Cursor codex r19). Fail closed.
+        return _nc(f"{var}: its compile() result is captured in an untracked alias (its invoke limit is out "
+                   f"of view — fail closed)")
     if g.get("scope_split"):
         # the graph is built in one function scope but mutated from another (e.g. a closure that calls
         # `{var}.add_node` is itself invoked in a loop) → it can be grown an unbounded number of times while
