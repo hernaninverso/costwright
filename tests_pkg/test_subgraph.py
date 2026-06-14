@@ -244,6 +244,38 @@ def _check_file(tmp_path, src):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def _check_kind(tmp_path, src, kind):
+    f = tmp_path / "g.py"
+    f.write_text(src, encoding="utf-8")
+    meta = {"unit_id": "u", "kind": kind, "file": "g.py"}
+    return map_unit(extract_unit(tmp_path, meta), meta)
+
+
+def test_e2e_multiple_explicit_bounds_combine(tmp_path):
+    # audit-3 codex r70: MULTIPLE explicit bounds of the same param were collapsed to the FIRST → understated.
+    # LangGraph invokes are separate runs ⇒ per-run worst case = MAX recursion_limit. CrewAI agents / Agents-SDK
+    # handoffs are sequential ⇒ SUM of iteration budgets.
+    lg = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "app = g.compile()\n"
+        "app.invoke({}, config={'recursion_limit': 5})\n"
+        "app.invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_kind(tmp_path, lg, "langgraph")
+    assert r["bound_factor"] == 50, r          # MAX(5, 50), not the first (5)
+
+    crew = (
+        "from crewai import Agent\n"
+        "a1 = Agent(role='r1', goal='g', backstory='b', max_iter=1)\n"
+        "a2 = Agent(role='r2', goal='g', backstory='b', max_iter=50000)\n"
+    )
+    rc = _check_kind(tmp_path, crew, "crewai")
+    assert rc["bound_factor"] == 50001, rc     # SUM(1, 50000), not the first (1)
+
+
 def test_e2e_flat_nonpositive_recursion_limit_fails_closed(tmp_path):
     # audit-3 r69 (flat path): an explicit recursion_limit <= 0 yielded a zero/NEGATIVE ceiling (bf=-5 for
     # recursion_limit=-5), which is nonsensical and understates any real run. The framework rejects <1 at

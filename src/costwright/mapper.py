@@ -94,12 +94,16 @@ def map_unit(ex: dict, meta: dict) -> dict:
                 "aggregation": agg, "bound_factor": n if linear else n * n_nodes,
                 "bound_source": source}
 
-    # 4 — tipa:explicit
+    # 4 — tipa:explicit. MULTIPLE explicit bounds of the same param must COMBINE, not take the first (codex r70,
+    # which printed the FIRST max_iter and understated). LangGraph invokes are SEPARATE runs ⇒ the per-run
+    # worst case is the MAX recursion_limit (consistent with the subgraph path's _merge_invoke_limit). CrewAI
+    # agents / Agents-SDK handoffs run SEQUENTIALLY within one execution ⇒ the worst case is the SUM of their
+    # iteration budgets (conservative; a single agent contributes its own max_iter).
     if kind == "langgraph":
         rl = [b for b in explicit if b["param"] == "recursion_limit"]
         if rl:
-            return {**base, "category": "tipa:explicit", **bound_term(rl[0]["value"], "explicit"),
-                    "cyclic": cyclic}
+            return {**base, "category": "tipa:explicit",
+                    **bound_term(max(b["value"] for b in rl), "explicit"), "cyclic": cyclic}
         n = DEFAULTS["langgraph_recursion_limit_modern"]
         return {**base, "category": "tipa:framework-default",
                 **bound_term(n, "framework-default(1000 moderno; 25 legacy)"),
@@ -107,15 +111,15 @@ def map_unit(ex: dict, meta: dict) -> dict:
     if kind == "crewai":
         mi = [b for b in explicit if b["param"] == "max_iter"]
         if mi:
-            return {**base, "category": "tipa:explicit", **bound_term(mi[0]["value"], "explicit"),
-                    "cyclic": cyclic}
+            return {**base, "category": "tipa:explicit",
+                    **bound_term(sum(b["value"] for b in mi), "explicit"), "cyclic": cyclic}
         return {**base, "category": "tipa:framework-default",
                 **bound_term(DEFAULTS["crewai_max_iter"], "framework-default(20)"), "cyclic": cyclic}
     if kind == "agents_sdk":
         mt = [b for b in explicit if b["param"] == "max_turns"]
         if mt:
-            return {**base, "category": "tipa:explicit", **bound_term(mt[0]["value"], "explicit"),
-                    "cyclic": cyclic}
+            return {**base, "category": "tipa:explicit",
+                    **bound_term(sum(b["value"] for b in mt), "explicit"), "cyclic": cyclic}
         return {**base, "category": "tipa:framework-default",
                 **bound_term(DEFAULTS["agents_sdk_max_turns"], "framework-default(10)"),
                 "cyclic": cyclic}
