@@ -563,7 +563,7 @@ def _resolve(var, A, seen, depth, parent_limit=0):
     # is legitimate, sound info); runaway only for a single graph's explicit recursion_limit ≥ HUGE_LIMIT.
     n_total = len(g["nodes"])
     bound_factor = outer_steps * max(n_total + inner_sum, 1)
-    return {"category": cat, "bound_factor": bound_factor, "prov": prov}
+    return {"category": cat, "bound_factor": bound_factor, "prov": prov, "outer_steps": outer_steps}
 
 
 def compose(ex_flat: dict) -> dict | None:
@@ -604,12 +604,12 @@ def compose(ex_flat: dict) -> dict | None:
         return {**base, "category": "no-mapeable:subgraph-node", "reason": res["prov"]}
     if res["category"] == "runaway":
         return {**base, "category": "rechaza-con-razon", "reason": res["prov"]}
-    # the outer's OWN recursion_limit drives the displayed `supersteps`; the composed total is the
-    # node-executions ceiling (aggregation=sum renders it as "≤S supersteps × N nodes = ≤total").
-    ostep = A["invoke_limit"].get(outer)
-    outer_steps = ostep if isinstance(ostep, int) else DEFAULTS["langgraph_recursion_limit_modern"]
+    # the EFFECTIVE outer steps that _resolve actually used (e.g. the default 1000 when a no-config invoke
+    # dominates an explicit 50 — Cursor r32) drive `supersteps`, kept consistent with the bound and the
+    # composition string. The composed total is the node-executions ceiling (aggregation=sum renders it as
+    # "≤S supersteps × N nodes = ≤total").
     internal = "tipa:explicit" if res["category"] == "certifiable" else "tipa:framework-default"
-    out = {**base, "category": internal, "supersteps": outer_steps, "bound_factor": res["bound_factor"],
+    out = {**base, "category": internal, "supersteps": res["outer_steps"], "bound_factor": res["bound_factor"],
            "aggregation": "sum", "composed": True, "composition": res["prov"],
            "bound_source": "explicit" if internal == "tipa:explicit" else "framework-default(composed)"}
     if internal == "tipa:framework-default":

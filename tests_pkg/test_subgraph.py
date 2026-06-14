@@ -695,6 +695,8 @@ def test_e2e_cursor_mixed_explicit_and_default_invoke_uses_default(tmp_path):
     # worst run is the no-config one (default 1000); inner inherits 1000 → 1000 × (1 + 1000) = 1,001,000
     assert r["bound_factor"] == 1000 * (1 + 1000)
     assert r["bound_factor"] > 50050
+    # supersteps must reflect the EFFECTIVE limit (1000), consistent with the bound (Cursor r32), NOT 50.
+    assert r["supersteps"] == 1000
 
 
 def test_e2e_cursor_starred_invoke_args_is_non_certifiable(tmp_path):
