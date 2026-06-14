@@ -663,6 +663,99 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_reflective_getattr_send_is_non_certifiable(tmp_path):
+    # audit-3 codex CLI r43 + Cursor r42 (BOTH found this): `S = getattr(lgtypes, "Send")` resolves Send via a
+    # CONSTANT-LITERAL reflective access — statically visible in the AST, so missing it understated a reachable
+    # fan-out (composed a finite number). Constant-literal getattr/vars/__dict__/globals reflection is now
+    # resolved against the construct names → fan-out blocks → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "S = getattr(lgtypes, 'Send')\n"
+        "def route(_s):\n"
+        "    return [S('sub', {}), S('sub', {})]\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', lambda s: s)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_conditional_edges('r', route)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:send-fanout"
+    assert "bound_factor" not in r
+
+
+def test_e2e_reflective_getattr_command_dynamic_goto_blocks(tmp_path):
+    # codex r43 flagged reflective Command too. `X = getattr(lgtypes,'Command')` then `X(goto=<dynamic>)` is a
+    # dynamic goto (unbounded routing). The reflective alias must propagate so the dynamic-goto blocks compose.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "X = getattr(lgtypes, 'Command')\n"
+        "def r(_s):\n"
+        "    return X(goto=_s['next'])\n"   # dynamic (non-literal) goto ⇒ blocking
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', r)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    res = _check_file(tmp_path, src)
+    assert res["category"] == "no-mapeable:dynamic-goto", res
+    assert "bound_factor" not in res
+
+
+def test_e2e_reflective_getattr_interrupt_blocks(tmp_path):
+    # `X = getattr(lgtypes,'interrupt')` then `X()` = human-in-loop interrupt ⇒ blocks composition.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "X = getattr(lgtypes, 'interrupt')\n"
+        "def r(_s):\n"
+        "    X('approve?')\n"
+        "    return 'sub'\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', r)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    res = _check_file(tmp_path, src)
+    assert res["category"] == "no-mapeable:interrupt-human-in-loop", res
+    assert "bound_factor" not in res
+
+
+def test_e2e_reflective_vars_and_dunder_dict_send_block(tmp_path):
+    # the other constant-literal reflective shapes: vars(mod)["Send"] and mod.__dict__["Send"].
+    for access in ("vars(lgtypes)['Send']", "lgtypes.__dict__['Send']", "globals()['Send']"):
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "import langgraph.types as lgtypes\n"
+            "from langgraph.types import Send\n"   # so globals()['Send'] is defined
+            f"S = {access}\n"
+            "def route(_s):\n"
+            "    return [S('sub', {}), S('sub', {})]\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('i', lambda s: s)\n"
+            "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+            "outer = StateGraph(dict)\n"
+            "outer.add_node('r', lambda s: s)\n"
+            "outer.add_node('sub', inner.compile())\n"
+            "outer.add_conditional_edges('r', route)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:send-fanout", (access, r)
+        assert "bound_factor" not in r, (access, r)
+
+
 def test_e2e_cursor_aliased_send_fanout_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-37: `from langgraph.types import Send as S` then `S(...)` bypassed
     # the send-fanout blocking (only literal `Send(...)` was detected) → composed a number despite fan-out.

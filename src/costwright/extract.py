@@ -295,13 +295,27 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                    for x in ast.walk(value))
 
     def _refs_construct(value, name_set, attr_set):
-        # value references a langgraph construct either by a known alias Name OR by an attribute `mod.Send`
-        # (Cursor r41) — so `S = lgtypes.Send` is recognized as a Send alias.
+        # value references a langgraph construct either by a known alias Name, an attribute `mod.Send`
+        # (Cursor r41), OR a CONSTANT-LITERAL reflective access that statically resolves to a construct name
+        # (codex/Cursor r42/r43): `getattr(mod, "Send")`, `vars(mod)["Send"]`, `mod.__dict__["Send"]`,
+        # `globals()["Send"]`. The literal attr/key is right there in the AST, so leaving it unhandled would
+        # understate a fan-out reachable through reflection. (Non-literal `getattr(mod, var)` / `eval` /
+        # monkeypatching stays unobservable → documented out of scope, voids the certificate.)
         for x in ast.walk(value):
             if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in name_set:
                 return True
             if isinstance(x, ast.Attribute) and x.attr in attr_set:
                 return True
+            if (isinstance(x, ast.Call) and isinstance(x.func, ast.Name) and x.func.id == "getattr"
+                    and len(x.args) >= 2 and isinstance(x.args[1], ast.Constant)
+                    and x.args[1].value in attr_set):
+                return True
+            if isinstance(x, ast.Subscript) and isinstance(x.slice, ast.Constant) and x.slice.value in attr_set:
+                base = x.value
+                if ((isinstance(base, ast.Call) and isinstance(base.func, ast.Name)
+                        and base.func.id in {"vars", "globals", "locals"})
+                        or (isinstance(base, ast.Attribute) and base.attr == "__dict__")):
+                    return True
         return False
 
     # A name is a POSSIBLE compiled subgraph if its binding value contains a `.compile()` OR Load-references
