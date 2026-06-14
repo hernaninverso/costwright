@@ -224,6 +224,10 @@ class Extractor(ast.NodeVisitor):
             if mi is not None:
                 s.bounds.append({"param": "max_iter", "value": const_of(mi.value),
                                  "source": "explicit", "line": n.lineno})
+            elif any(k.arg is None for k in n.keywords):
+                # a **kwargs spread on the Agent could carry max_iter (huge or disabling) → unrecoverable; do NOT
+                # fall back to the framework default 20 (that would understate) → fail closed (codex/Cursor r80).
+                s.bounds.append({"param": "max_iter", "value": None, "source": "explicit", "line": n.lineno})
             # CrewAI Agent sin max_iter → default 20 (lo decide el mapper por-kind)
         elif last == "Crew":
             # a hierarchical Crew runs a MANAGER that re-delegates (an unbounded loop) → fail closed. A
@@ -232,11 +236,12 @@ class Extractor(ast.NodeVisitor):
             # — a hierarchical literal, a VARIABLE (`mode = Process.hierarchical; process=mode` — codex r75), or
             # any computed expression could be the manager loop.
             has_manager = any(k.arg in ("manager_agent", "manager_llm") for k in n.keywords)
+            spread = any(k.arg is None for k in n.keywords)   # **cfg could hide process=hierarchical / a manager
             proc = next((k for k in n.keywords if k.arg == "process"), None)
             confirmed_sequential = (proc is not None and isinstance(proc.value, (ast.Attribute, ast.Constant))
                                     and "sequential" in ast.dump(proc.value)
                                     and "hierarchical" not in ast.dump(proc.value))
-            if has_manager or (proc is not None and not confirmed_sequential):
+            if has_manager or spread or (proc is not None and not confirmed_sequential):
                 s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
 
         # caps de tokens en cualquier call (constructores de modelos, llamadas)

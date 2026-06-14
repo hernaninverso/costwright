@@ -269,6 +269,14 @@ def test_e2e_invoke_kwargs_spread_fails_closed(tmp_path):
     ok = _check_kind(tmp_path, 'from agents import Agent, Runner\nRunner.run_sync(Agent(name="x"), "x", max_turns=5)\n', "agents_sdk")
     assert ok["category"] == "tipa:explicit" and ok["bound_factor"] == 5, ok
 
+    # CrewAI constructor spreads also hide the bound: Agent(**opts) can carry max_iter (huge/disabling) →
+    # fail closed (no default-20); Crew(**cfg) can carry process=hierarchical / a manager → hierarchical-manager.
+    H = "from crewai import Crew, Agent, Process\n"
+    ra = _check_kind(tmp_path, H + 'opts={"max_iter":99999}\nCrew(agents=[Agent(role="r",goal="g",backstory="b",**opts)])\n', "crewai")
+    assert ra["category"] == "extractor-failure" and "bound_factor" not in ra, ra
+    rc = _check_kind(tmp_path, H + 'cfg={"process":Process.hierarchical}\nCrew(agents=[Agent(role="r",goal="g",backstory="b",max_iter=2)], **cfg)\n', "crewai")
+    assert rc["category"] == "no-mapeable:hierarchical-manager" and "bound_factor" not in rc, rc
+
 
 def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
     # audit-3 codex r75: a CrewAI hierarchical process runs a MANAGER that re-delegates (unbounded). The
