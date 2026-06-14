@@ -358,6 +358,28 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_named_config_dict_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-16 WITNESS: recursion_limit carried via a NAMED dict
+    # (`cfg = {"recursion_limit": 5000}; app.invoke(config=cfg)`) is not read by the inline-dict path →
+    # defaulted to 1000 → composed bound understates the true 5000 limit. A non-literal config → unresolved
+    # → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "cfg = {'recursion_limit': 5000}\n"
+        "app.invoke({}, config=cfg)\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the defaulted-1000 undercount
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_multi_invoke_uses_max_limit(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-15 WITNESS: the outer graph is invoked at TWO call sites with
     # recursion_limit 100 and 5. Each invoke is a separate run; the per-run worst case is the MAX (100).

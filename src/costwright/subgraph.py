@@ -264,11 +264,20 @@ class _GraphReceivers(ast.NodeVisitor):
                     src = ic.func.value.id
             if src is not None:
                 for k in n.keywords:
-                    if k.arg == "config" and isinstance(k.value, ast.Dict):
+                    if k.arg != "config":
+                        continue
+                    if isinstance(k.value, ast.Dict) and all(kk is not None for kk in k.value.keys):
+                        # inline dict literal, no ** spread → read recursion_limit (non-constant value →
+                        # unresolved). An ABSENT key means the framework default applies (leave unset →
+                        # default handling) — that IS the real runtime limit, so it's sound.
                         for kk, vv in zip(k.value.keys, k.value.values):
                             if const_of(kk) == "recursion_limit":
                                 self._merge_invoke_limit(src, const_of(vv) if const_of(vv) is not None
                                                          else "unresolved")
+                    else:
+                        # config is a named variable / call / has a ** spread → we can't read the
+                        # recursion_limit; it could exceed the default → unresolved → fail closed (Cursor r16).
+                        self._merge_invoke_limit(src, "unresolved")
         self.generic_visit(n)
 
     def to_dict(self):
