@@ -466,6 +466,25 @@ def test_e2e_flat_nonpositive_recursion_limit_fails_closed(tmp_path):
     assert r1["category"] == "tipa:explicit" and r1["bound_factor"] == 1, r1
 
 
+def test_e2e_flat_noninteger_recursion_limit_fails_closed(tmp_path):
+    # codex r89 (flat path): a FLOAT recursion_limit slipped past the int-only nonpositive check. `-1e309` /
+    # `1e309` fold to ±inf and `5.0` is fractional-typed; the analyzer propagated a non-finite / negative /
+    # float ceiling — `recursion_limit=-1e309` CERTIFIED a `-Infinity` ceiling (false assurance). A bound value
+    # that is not a positive INTEGER now fails closed (extractor-failure: nonint-bound); a valid int still
+    # certifies. (The subgraph path already coerced non-int invoke limits to "unresolved".)
+    base = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+    )
+    for lim in ("-1e309", "1e309", "5.0", "float('nan')"):
+        r = _check_file(tmp_path, base + f"g.compile().invoke({{}}, config={{'recursion_limit': {lim}}})\n")
+        assert r["category"] == "extractor-failure" and "bound_factor" not in r, (lim, r)
+    r5 = _check_file(tmp_path, base + "g.compile().invoke({}, config={'recursion_limit': 5})\n")
+    assert r5["category"] == "tipa:explicit" and r5["bound_factor"] == 5, r5
+
+
 def test_e2e_flat_add_node_in_loop_fails_closed(tmp_path):
     # audit-3 codex r68 (flat path): add_node inside a for/while/comprehension builds N runtime nodes from ONE
     # textual site — `for i in range(100): g.add_node('leaf'+str(i), ...)` — so the static node count undercounts

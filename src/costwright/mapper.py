@@ -57,6 +57,14 @@ def map_unit(ex: dict, meta: dict) -> dict:
         return {**base, "category": "extractor-failure", "reason": "unresolved-bound",
                 "params": sorted({b["param"] for b in unresolved})}
     explicit = [b for b in explicit_all if b["value"] is not None]
+    # a bound value that is NOT a positive integer is not a valid run budget. A FLOAT (`recursion_limit=5.0`,
+    # or `1e309`/`-1e309` which Python folds to ±inf, or NaN) slips past the int-only nonpositive check below and
+    # would propagate a non-finite / negative / fractional ceiling — `-1e309` certified a `-Infinity` ceiling
+    # (codex r89). The framework expects an int; anything else fails closed BEFORE any arithmetic.
+    nonint = [b for b in explicit if not (isinstance(b["value"], int) and not isinstance(b["value"], bool))]
+    if nonint:
+        return {**base, "category": "extractor-failure", "reason": "nonint-bound",
+                "params": sorted({b["param"] for b in nonint})}
     # an explicit bound < 1 (recursion_limit / max_iter / max_turns ≤ 0) is not a valid run budget — the
     # framework rejects it at runtime — and would yield a zero/NEGATIVE ceiling, which is nonsensical and
     # understates any real run. Fail closed (codex/Cursor r69; mirrors the subgraph v≥1 guard).
