@@ -2,6 +2,17 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.12] — 2026-06-14
+
+### Silent scan truncation never reads as clean (codex `gpt-5.3-codex`)
+
+- **A truncated `--max-files` scan now fails closed** (codex r93) — a `--max-files` cap smaller than the number
+  of eligible `.py` files silently stopped the scan and reported an all-zero summary with exit 0, hiding
+  whatever the unscanned files contained (a clean "all clear" over incomplete coverage = false assurance).
+  Now: `--max-files < 1` is rejected; `_find_units` reports a truncation flag; the JSON summary carries
+  `scan_truncated`; and a truncated scan exits 1 under any `--fail-on` (unscanned files are unknown) or 2
+  otherwise, with a clear message — never a silent 0. A cap covering all files is unaffected.
+
 ## [0.2.11] — 2026-06-14
 
 ### StateGraph / Crew subclass discovery (Cursor `gpt-5.3-codex`, generalizes the Runner-subclass fix)
