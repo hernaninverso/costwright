@@ -263,7 +263,12 @@ class _GraphReceivers(ast.NodeVisitor):
                 if (call_name(ic).split(".")[-1] == "compile" and isinstance(ic.func, ast.Attribute)
                         and isinstance(ic.func.value, ast.Name)):
                     src = ic.func.value.id
-            if src is not None:
+            if src is not None and (any(isinstance(a, ast.Starred) for a in n.args)
+                                    or any(k.arg is None for k in n.keywords)):
+                # a *args / **kwargs spread could carry config (and its recursion_limit) where we can't read
+                # it (`app.invoke(*payload)`, Cursor r20) → unresolved → fail closed.
+                self._merge_invoke_limit(src, "unresolved")
+            elif src is not None:
                 # config is the 2nd argument of invoke/ainvoke/stream/astream — POSITIONAL (`invoke(input,
                 # config)`, Cursor r17) or keyword (`config=`). Read whichever is present.
                 cfg = n.args[1] if len(n.args) > 1 else None
