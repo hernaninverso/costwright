@@ -544,6 +544,28 @@ def test_e2e_cursor_walrus_compile_alias_composes(tmp_path):
     assert r.get("composed") is True
 
 
+def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-31 WITNESS: `compiled = inner.compile(); alias = compiled;
+    # outer.add_node('sub', alias)`. `alias`'s source is a bare Name (no `.compile()`), so it wasn't flagged
+    # → flat undercount (10). Name-alias chains now propagate the compiled flag → routes to compose → fail
+    # closed (the alias chain isn't a clean resolvable `c = g.compile()`).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "compiled = inner.compile()\n"
+        "alias = compiled\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', alias)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 10
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_subgraph_inherits_parent_limit_not_standalone(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-30 WITNESS (CORE MODEL fix): inner's standalone
     # `inner.compile().invoke(recursion_limit=1)` is a SEPARATE run and does NOT constrain inner's execution

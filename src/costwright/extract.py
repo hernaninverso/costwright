@@ -239,6 +239,23 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
                 for nm in _names(tgt):
                     ex.pregel_vars.add(nm)
+    # propagate through plain Name-alias chains: `alias = compiled` (Cursor r31). Fixpoint so chains of any
+    # length are covered. A flagged alias reaching add_node routes to compose, which fails closed (it isn't a
+    # clean `c = g.compile()` it can resolve), never the flat undercount.
+    name_aliases = []   # (target, source) for `x = y` where both are bare Names
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name) and isinstance(nd.value, ast.Name):
+            name_aliases.append((nd.targets[0].id, nd.value.id))
+        elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Name):
+            name_aliases.append((nd.target.id, nd.value.id))
+    changed = True
+    while changed:
+        changed = False
+        for tgt, src in name_aliases:
+            if src in ex.compiled_vars and tgt not in ex.compiled_vars:
+                ex.compiled_vars.add(tgt); changed = True
+            if src in ex.pregel_vars and tgt not in ex.pregel_vars:
+                ex.pregel_vars.add(tgt); changed = True
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
