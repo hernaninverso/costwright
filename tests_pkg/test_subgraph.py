@@ -39,22 +39,24 @@ def _ex(graphs, invoke_limit, subgraph_nodes, features=("subgraph-node",), ambig
 
 # --- composition arithmetic + categories ------------------------------------------------------------
 def test_certifiable_composition_arithmetic():
-    # outer(50) nodes [sub, b]; sub -> inner(25) nodes [a]. The subgraph WRAPPER counts too (audit-3 codex):
-    # cost/super-step = n_total(2) + inner_bound(25×1) = 27 ; ceiling = 50 × 27 = 1350.
+    # outer(50) nodes [sub, b]; sub -> inner [a]. The subgraph inherits the PARENT run's limit, NOT its own
+    # standalone invoke (Cursor r30): inner uses max(50, default 1000) = 1000. cost/super-step =
+    # n_total(2) + inner_bound(1000×1) = 1002 ; ceiling = 50 × 1002 = 50100. default_dependent (inner relies
+    # on the inherited/default limit) ⇒ tipa:framework-default.
     ex = _ex({"outer": _G(["sub", "b"]), "inner": _G(["a"])},
              {"outer": 50, "inner": 25}, [["outer", "sub", "inner", 0]])
     r = subgraph.compose(ex)
-    assert r["category"] == "tipa:explicit"
-    assert r["bound_factor"] == 50 * (2 + 25)                   # == 1350
-    assert "outer(explicit 50)" in r["composition"] and "inner(explicit 25)" in r["composition"]
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 50 * (2 + 1000)                 # == 50100 (inner's standalone 25 is ignored)
+    assert "outer(explicit 50)" in r["composition"] and "inner(inherits 1000)" in r["composition"]
 
 
 def test_wrapper_execution_counted_codex_witness():
-    # codex's minimal understatement witness: outer(1) [sub] → inner(1) [a]. TRUE executions = 2 (one
-    # outer wrapper + one inner). The OLD n_normal formula gave 1 (a LIE). Must be ≥ 2.
+    # codex's wrapper-counting witness: outer(1) [sub] → inner [a]. n_total counts the subgraph WRAPPER
+    # (1) PLUS the inner bound. Inner inherits max(1, 1000) = 1000 (Cursor r30). bound = 1 × (1 + 1000×1).
     ex = _ex({"outer": _G(["sub"]), "inner": _G(["a"])},
              {"outer": 1, "inner": 1}, [["outer", "sub", "inner", 0]])
-    assert subgraph.compose(ex)["bound_factor"] == 1 * (1 + 1)  # == 2, not 1
+    assert subgraph.compose(ex)["bound_factor"] == 1 * (1 + 1000)  # wrapper(1) + inner(1000), not n_normal(0)
 
 
 def test_inner_default_inherits_parent_limit():
@@ -76,11 +78,13 @@ def test_inner_inherits_LARGER_parent_limit():
     assert r["bound_factor"] == 2000 * (1 + 2000)               # inner inherited 2000, not the 1000 default
 
 
-def test_inner_huge_explicit_is_runaway():
+def test_top_huge_explicit_is_runaway():
+    # the TOP graph's own explicit recursion_limit ≥ HUGE ⇒ effectively unbounded ⇒ runaway. (A subgraph's
+    # standalone limit is ignored under the inherited-limit model, so runaway comes from the top — Cursor r30.)
     ex = _ex({"outer": _G(["sub"]), "inner": _G(["a"])},
-             {"outer": 50, "inner": 99999}, [["outer", "sub", "inner", 0]])
+             {"outer": 99999, "inner": 25}, [["outer", "sub", "inner", 0]])
     r = subgraph.compose(ex)
-    assert r["category"] == "rechaza-con-razon"                 # inner recursion_limit ≥ HUGE ⇒ effectively unbounded
+    assert r["category"] == "rechaza-con-razon"
     assert "bound_factor" not in r                              # absorbing — no number
 
 
@@ -94,11 +98,12 @@ def test_retry_policy_is_non_certifiable():
 
 
 def test_large_composed_product_is_NOT_runaway():
-    # both explicit and under HUGE individually; product is large but a legitimate certified ceiling.
+    # top explicit 9000 (< HUGE); inner inherits max(9000, 1000) = 9000. product is large but a legitimate
+    # ceiling, not runaway. inner relies on the inherited limit ⇒ tipa:framework-default.
     ex = _ex({"outer": _G(["sub"]), "inner": _G(["a"])},
              {"outer": 9000, "inner": 9000}, [["outer", "sub", "inner", 0]])
     r = subgraph.compose(ex)
-    assert r["category"] == "tipa:explicit"
+    assert r["category"] == "tipa:framework-default"
     assert r["bound_factor"] == 9000 * (1 + 9000)              # 81,009,000 — reported, sound, not runaway
 
 
@@ -112,9 +117,11 @@ def test_inner_unresolved_absorbs_to_non_certifiable():
     assert "imported" in r["reason"] or "resolvable" in r["reason"]
 
 
-def test_inner_unresolved_recursion_limit_non_certifiable():
+def test_top_unresolved_recursion_limit_non_certifiable():
+    # the TOP graph's own recursion_limit is a non-constant expression ⇒ fail closed. (A subgraph's
+    # standalone unresolved limit is irrelevant — it inherits the parent — so it's the TOP that matters.)
     ex = _ex({"outer": _G(["sub"]), "inner": _G(["a"])},
-             {"outer": 50, "inner": "unresolved"}, [["outer", "sub", "inner", 0]])
+             {"outer": "unresolved", "inner": 25}, [["outer", "sub", "inner", 0]])
     assert subgraph.compose(ex)["category"] == "no-mapeable:subgraph-node"
 
 
@@ -159,24 +166,27 @@ def test_no_unique_outer_is_non_certifiable():
 
 # --- SOUNDNESS: composed bound never understates an independent reference ----------------------------
 def _ref_worst(var, A, seen, depth, parent_limit=0):
-    """Independent re-derivation of the conservative worst-case node-execution count, from FIRST PRINCIPLES
-    (NOT mirroring the old buggy n_normal — that is exactly why the earlier property test missed codex's
-    wrapper-counting bug). Model: a graph runs ≤ steps super-steps; per super-step EVERY node executes once
-    (n_total wrappers) and a subgraph node ADDITIONALLY runs its whole inner; retries unmodeled ⇒ nc;
-    a subgraph without its own limit inherits the parent's (max with the default)."""
+    """Independent re-derivation of the conservative worst-case node-execution count, from FIRST PRINCIPLES.
+    Model (Cursor r30): a graph runs ≤ steps super-steps; per super-step EVERY node executes once (n_total
+    wrappers) and a subgraph node ADDITIONALLY runs its whole inner. The TOP graph uses its OWN invoke limit;
+    a SUBGRAPH inherits the parent run's limit = max(parent, default), IGNORING its standalone invoke (a
+    separate run). Retries/unmodeled ⇒ nc; a top with unresolved/non-constant limit ⇒ nc."""
     if depth > subgraph.DEPTH_CAP or var in seen or var not in A["graphs"]:
         return ("non_certifiable", None)
     seen = seen | {var}
     g = A["graphs"][var]
     if g.get("unmodeled"):
         return ("non_certifiable", None)
-    rl = A["invoke_limit"].get(var)
-    if rl == "unresolved":
-        return ("non_certifiable", None)
-    if isinstance(rl, int):
-        steps, cat = rl, "certifiable"
+    if parent_limit > 0:
+        steps, cat = max(parent_limit, 1000), "default_dependent"   # subgraph inherits; standalone ignored
     else:
-        steps, cat = max(parent_limit, 1000), "default_dependent"
+        rl = A["invoke_limit"].get(var)
+        if rl == "unresolved":
+            return ("non_certifiable", None)
+        if isinstance(rl, int):
+            steps, cat = rl, "certifiable"
+        else:
+            steps, cat = 1000, "default_dependent"                  # top with no explicit limit ⇒ default
     if cat == "certifiable" and steps >= subgraph.HUGE_LIMIT:
         return ("runaway", None)
     subs = [(nn, iv) for (ov, nn, iv, _al, _l) in A["subgraph_nodes"] if ov == var]
@@ -248,7 +258,8 @@ def test_e2e_nested_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 50 * (2 + 25)   # 1350 (wrapper counted)
+    # inner inherits the parent run's limit, NOT its standalone 25 (Cursor r30) → 50 × (2 + 1000) = 50100.
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 50 * (2 + 1000)
 
 
 def test_e2e_aliased_compile_composed_soundly(tmp_path):
@@ -268,8 +279,8 @@ def test_e2e_aliased_compile_composed_soundly(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "tipa:explicit"
-    assert r["bound_factor"] == 50 * (2 + 25)        # composed, identical to the inline case (1350)
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 50 * (2 + 1000)       # inner inherits 1000 (Cursor r30), like the inline case
     assert r.get("composed") is True
 
 
@@ -399,9 +410,11 @@ def test_e2e_cursor_invoke_before_compile_assign_is_read(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    # inner explicit 5000, outer explicit 1 → 1 × (n_total 1 + inner 5000×1) = 5001 (not the order-bug 1001)
-    assert r["bound_factor"] == 1 * (1 + 5000)
-    assert r["bound_factor"] > 1001
+    # the pre-pass links the invoke regardless of document order (no crash, composes). Under the r30 model
+    # inner's standalone 5000 is IGNORED (a separate run) → inner inherits max(outer 1, default 1000) = 1000
+    # → 1 × (n_total 1 + inner 1000) = 1001.
+    assert r["bound_factor"] == 1 * (1 + 1000)
+    assert r.get("composed") is True
 
 
 def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
@@ -506,7 +519,7 @@ def test_e2e_cursor_annotated_compile_alias_composes(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["bound_factor"] == 1 * (1 + 25)   # composed 26, not the flat-path undercount 25
+    assert r["bound_factor"] == 1 * (1 + 1000)   # inner inherits 1000 (Cursor r30); routed to compose, not the flat undercount 25
     assert r.get("composed") is True
 
 
@@ -527,8 +540,31 @@ def test_e2e_cursor_walrus_compile_alias_composes(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["bound_factor"] == 1 * (1 + 25)   # composed 26, not the flat-path undercount 25
+    assert r["bound_factor"] == 1 * (1 + 1000)   # inner inherits 1000 (Cursor r30); routed to compose, not the flat undercount 25
     assert r.get("composed") is True
+
+
+def test_e2e_cursor_subgraph_inherits_parent_limit_not_standalone(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-30 WITNESS (CORE MODEL fix): inner's standalone
+    # `inner.compile().invoke(recursion_limit=1)` is a SEPARATE run and does NOT constrain inner's execution
+    # as outer's subgraph — that inherits the parent run's config. The old model used inner's standalone 1 →
+    # composed 100 (understatement). inner now inherits max(outer 50, default 1000) = 1000 → 50 × (1 + 1000)
+    # = 50050, default_dependent.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 1})\n"   # standalone low limit — IRRELEVANT
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 50 * (1 + 1000)   # 50050 — inner inherits 1000, NOT its standalone 1 (not 100)
+    assert r["bound_factor"] > 100
 
 
 def test_e2e_cursor_compiled_alias_escapes_to_helper_is_non_certifiable(tmp_path):
@@ -723,8 +759,8 @@ def test_e2e_cursor_multi_invoke_uses_max_limit(tmp_path):
         "app.invoke({}, config={'recursion_limit': 5})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "tipa:explicit"
-    assert r["bound_factor"] == 100 * (2 + 2)   # max(100,5)=100 × (n_total outer 2 + inner 2×1) = 400, not 20
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 100 * (2 + 1000)   # max(100,5)=100 × (n_total 2 + inner inherits 1000); inner standalone 2 ignored (r30)
 
 
 def test_e2e_cursor_container_receiver_is_non_certifiable(tmp_path):
@@ -791,8 +827,8 @@ def test_e2e_local_run_in_one_scope_composes(tmp_path):
         "    outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "tipa:explicit"
-    assert r["bound_factor"] == 50 * (2 + 25)   # 1350 — single-scope local run composes
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 50 * (2 + 1000)   # inner inherits 1000 (Cursor r30); single-scope local run composes
 
 
 def test_e2e_cursor_container_passed_graph_is_non_certifiable(tmp_path):

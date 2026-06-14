@@ -514,21 +514,29 @@ def _resolve(var, A, seen, depth, parent_limit=0):
     if g.get("unmodeled"):
         return _nc(f"{var}: {g['unmodeled']}")
 
-    rl = A["invoke_limit"].get(var)
     default = DEFAULTS["langgraph_recursion_limit_modern"]
-    saw_default = var in set(A.get("invoke_saw_default", []))   # ≥1 invoke uses the framework default 1000
-    if rl == "unresolved":
-        return _nc(f"{var}: recursion_limit is a non-constant expression")
-    if isinstance(rl, int):
-        if saw_default and default > rl:
-            # this graph is ALSO invoked with NO explicit limit somewhere → that run uses the default, which
-            # is LARGER than the explicit one → the worst case is the default run (Cursor r22).
-            outer_steps, cat, prov = default, "default_dependent", f"{var}(default {default} ≥ explicit {rl})"
-        else:
-            outer_steps, cat, prov = rl, "certifiable", f"{var}(explicit {rl})"
-    else:                                                   # no explicit limit ⇒ inherits parent's, else default
+    if parent_limit > 0:
+        # SUBGRAPH (Cursor r30): a compiled subgraph run as a node does NOT use its own standalone invoke
+        # limit (`inner.compile().invoke(recursion_limit=N)` is a SEPARATE run). It inherits the PARENT run's
+        # config recursion_limit. We use max(parent, default) — conservative whether the config propagates
+        # (parent) or the subgraph runs at a fresh default — and never the (possibly smaller) standalone limit.
         outer_steps = max(parent_limit, default)
-        cat, prov = "default_dependent", f"{var}(default/inherited {outer_steps})"
+        cat, prov = "default_dependent", f"{var}(inherits {outer_steps})"
+    else:
+        # TOP graph: use its OWN invoke limit.
+        rl = A["invoke_limit"].get(var)
+        saw_default = var in set(A.get("invoke_saw_default", []))   # ≥1 invoke uses the framework default 1000
+        if rl == "unresolved":
+            return _nc(f"{var}: recursion_limit is a non-constant expression")
+        if isinstance(rl, int):
+            if saw_default and default > rl:
+                # ALSO invoked with NO explicit limit somewhere → that run uses the default, larger than the
+                # explicit one → the worst case is the default run (Cursor r22).
+                outer_steps, cat, prov = default, "default_dependent", f"{var}(default {default} ≥ explicit {rl})"
+            else:
+                outer_steps, cat, prov = rl, "certifiable", f"{var}(explicit {rl})"
+        else:                                              # no explicit limit ⇒ framework default
+            outer_steps, cat, prov = default, "default_dependent", f"{var}(default {default})"
     if cat == "certifiable" and outer_steps >= HUGE_LIMIT:
         return _runaway(f"{var}: recursion_limit {outer_steps} ≥ {HUGE_LIMIT}")
 
