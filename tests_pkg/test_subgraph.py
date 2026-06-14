@@ -358,6 +358,30 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_invoke_before_compile_assign_is_read(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-18 WITNESS: an `app.invoke(config={recursion_limit:5000})` inside a
+    # function DEFINED before `app = inner.compile()`. Document-order linking missed inner's limit → defaulted
+    # to 1000 → composed 1001 (understated). A pre-pass populates compiled_from order-independently → 5001.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "def prime():\n"
+        "    app.invoke({}, config={'recursion_limit': 5000})\n"
+        "app = inner.compile()\n"
+        "prime()\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # inner explicit 5000, outer explicit 1 → 1 × (n_total 1 + inner 5000×1) = 5001 (not the order-bug 1001)
+    assert r["bound_factor"] == 1 * (1 + 5000)
+    assert r["bound_factor"] > 1001
+
+
 def test_e2e_cursor_positional_config_is_read(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-17 WITNESS: config passed POSITIONALLY `app.invoke({}, {...})`
     # (not config=) was ignored → defaulted to 1000 → composed bound 1,001,000, understating the true 5000

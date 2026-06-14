@@ -305,6 +305,27 @@ def analyze(tree) -> dict:
     `subgraph-node` feature is present (the flat path is otherwise untouched)."""
     R = _GraphReceivers()
 
+    # PRE-PASS: populate `app = X.compile()` / `Pregel(...)` bindings BEFORE the main visit, so an invoke
+    # visited before its compile-assignment (e.g. inside a function defined earlier — Cursor r18) still
+    # resolves its recursion_limit. Without this, invoke→graph linking was document-order-sensitive and could
+    # silently miss an explicit limit → default 1000 → understatement. (store_count>1 still fails closed on
+    # any multi-binding, so a single overwrite here is safe.)
+    for nd in ast.walk(tree):
+        tv = None
+        if (isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name)
+                and isinstance(nd.value, ast.Call)):
+            tv = (nd.targets[0].id, nd.value)
+        elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
+            tv = (nd.target.id, nd.value)
+        if tv is not None:
+            tgt, v = tv
+            cn = call_name(v).split(".")[-1]
+            if cn == "compile" and isinstance(v.func, ast.Attribute) and isinstance(v.func.value, ast.Name):
+                R.compiled_from[tgt] = v.func.value.id
+            elif cn == "Pregel":
+                R.pregel_vars.add(tgt)
+
+
     def bump(name):
         if name:
             R.store_count[name] = R.store_count.get(name, 0) + 1
