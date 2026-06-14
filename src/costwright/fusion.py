@@ -80,6 +80,8 @@ _SLA_MODES = {"strict", "balanced"}
 # it is a reported analysis the signed bundle BINDS (tamper-evidence) and whose ARITHMETIC fusion
 # re-checks in pure stdlib — but whose operational ASSUMPTIONS fusion canNOT verify (self-asserted).
 _INTERF_KIND = "tv-coupling-bound"
+_CHANNEL_COVERED = "budget-cap-distribution-shift (channel 1 of N; N unknown)"
+_SOURCE_ESTIMATOR = "eleata-verify.epsilon.interference_risk_bound"
 _ASSURANCE_LEVELS = {"self_asserted", "evidence_attached", "independently_reviewed"}
 _ASSUMPTIONS = {"A", "C", "D"}                            # the operational assumptions the (ii) bound needs
 # status is NEVER "bounded" (council P0-1: no word that reads as a guarantee). Derived by fusion.
@@ -423,8 +425,8 @@ def conditional_analysis_from_epsilon(epsilon_bound: dict, *, assumptions_attest
     _bound_auth = _inflate_alpha(float(_ab), _eps_auth, float(_cu))
     block = {
         "kind": _INTERF_KIND,
-        "channel_covered": "budget-cap-distribution-shift (channel 1 of N; N unknown)",
-        "source_estimator": "eleata-verify.epsilon.interference_risk_bound",
+        "channel_covered": _CHANNEL_COVERED,
+        "source_estimator": _SOURCE_ESTIMATOR,
         "verify_version": str(verify_version),
         "note": INTERF_NOTE,
         "channel1_conditional_risk_upper": _bound_auth,   # RECOMPUTED, not the caller's alpha_effective
@@ -562,6 +564,16 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
     out["assumptions_complete"] = assumptions_complete
     out["bound_verification"] = bound_verification
     out["open_channels_non_exhaustive"] = True        # forced — the list is non-exhaustive by construction
+    # FORCE the honesty/provenance fields to costwright's own constants — the caller cannot inject a
+    # `disclaimer="GUARANTEED SAFE"`, a reassuring `note`, a shrunk `open_channels=["none"]`, or a misleading
+    # `channel_covered`/`source_estimator` into the signed bundle (codex r78). Only measured PRIMITIVES
+    # (k, m, δ_eps, α, c, attestations) come from the caller; every honesty string is costwright's.
+    out["kind"] = _INTERF_KIND
+    out["channel_covered"] = _CHANNEL_COVERED
+    out["source_estimator"] = _SOURCE_ESTIMATOR
+    out["note"] = INTERF_NOTE
+    out["open_channels"] = list(_OPEN_CHANNELS)
+    out["disclaimer"] = NON_INTERFERENCE
     return {"channel1_budget_cap_risk": out}
 
 

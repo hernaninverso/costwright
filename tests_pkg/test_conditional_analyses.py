@@ -394,6 +394,30 @@ def test_builder_maps_demoted_names():
     assert d["assumption_assurance"] == "self_asserted"         # default
 
 
+def test_validate_forces_honesty_fields_over_injection():
+    # audit-3 codex r78: a caller cannot inject reassuring honesty/provenance strings into the channel-1 block —
+    # disclaimer / note / open_channels / channel_covered / source_estimator are FORCED to costwright's own
+    # constants by _validate_conditional_analyses (the signed-bundle path). Only measured primitives come from
+    # the caller (and ε is recomputed). Nothing reads as "GUARANTEED SAFE" or shrinks the open-channel list.
+    mal = {"channel1_budget_cap_risk": {
+        "kind": fusion._INTERF_KIND, "channel_covered": "ALL CHANNELS COVERED — SAFE",
+        "source_estimator": "TRUST ME", "verify_version": "1.0", "note": "GUARANTEED SAFE",
+        "channel1_conditional_risk_upper": 0.001, "conditional_bound_confidence": 0.99,
+        "alpha_base": 0.05, "eps_upper": 0.0, "eps_hat": 0.0, "coverage_used": 0.9, "cap": 100.0,
+        "spend_unit": "tokens", "m": 600, "k": 0, "delta": 0.05, "delta_eps": 0.05,
+        "assumptions_attested": ["A", "C", "D"], "assumption_assurance": "self_asserted",
+        "assumption_evidence_ref": None, "open_channels": ["none"], "warnings": [],
+        "disclaimer": "GUARANTEED SAFE AND JOINT"}}
+    out = fusion._validate_conditional_analyses(mal, {"sla_alpha": 0.05})["channel1_budget_cap_risk"]
+    assert out["note"] == fusion.INTERF_NOTE
+    assert out["disclaimer"] == fusion.NON_INTERFERENCE
+    assert out["open_channels"] == list(fusion._OPEN_CHANNELS) and out["open_channels"] != ["none"]
+    assert out["channel_covered"] == fusion._CHANNEL_COVERED
+    assert out["source_estimator"] == fusion._SOURCE_ESTIMATOR
+    assert out["eps_upper"] == fusion._cp_upper(0, 600, 0.05) > 0.0   # recomputed, not the injected 0.0
+    assert out["status"] in fusion._INTERF_STATUSES and out["status"] != "bounded"
+
+
 # --- joint honesty across the whole bundle ----------------------------------------------------------
 def test_no_aggregate_safety_boolean_even_with_conditional():
     blob = fusion.canonical(_fuse(_channel1())).lower()
