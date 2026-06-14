@@ -617,6 +617,19 @@ def compose(ex_flat: dict) -> dict | None:
                               "StateGraph (e.g. a container/subscript) — fail closed"}
         return None
 
+    # COMPLETENESS (codex r53): the flat extractor flags ONE subgraph-node feature per add_node call carrying a
+    # compiled subgraph, but the per-graph analyzer only attributes those whose receiver is a bare StateGraph
+    # Name. A MIXED file — one attributable `outer.add_node("s", small.compile())` PLUS an unattributable
+    # `box[0].add_node("huge", big.compile())` — has MORE subgraph-node features than attributed subgraph_nodes.
+    # Composing only the attributable graph would emit a confident number while a second compiled subgraph (which
+    # may run a far larger inner) is INVISIBLE to the analysis → undercount of the file's true ceiling. Fail closed.
+    n_feat = sum(1 for fe in ex_flat.get("features", []) if fe["feature"] == "subgraph-node")
+    if n_feat > len(A["subgraph_nodes"]):
+        return {**base, "category": "no-mapeable:subgraph-node",
+                "reason": f"{n_feat} compiled-subgraph add_node sites but only {len(A['subgraph_nodes'])} "
+                          "attributable to a StateGraph — an unattributed subgraph would be ignored "
+                          "(undercount). Fail closed."}
+
     # NO-FAN-OUT INVARIANT (council P0 / FR-007): any Send / dynamic-goto ⇒ composition unsound.
     bad = feats & _FANOUT_FEATURES
     if bad:

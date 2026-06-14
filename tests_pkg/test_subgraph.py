@@ -788,6 +788,31 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_mixed_attributed_and_unattributed_subgraph_fails_closed(tmp_path):
+    # audit-3 codex r53 WITNESS: a file with TWO compiled-subgraph add_node sites — one attributable
+    # (`outer.add_node("s", small.compile())`) and one NOT (`box[0].add_node("huge", big.compile())`, subscript
+    # receiver). The per-graph analyzer attributes only the first, so composing just `outer` emits a confident
+    # number (1001) while the second compiled subgraph — which could run a far larger inner — is INVISIBLE to the
+    # analysis → undercount of the file. Now: #subgraph-node features (2) > #attributed subgraph_nodes (1) ⇒ fail
+    # closed (never a number when a compiled subgraph escapes attribution).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "small = StateGraph(dict)\n"
+        "small.add_node('i', lambda s: s)\n"
+        "small.add_edge(START, 'i'); small.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('s', small.compile())\n"
+        "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+        "box = [StateGraph(dict)]\n"
+        "box[0].add_node('huge', small.compile())\n"     # unattributable subscript receiver
+        "box[0].add_edge(START, 'huge'); box[0].add_edge('huge', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node", r
+    assert "bound_factor" not in r
+
+
 def test_e2e_batch_host_is_per_run_not_aggregate(tmp_path):
     # audit-3 Cursor r50 filed a "batch([6000]) totals 6000 > per-run 5005 ⇒ understate" BLOCKER. codex
     # adjudicated it a per-run-vs-aggregate SEMANTIC false positive: the certificate's node_executions_ceiling
