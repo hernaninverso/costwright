@@ -214,6 +214,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             tv = (nd.targets[0].id, nd.value)
         elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
             tv = (nd.target.id, nd.value)   # walrus  (c := g.compile())  — Cursor r26
+        elif isinstance(nd, ast.AnnAssign) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
+            tv = (nd.target.id, nd.value)   # annotated  c: T = g.compile()  — Cursor r27
         if tv is not None:
             cn = call_name(tv[1]).split(".")[-1]
             if cn == "compile":

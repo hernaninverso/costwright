@@ -188,6 +188,12 @@ class _GraphReceivers(ast.NodeVisitor):
             self._record_binding(n.target.id, n.value)
         self.generic_visit(n)
 
+    def visit_AnnAssign(self, n):
+        # annotated binding `c: T = X.compile()` (Cursor r27) — same path as visit_Assign.
+        if isinstance(n.target, ast.Name) and isinstance(n.value, ast.Call):
+            self._record_binding(n.target.id, n.value)
+        self.generic_visit(n)
+
     @staticmethod
     def _recv(n):
         f = n.func
@@ -345,6 +351,8 @@ def analyze(tree) -> dict:
             tv = (nd.targets[0].id, nd.value)
         elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
             tv = (nd.target.id, nd.value)
+        elif isinstance(nd, ast.AnnAssign) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
+            tv = (nd.target.id, nd.value)   # annotated  c: T = g.compile()  — Cursor r27
         if tv is not None:
             tgt, v = tv
             cn = call_name(v).split(".")[-1]
@@ -367,6 +375,8 @@ def analyze(tree) -> dict:
             tracked.add(id(nd.value))
         elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and _is_compile(nd.value):
             tracked.add(id(nd.value))
+        elif isinstance(nd, ast.AnnAssign) and isinstance(nd.target, ast.Name) and _is_compile(nd.value):
+            tracked.add(id(nd.value))                      # annotated  c: T = g.compile()  — Cursor r27
         elif isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute):
             if _is_compile(nd.func.value) and nd.func.attr in _INVOKE_METHODS:
                 tracked.add(id(nd.func.value))                 # chained  g.compile().invoke(...) — recognized
