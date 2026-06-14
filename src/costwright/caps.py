@@ -76,6 +76,11 @@ def scan_file(path: Path):
         model_val = next((k.value.value for k in node.keywords
                           if k.arg == "model" and isinstance(k.value, ast.Constant)
                           and isinstance(k.value.value, str)), "")
+        # the model can also be the FIRST POSITIONAL arg — `ChatOpenAI("gpt-5")` (codex/Cursor r76); otherwise
+        # a reasoning model passed positionally would escape the reasoning detection below.
+        if not model_val and node.args and isinstance(node.args[0], ast.Constant) \
+                and isinstance(node.args[0].value, str):
+            model_val = node.args[0].value
         reasoning = any(model_val.startswith(p) for p in
                         ("o1", "o3", "o4", "gpt-5")) if model_val else False
         # SOLO Chat-API constructors (audit-3 R2 gpt-5.5): el constructor `OpenAI` es
@@ -134,30 +139,38 @@ def scan_file(path: Path):
 
 
 def make_patch(path: Path, src: str, findings, cap_value: int) -> str:
-    """Unified diff que agrega `kwarg=cap_value` a cada constructor sin cap.
-    Edición textual mínima: insertar el kwarg tras el paréntesis de apertura del call.
-    NUNCA escribe el archivo — solo el diff (council 002 P0-2)."""
+    """Unified diff que agrega `kwarg=cap_value` como ÚLTIMO argumento de cada constructor sin cap.
+    Inserción basada en AST (robusta a args POSICIONALES, strings con paréntesis, y kwargs previos): el kwarg
+    va antes del `)` de cierre del call, NUNCA tras el `(` (eso produciría `Ctor(kwarg=…, "positional")` =
+    SyntaxError — codex/Cursor r76). NUNCA escribe el archivo — solo el diff (council 002 P0-2)."""
+    try:
+        tree = ast.parse(src)
+    except SyntaxError:
+        return ""
+    # map (lineno, constructor) → list of Call nodes, to insert at the exact end of the right call
+    by_key = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            by_key.setdefault((node.lineno, call_name(node)), []).append(node)
     lines = src.splitlines(keepends=True)
     new_lines = list(lines)
-    # de abajo hacia arriba para no correr line numbers
-    for f in sorted((f for f in findings if f["kind"] == "missing"),
-                    key=lambda x: -x["line"]):
-        i = f["line"] - 1
-        if i >= len(new_lines):
-            continue
+    edits = []   # (line_index, col, text) — applied right-to-left so columns don't shift
+    for f in (f for f in findings if f["kind"] == "missing"):
+        cands = by_key.get((f["line"], f["constructor"]), [])
+        if len(cands) != 1:
+            continue   # 0 or >1 matching calls on the line → ambiguous, skip (the finding is still reported)
+        call = cands[0]
+        if call.end_lineno != call.lineno or call.end_col_offset is None:
+            continue   # multi-line call → skip (conservative)
+        i = call.lineno - 1
+        close = call.end_col_offset - 1   # column of the closing ')'
+        had_args = bool(call.args) or bool(call.keywords)
+        sep = ", " if had_args else ""
+        edits.append((i, close, f"{sep}{f['suggest_kwarg']}={cap_value}"))
+    # apply right-to-left (highest column on a line first) so earlier insertions don't shift later columns
+    for i, col, text in sorted(edits, key=lambda e: (e[0], -e[1])):
         line = new_lines[i]
-        ctor = f["constructor"]
-        # audit-3 (gemini P0): si hay >1 ocurrencia del constructor en la línea, NO parchear
-        # (la inserción textual no sabe cuál es cuál) — conservador, el hallazgo igual se reporta
-        if line.count(ctor + "(") != 1:
-            continue
-        idx = line.find(ctor + "(")
-        if idx < 0:
-            continue  # constructor multilínea: skip (conservador)
-        insert_at = idx + len(ctor) + 1
-        rest = line[insert_at:]
-        sep = "" if rest.lstrip().startswith(")") else ", "
-        new_lines[i] = line[:insert_at] + f"{f['suggest_kwarg']}={cap_value}{sep}" + rest
+        new_lines[i] = line[:col] + text + line[col:]
     if new_lines == lines:
         return ""
     rel = str(path)

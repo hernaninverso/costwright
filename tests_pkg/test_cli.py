@@ -121,6 +121,31 @@ def test_caps_syntax_error_not_all_capped(tmp_path):
     assert "all LLM constructors capped" not in r.stdout, r.stdout
 
 
+def test_caps_make_patch_valid_python_and_correct_kwarg(tmp_path):
+    # codex/Cursor r76: make_patch inserted the kwarg right after '(', producing Ctor(kwarg=…, "positional") =
+    # SyntaxError; and a reasoning model passed POSITIONALLY (ChatOpenAI("gpt-5")) escaped reasoning detection
+    # so the WRONG kwarg (max_tokens) was suggested. Now the kwarg is the LAST arg (AST-based) and a positional
+    # model is recognized. Every suggested edit must PARSE and use the constructor's correct kwarg.
+    import ast as _ast
+    from costwright import caps as cm
+    cases = {
+        'from x import ChatOpenAI\nllm = ChatOpenAI("gpt-5")\n': "max_completion_tokens",   # reasoning, positional
+        'from x import ChatOpenAI\nllm = ChatOpenAI("gpt-4o", temperature=0)\n': "max_tokens",
+        'from x import ChatOllama\nllm = ChatOllama("llama3")\n': "num_predict",
+    }
+    for code, expect_kwarg in cases.items():
+        f = tmp_path / "p.py"
+        f.write_text(code)
+        fs, src = cm.scan_file(f)
+        assert fs and fs[0]["suggest_kwarg"] == expect_kwarg, (code, fs)
+        patch = cm.make_patch(Path("p.py"), src, fs, 100)
+        added = [ln[1:] for ln in patch.splitlines() if ln.startswith("+") and not ln.startswith("+++")]
+        assert added, (code, patch)
+        for ln in added:
+            _ast.parse(ln.strip())                # must be valid Python (raises SyntaxError otherwise)
+            assert f"{expect_kwarg}=100" in ln, (code, ln)
+
+
 def test_caps_patch_rejects_nonpositive_cap(tmp_path):
     # codex r75: --patch --cap 0 would insert an inert max_tokens=0 (which costwright itself flags ineffective).
     make(tmp_path, "a.py", "from x import ChatOpenAI\nllm=ChatOpenAI(model='gpt-4')\n")
