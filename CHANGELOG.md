@@ -2,6 +2,20 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.13] — 2026-06-14
+
+### File-path scanning + batch multiplicity (codex + Cursor `gpt-5.3-codex`)
+
+- **`check` / `caps` accept a file path** (codex r94) — `root.rglob("*.py")` returns nothing when `root` is a
+  file, so `check path/to/wf.py` scanned zero files and reported a false "all clear" / exit 0 even when the file
+  held a non_certifiable/runaway unit. `_find_units` and `caps.scan_path` now scan the file directly when root
+  is a file (rglob the tree when it is a directory); the EXCLUDE_DIRS/symlink guards remain for tree discovery.
+- **LangGraph `.batch([N])` multiplicity** (Cursor r94) — a `.batch([i1, i2, ...])` / `.abatch(...)` call runs
+  one full graph execution per input, so its node-activation ceiling is `N ×` the per-input ceiling.
+  costwright treated batch like a single invoke, so `app.batch([3 inputs], recursion_limit=2)` reported a
+  ceiling of 2 when the call does 6 — an understatement. A literal input list now multiplies the ceiling by N;
+  a non-literal / starred / absent inputs list is an unbounded multiplicity and fails closed.
+
 ## [0.2.12] — 2026-06-14
 
 ### Silent scan truncation never reads as clean (codex `gpt-5.3-codex`)
