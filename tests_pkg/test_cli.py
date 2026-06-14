@@ -167,6 +167,29 @@ def test_aliased_runner_call_is_discovered_and_not_dropped(tmp_path):
     assert run("check", str(d2)).returncode == 0
 
 
+def test_runner_subclass_call_is_discovered(tmp_path):
+    # codex r85: a SUBCLASS of Runner inherits run/run_sync/run_streamed — `class UnboundedRunner(Runner)` then
+    # `UnboundedRunner.run_sync(..., max_turns=None)` is the same runaway, but the receiver is the subclass name
+    # (not `Runner`), so _find_units dropped it → exit 0 on an unbounded run. Subclass names are now collected
+    # (fixpoint over transitive subclasses, base resolved via the import alias) and their .run* calls counted.
+    shapes = {
+        "direct":     "from agents import Agent, Runner\nclass UR(Runner): pass\nUR.run_sync(Agent(name='x'), 'h', max_turns=None)\n",
+        "transitive": "from agents import Runner\nclass A(Runner): pass\nclass B(A): pass\nB.run(agent, 'x', max_turns=None)\n",
+        "aliasedbase":"from agents import Runner as RB\nclass C(RB): pass\nC.run_streamed(agent, 'x', max_turns=None)\n",
+    }
+    for name, code in shapes.items():
+        d = tmp_path / name; d.mkdir()
+        (d / "w.py").write_text(code)
+        r = run("check", str(d), "--fail-on", "reject")
+        assert r.returncode == 1, (name, r.returncode, r.stdout, r.stderr)
+        rep = json.loads(run("check", str(d), "--json").stdout)
+        assert any(u["framework"] == "agents_sdk" for u in rep["units"]), (name, rep)
+    # no false positive: a class with a run_sync method but NOT subclassing Runner is not a unit
+    d3 = tmp_path / "nofp"; d3.mkdir()
+    (d3 / "w.py").write_text("class MyThing:\n    @classmethod\n    def run_sync(cls, x): pass\nMyThing.run_sync('x')\n")
+    assert run("check", str(d3)).returncode == 0
+
+
 def test_caps_dynamic_model_requires_max_completion_tokens(tmp_path):
     # codex r83: a Chat-API model name that is NOT a string constant — `"gpt-" + "5"` (BinOp concat), a Name
     # bound elsewhere, an f-string, os.environ[...] — could resolve to a reasoning model at runtime, where

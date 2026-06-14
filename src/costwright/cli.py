@@ -53,6 +53,25 @@ def _find_units(root: Path, max_files: int):
         # discovered as a unit (codex/Cursor r81) — otherwise the graph is silently dropped from the report.
         alias = {a.asname: a.name for nd in _ast.walk(tree) if isinstance(nd, _ast.ImportFrom)
                  for a in nd.names if a.asname}
+        # a SUBCLASS of Runner inherits run/run_sync/run_streamed — `class UnboundedRunner(Runner): ...` then
+        # `UnboundedRunner.run_sync(..., max_turns=None)` is the SAME runaway, but the receiver is the subclass
+        # name, not `Runner` (codex r85). Collect Runner subclass names (fixpoint over transitive subclasses,
+        # base resolved through the import alias) and treat their .run* calls as agents_sdk.
+        runner_subclasses: set[str] = set()
+        _classdefs = [nd for nd in _ast.walk(tree) if isinstance(nd, _ast.ClassDef)]
+        _changed = True
+        while _changed:
+            _changed = False
+            for nd in _classdefs:
+                if nd.name in runner_subclasses:
+                    continue
+                for base in nd.bases:
+                    bn = (alias.get(base.id, base.id) if isinstance(base, _ast.Name)
+                          else base.attr if isinstance(base, _ast.Attribute) else None)
+                    if bn == "Runner" or bn in runner_subclasses:
+                        runner_subclasses.add(nd.name)
+                        _changed = True
+                        break
         for node in _ast.walk(tree):
             if not isinstance(node, _ast.Call):
                 continue
@@ -64,7 +83,10 @@ def _find_units(root: Path, max_files: int):
             if isinstance(f, _ast.Name):
                 nm = alias.get(f.id, f.id)
             elif isinstance(f, _ast.Attribute) and isinstance(f.value, _ast.Name):
-                nm = f"{alias.get(f.value.id, f.value.id)}.{f.attr}"
+                recv = alias.get(f.value.id, f.value.id)
+                if recv in runner_subclasses:    # UnboundedRunner.run_sync ⇒ Runner.run_sync (codex r85)
+                    recv = "Runner"
+                nm = f"{recv}.{f.attr}"
             elif isinstance(f, _ast.Attribute):
                 nm = f.attr
             else:
