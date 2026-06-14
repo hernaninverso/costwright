@@ -251,6 +251,25 @@ def _check_kind(tmp_path, src, kind):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_invoke_kwargs_spread_fails_closed(tmp_path):
+    # audit-3 codex/Cursor r79: a **kwargs spread on an invoke/run call is OPAQUE — it could carry a
+    # max_turns/recursion_limit that DISABLES the cap (e.g. Runner.run(a, **{"max_turns": None})), and the
+    # bound would be unrecoverable. _scan_invoke ignored the spread (keyword.arg is None) so the analyzer fell
+    # back to the framework default and CERTIFIED a finite bound (false assurance). Now it fails closed.
+    cases = (
+        ('from agents import Agent, Runner\nRunner.run(Agent(name="x"), input="x", **{"max_turns": None})\n', "agents_sdk"),
+        ('from agents import Agent, Runner\nopts={"max_turns": None}\nRunner.run_sync(Agent(name="x"), "x", **opts)\n', "agents_sdk"),
+        ('from langgraph.graph import StateGraph, START, END\ng=StateGraph(dict)\ng.add_node("a", lambda s: s)\n'
+         'g.add_edge(START,"a"); g.add_edge("a",END)\ng.compile().invoke({}, **{"config": {"recursion_limit": 99999}})\n', "langgraph"),
+    )
+    for src, kind in cases:
+        r = _check_kind(tmp_path, src, kind)
+        assert r["category"] == "extractor-failure" and "bound_factor" not in r, (kind, r)
+    # regression: a normal explicit bound (no spread) still certifies
+    ok = _check_kind(tmp_path, 'from agents import Agent, Runner\nRunner.run_sync(Agent(name="x"), "x", max_turns=5)\n', "agents_sdk")
+    assert ok["category"] == "tipa:explicit" and ok["bound_factor"] == 5, ok
+
+
 def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
     # audit-3 codex r75: a CrewAI hierarchical process runs a MANAGER that re-delegates (unbounded). The
     # detection caught the literal `process=Process.hierarchical` but NOT an aliased `mode =

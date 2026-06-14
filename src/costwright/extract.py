@@ -251,6 +251,12 @@ class Extractor(ast.NodeVisitor):
 
     def _scan_invoke(s, n):
         """Busca recursion_limit / max_turns en el config del call-site (D2)."""
+        # a **kwargs spread on an invoke/run call is OPAQUE — it could carry a max_turns / recursion_limit that
+        # DISABLES the cap (e.g. `Runner.run(a, **{"max_turns": None})`, `app.invoke({}, **opts)`) and the bound
+        # would be unrecoverable → record an UNRESOLVED bound so the mapper fails closed (codex/Cursor r79).
+        if any(k.arg is None for k in n.keywords):
+            s.bounds.append({"param": "invoke-kwargs-spread", "value": None,
+                             "source": "explicit", "line": n.lineno})
         for k in n.keywords:
             if k.arg == "max_turns":
                 # distinguir None LITERAL (desactivación deliberada) de expresión no-constante
