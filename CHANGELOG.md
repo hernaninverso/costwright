@@ -2,6 +2,31 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.5] — 2026-06-14
+
+### Continued whole-tool audit — four more understatement/false-assurance paths (codex + Cursor `gpt-5.3-codex`)
+
+- **Dynamic Chat-API model name** (codex r83) — a model name that is not a string constant (`"gpt-" + "5"`
+  concat, a `Name` bound elsewhere, an f-string, `os.environ[...]`) could resolve to a reasoning model at
+  runtime, where Chat-API `max_tokens` is IGNORED. `caps` assumed non-reasoning and accepted `max_tokens=1` as
+  effective → "all capped" false assurance. A dynamic model on `ChatOpenAI`/`AzureChatOpenAI` now requires
+  `max_completion_tokens` (the cap that holds for reasoning AND non-reasoning Chat models).
+- **Reflective LLM constructor** (Cursor r83) — `importlib.import_module("langchain_openai")` +
+  `getattr(m, "ChatOpenAI")` then `Ctor(...)` reached a known constructor by string, escaping the by-name
+  `caps` scan → an uncapped LLM reported as "all capped". A literal `getattr(_, "<KnownCtor>")` now fails closed,
+  and the all-clear message no longer claims completeness (it states reflective/dynamic construction is not
+  covered by a static by-name scan).
+- **Aliased `Runner` receiver** (codex r84) — `from agents import Runner as R` then
+  `R.run(..., max_turns=None)` was dropped by `_find_units` (the literal `"Runner.run"` precheck missed the
+  aliased call and the AST resolved the dotted string `R.run`, never the alias map). A runaway
+  (`max_turns=None` disables the bound) silently passed `--fail-on reject` with exit 0. The receiver alias is
+  now resolved before composing `Runner.run`/`run_sync`/`run_streamed`.
+- **`add_sequence` factory-method subgraph** (Cursor r84) — `add_sequence([('sub', Factory.make())])` where
+  `Factory.make()` returns `inner.compile()` silently certified an understated flat bound: `add_sequence`
+  checked only inline-`.compile()` and compiled-var references, NOT the factory-method attribute that
+  `add_node` already detects. `add_sequence` now mirrors `add_node` exactly and routes the element to
+  compose/fail-closed.
+
 ## [0.2.4] — 2026-06-14
 
 ### Continued whole-tool audit — three more understatement/false-assurance paths (codex + Cursor `gpt-5.3-codex`)
