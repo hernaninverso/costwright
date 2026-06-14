@@ -1271,6 +1271,27 @@ def test_e2e_construct_passed_as_arg_fails_closed(tmp_path):
         assert "bound_factor" not in r
 
 
+def test_e2e_construct_returned_from_lambda_fails_closed(tmp_path):
+    # codex r95 WITNESS: a Send RETURNED from a lambda/function — `(lambda: Send)()('worker', {})`,
+    # `def mk(): return Send` then `mk()('worker', {})` — evaluates to `Send(...)` at runtime and fans out, but
+    # the outer call's callee is a Call (not a construct Name), so by-name detection missed it and a finite
+    # bound was certified. A construct alias appearing as a NON-callee Load inside a lambda body or a `return`
+    # now fails closed. A routing function that CALLS the construct is still detected as a normal fan-out.
+    head = ("from langgraph.graph import StateGraph, START, END\nfrom langgraph.types import Send\n"
+            "g = StateGraph(dict)\ng.add_node('route', lambda s: s)\ng.add_node('worker', lambda s: s)\n"
+            "g.add_edge(START, 'route')\napp = g.compile()\n")
+    for esc in (
+        "sends = [(lambda: Send)()('worker', {'i': i}) for i in range(100)]\n",
+        "def mk():\n    return Send\nmk()('worker', {})\n",
+        "f = lambda: Send\nf()('worker', {})\n",
+    ):
+        r = _check_file(tmp_path, head + esc + "app.invoke({}, config={'recursion_limit': 10})\n")
+        assert r["category"] == "no-mapeable:construct-escaped" and "bound_factor" not in r, (esc, r)
+    # NO false positive: a plain graph with no Send reference still certifies.
+    rok = _check_file(tmp_path, head + "app.invoke({}, config={'recursion_limit': 10})\n")
+    assert rok["category"] == "tipa:explicit" and rok["bound_factor"] == 10, rok
+
+
 def test_e2e_direct_send_still_send_fanout(tmp_path):
     # COVERAGE guard: a directly-called Send `Send(...)` (and bare-Name aliases) must STILL report send-fanout,
     # not the broader construct-escaped — the construct-escape guard only fires on argument-position uses.

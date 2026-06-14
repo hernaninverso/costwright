@@ -754,6 +754,23 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             break
     if _construct_escaped:
         ex.features.append({"feature": "construct-escaped", "line": 0})
+    # CONSTRUCT-RETURN-ESCAPE (codex r95): a construct RETURNED from a lambda/function — `(lambda: Send)()(...)`,
+    # `def f(): return Send` — is a factory whose result can be invoked to fan out, bypassing the by-name callee
+    # detection (the outer call's func is a Call, not a construct Name). Any construct alias that appears as a
+    # NON-callee Load inside a lambda body or a `return` value means the construct escapes → fail closed. A
+    # routing function that CALLS the construct (`lambda x: Send(x)`, `return Send("w", s)`) has it as a callee,
+    # so it is detected as a normal fan-out, not an escape.
+    if not _construct_escaped:
+        for nd in ast.walk(tree):
+            ret = nd.body if isinstance(nd, ast.Lambda) else (
+                nd.value if isinstance(nd, ast.Return) and nd.value is not None else None)
+            if ret is None:
+                continue
+            callees = {id(c.func) for c in ast.walk(ret) if isinstance(c, ast.Call)}
+            if any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in _construct_aliases
+                   and id(x) not in callees for x in ast.walk(ret)):
+                ex.features.append({"feature": "construct-escaped", "line": getattr(nd, "lineno", 0)})
+                break
     # INTER-PROCEDURAL node-helper guard (Cursor r71): a function whose body adds nodes, CALLED ≥2 times or
     # inside a loop, materializes N runtime nodes from ONE textual add_node site → the flat node count
     # undercounts → fail closed. A node-adding helper called exactly once (not in a loop) is counted correctly.
