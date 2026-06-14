@@ -53,6 +53,8 @@ class Extractor(ast.NodeVisitor):
         s._in_while_true = 0
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
         s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
+        s.send_aliases = {"Send"}        # names that resolve to langgraph Send (incl. import aliases, r37)
+        s.command_aliases = {"Command"}  # names that resolve to langgraph Command (incl. import aliases)
 
     def visit_While(s, n):
         is_true = isinstance(n.test, ast.Constant) and n.test.value is True
@@ -108,9 +110,9 @@ class Extractor(ast.NodeVisitor):
                 s.edges.append({"kind": "conditional-literal", "src": None, "dsts": dsts, "line": n.lineno})
             else:
                 s.edges.append({"kind": "conditional-fn", "src": None, "dsts": None, "line": n.lineno})
-        elif last == "Send":
+        elif last in s.send_aliases:
             s.features.append({"feature": "send-fanout", "line": n.lineno})
-        elif last == "Command":
+        elif last in s.command_aliases:
             goto = next((k.value for k in n.keywords if k.arg == "goto"), None)
             if goto is not None and const_of(goto) is None and not isinstance(goto, ast.List):
                 s.features.append({"feature": "dynamic-goto", "line": n.lineno})
@@ -214,6 +216,16 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     except SyntaxError:
         return {"unit_id": meta["unit_id"], "status": "extractor-failure", "reason": "syntax"}
     ex = Extractor(src)
+    # import aliases for Send / Command so `from langgraph.types import Send as S` doesn't bypass the
+    # send-fanout / dynamic-goto blocking (Cursor r37). Order-independent (imports precede use in valid code,
+    # but the walk is robust regardless).
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.ImportFrom):
+            for a in nd.names:
+                if a.name == "Send":
+                    ex.send_aliases.add(a.asname or a.name)
+                elif a.name == "Command":
+                    ex.command_aliases.add(a.asname or a.name)
     # prepass (order-independent): a name bound to an expression CONTAINING a `.compile()` (or to a Pregel)
     # via ANY binding form — assign / annotated / walrus / for-target / with-as, incl. tuple/list targets —
     # is treated as a possible compiled subgraph, so an aliased subgraph reaching add_node is flagged
