@@ -2,6 +2,24 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.4] — 2026-06-14
+
+### Continued whole-tool audit — three more understatement/false-assurance paths (codex + Cursor `gpt-5.3-codex`)
+
+- **Standalone middle subgraph in a 3-level nest** (codex r82, BLOCKER) — `leaf→mid→outer` where the MIDDLE
+  subgraph is ALSO invoked standalone at a far-larger limit than the outer. `compose()` reported only the
+  unique outer composition and hid the bigger mid-standalone run (witness: outer `recursion_limit=2` →
+  2,002,002 reported, but `mid.compile().invoke(recursion_limit=9000)` is a separate top-level run worth
+  81,009,000). `compose()` now resolves EVERY top-level run — the unique outer PLUS any inner that is also
+  invoked standalone — and reports the MAX bound. The pre-existing "standalone ignored" test was itself
+  encoding the understatement and was corrected to the conservative value.
+- **fusion RISK glyph not verdict-aware** (codex r82) — `pretty()` rendered non-abstained `Refuted` and
+  `Conflicting` verdicts with the same `✓` glyph as `Supported` → reassuring summary on a contradicted claim.
+  New `_risk_glyph()` is verdict-aware: `Supported=✓`, `Refuted=✗`, `Conflicting=⚠`, `Not Enough Evidence=▲`.
+- **Import-aliased LLM constructors** (codex + Cursor r81) — `from langchain_openai import ChatOpenAI as LLM2`
+  then `LLM2(...)` escaped the by-name `caps` lookup → an uncapped constructor reported as "all capped" (false
+  assurance). `caps.scan_file` and `cli._find_units` now resolve `ImportFrom ... as` aliases before lookup.
+
 ## [0.2.3] — 2026-06-14
 
 ### Continued whole-tool audit — false-assurance paths in the secondary features (codex + Cursor `gpt-5.3-codex`)
