@@ -2,6 +2,21 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.9] — 2026-06-14
+
+### Conservative float-rounding of every shipped fusion risk number (codex `gpt-5.3-codex` + systematic)
+
+- **Joint confidence never overstated** (codex r91) — `1.0 − δ − δ_eps` in float can round a few ULPs above the
+  exact value, overstating the confidence (= understating the failure probability); `1−.49−.49` floats to
+  `0.02000000000000018 > 0.02`. The failure probability is now bounded from above and the confidence from below
+  (`math.nextafter`), so the shipped confidence is provably ≤ the exact `1 − δ − δ_eps` (≈2 ULP margin).
+- **Conditional risk bound never understated** (systematic, same class) — the (ii) inflation chains several
+  float ops whose rounding left the shipped bound a few ULPs below the Decimal-exact value (~8e-17 in 10 grid
+  cases). The shipped bound is nudged up by a minimal relative+absolute margin (same discipline as
+  `_cp_upper`), so it is provably ≥ the exact inflation (margin ~1e-12, negligible). `eps_upper` was already
+  conservative (verified vs a 100-digit Decimal oracle). All three shipped risk numbers are now
+  conservative-by-construction.
+
 ## [0.2.8] — 2026-06-14
 
 ### Conditional-analysis alpha-tolerance understatement (codex `gpt-5.3-codex`)
