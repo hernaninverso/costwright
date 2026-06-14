@@ -788,6 +788,54 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_classvar_and_decorator_subgraph_fail_closed(tmp_path):
+    # audit-3 r61: two further same-file shapes — (a) a class attribute holding a compiled subgraph
+    # `class C: sub = inner.compile()` accessed `C.sub`; (b) a function whose DECORATOR returns a compiled
+    # subgraph `@deco def node` (node becomes the subgraph). Both were flat-counted; now both fail closed.
+    classvar = (
+        "class C:\n    sub = inner.compile()\n",
+        "C.sub")
+    decorator = (
+        "def deco(f):\n    return inner.compile()\n@deco\ndef node():\n    pass\n",
+        "node")
+    for defs, action in (classvar, decorator):
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            + defs +
+            "outer = StateGraph(dict)\n"
+            f"outer.add_node('s', {action})\n"
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (action, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_plain_classvar_and_decorator_do_not_falsely_block(tmp_path):
+    # COVERAGE guard: a plain class attr and a plain (identity/timing) decorator must NOT taint — the real
+    # subgraph still composes and the plain decorated node stays a normal node.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "class C:\n    x = 5\n"
+        "def timing(f):\n    return f\n"
+        "@timing\ndef mynode(s):\n    return s\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('s', inner.compile())\n"
+        "outer.add_node('n', mynode)\n"
+        "outer.add_edge(START, 's'); outer.add_edge('s', 'n'); outer.add_edge('n', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 5 * (2 + 1000), r
+
+
 def test_e2e_subgraph_passed_as_function_arg_fails_closed(tmp_path):
     # audit-3 r60: a compiled subgraph passed INTO a function as an argument — `def use(sub): outer.add_node(
     # "s", sub)` called `use(inner.compile())` — was flat-counted (no inter-procedural arg flow). Now a function

@@ -114,12 +114,12 @@ class Extractor(ast.NodeVisitor):
                 refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
                                     and (x.id in s.compiled_vars or x.id in s.pregel_vars)
                                     for x in ast.walk(a))
-                # a method/attribute call to a subgraph factory — `Factory.make()`, `obj.make()`, `self.make()`
-                # — matched by the factory method NAME (codex r58). Bare-name `make()` is already in compiled_vars.
-                calls_factory = any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute)
-                                    and x.func.attr in s.compiled_factory_names
+                # an ATTRIBUTE whose name resolves to a compiled subgraph — a factory method `Factory.make()` /
+                # `obj.make()` (r58) OR a class/instance attribute holding a subgraph `C.sub` (r61) — matched by
+                # the attribute NAME (called or not). Bare-name `make()`/`sub` is already in compiled_vars.
+                attr_subgraph = any(isinstance(x, ast.Attribute) and x.attr in s.compiled_factory_names
                                     for x in ast.walk(a))
-                if refs_compiled or contains_compile(a) or calls_factory:
+                if refs_compiled or contains_compile(a) or attr_subgraph:
                     # subgraph node: the arg CONTAINS a .compile() (inline `g.compile()` / wrapped
                     # `identity(g.compile())` — Cursor r29) OR Load-references a compiled var ANYWHERE — a bare
                     # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
@@ -319,6 +319,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     func_returns = []      # (func_name, [return_value_exprs]) — subgraph factories (codex/Cursor r56)
     func_params = {}       # func_name -> [param_names] (taint params of a fn called with a subgraph — r60)
     name_calls = []        # (callee_name, [arg_values]) for calls to a bare-Name function (r60)
+    class_attr_binds = []  # (attr_name, value) for class-body `attr = inner.compile()` (accessed C.attr — r61)
+    decorated = []         # (decorated_name, [decorator_exprs]) — `@factory def x` makes x a subgraph (r61)
     method_stash = []      # (base_name, [arg_values]) — `c.append(inner.compile())` stash via method (r57)
     # StateGraph build/run methods: a compiled subgraph as their arg is NOT a "stash into base" (e.g.
     # `outer.add_node("s", inner.compile())` builds the graph), so they don't taint the receiver.
@@ -346,6 +348,20 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         # fails closed). Inter-procedural & conservative (codex/Cursor r60).
         if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name):
             name_calls.append((nd.func.id, list(nd.args) + [k.value for k in nd.keywords]))
+        # a class-body attribute holding a compiled subgraph — `class C: sub = inner.compile()` — is accessed as
+        # `C.sub`; record the attr name so the add_node attribute check flags it (r61).
+        if isinstance(nd, ast.ClassDef):
+            for st in nd.body:
+                if isinstance(st, ast.Assign):
+                    for t in st.targets:
+                        for nm in _names(t):
+                            class_attr_binds.append((nm, st.value))
+                elif isinstance(st, ast.AnnAssign) and st.value is not None and isinstance(st.target, ast.Name):
+                    class_attr_binds.append((st.target.id, st.value))
+        # a def/class whose DECORATOR returns a compiled subgraph becomes one (`@deco def node: ...` ⇒
+        # node = deco(node)); taint the decorated name (r61).
+        if isinstance(nd, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) and nd.decorator_list:
+            decorated.append((nd.name, list(nd.decorator_list)))
         bs = []
         if isinstance(nd, ast.Assign):
             bs = [(t, nd.value) for t in nd.targets]
@@ -464,6 +480,23 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     if p not in ex.compiled_vars:
                         ex.compiled_vars.add(p)
                         changed = True
+        # a class attribute holding a compiled subgraph → its NAME, accessed as `C.attr`, is matched by the
+        # add_node attribute check (r61).
+        for attr, value in class_attr_binds:
+            if attr not in ex.compiled_factory_names and (contains_compile(value)
+                                                          or _loads_any(value, ex.compiled_vars)):
+                ex.compiled_factory_names.add(attr)
+                changed = True
+        # a name whose decorator returns a compiled subgraph becomes a subgraph → taint the name (r61).
+        for dname, decos in decorated:
+            if dname not in ex.compiled_vars and any(
+                    (isinstance(de, ast.Name) and de.id in ex.compiled_vars)
+                    or (isinstance(de, ast.Name) and de.id in ex.compiled_factory_names)
+                    or (isinstance(de, ast.Call) and isinstance(de.func, ast.Name)
+                        and (de.func.id in ex.compiled_vars or de.func.id in ex.compiled_factory_names))
+                    for de in decos):
+                ex.compiled_vars.add(dname)
+                changed = True
         for names, value in all_binds:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
             # `T = S`, …) — propagate so the fan-out / dynamic-goto blocking can't be bypassed (Cursor r38/r39).
