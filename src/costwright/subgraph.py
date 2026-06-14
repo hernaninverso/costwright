@@ -46,6 +46,10 @@ from costwright.extract import DEFAULTS, call_name, const_of, const_or_endref
 DEPTH_CAP = 5
 HUGE_LIMIT = 10_000
 _FANOUT_FEATURES = {"send-fanout", "dynamic-goto"}   # break the no-fan-out invariant ⇒ do NOT compose
+# Runnable methods that RUN a compiled graph and accept a recursion_limit via config (Cursor r13: batch was
+# missing). Any OTHER method on a compiled-graph alias is treated as a possible unread invocation → fail closed.
+_INVOKE_METHODS = ("invoke", "ainvoke", "stream", "astream", "batch", "abatch",
+                   "astream_events", "astream_log", "batch_as_completed", "abatch_as_completed")
 
 
 class _GraphReceivers(ast.NodeVisitor):
@@ -254,7 +258,11 @@ class _GraphReceivers(ast.NodeVisitor):
                                                "dsts": [const_of(v) for v in mp.values], "line": n.lineno})
             else:
                 self._g(recv)["edges"].append({"kind": "conditional-fn", "src": None, "dsts": None, "line": n.lineno})
-        elif last in ("invoke", "ainvoke", "stream", "astream"):
+        elif recv is not None and recv in self.compiled_from and last not in _INVOKE_METHODS:
+            # an UNRECOGNIZED method on a compiled-graph alias (e.g. `app.with_config({...})`) could carry or
+            # bind a recursion_limit we don't read → unresolved → fail closed (Cursor r13 generalization).
+            self._merge_invoke_limit(self.compiled_from[recv], "unresolved")
+        elif last in _INVOKE_METHODS:
             # link the recursion_limit back to its StateGraph var, two call shapes:
             #   (a) app = g.compile(); app.invoke(config=...)      → recv = app, src = compiled_from[app]
             #   (b) g.compile().invoke(config=...)  (chained)       → src = the compile()'s receiver g
@@ -354,8 +362,10 @@ def analyze(tree) -> dict:
         elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and _is_compile(nd.value):
             tracked.add(id(nd.value))
         elif isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute):
-            if _is_compile(nd.func.value):
-                tracked.add(id(nd.func.value))                 # chained  g.compile().invoke(...)
+            if _is_compile(nd.func.value) and nd.func.attr in _INVOKE_METHODS:
+                tracked.add(id(nd.func.value))                 # chained  g.compile().invoke(...) — recognized
+                #                                                invocation only; g.compile().with_config(...) is
+                #                                                NOT tracked → compile_escaped → fail closed.
             if nd.func.attr == "add_node":
                 for a in list(nd.args) + [k.value for k in nd.keywords]:
                     if _is_compile(a):

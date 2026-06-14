@@ -425,6 +425,48 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_batch_invoke_limit_counted(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-23 WITNESS: `app.batch([{}], config={'recursion_limit': 5000})` was
+    # ignored (only invoke/ainvoke/stream/astream were modeled) → max stayed at 50 → composed 50050. batch /
+    # abatch must contribute to the limit max like any invocation.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app.invoke({}, config={'recursion_limit': 50})\n"
+        "app.batch([{}], config={'recursion_limit': 5000})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # max(50, 5000) = 5000; inner inherits 5000 → 5000 × (1 + 5000) = 25,005,000 (not 50050)
+    assert r["bound_factor"] == 5000 * (1 + 5000)
+    assert r["bound_factor"] > 50050
+
+
+def test_e2e_cursor_with_config_alias_is_non_certifiable(tmp_path):
+    # generalization (Cursor r13): an unrecognized method on a compiled-graph alias (`app.with_config({...})`
+    # binds a recursion_limit we don't read) → unresolved → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app2 = app.with_config({'recursion_limit': 5000})\n"
+        "app2.invoke({})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_mixed_explicit_and_default_invoke_uses_default(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-22 WITNESS: outer invoked twice — once with explicit
     # recursion_limit 50, once with NO config (runtime default 1000). MAX-over-explicit gave 50 → composed
