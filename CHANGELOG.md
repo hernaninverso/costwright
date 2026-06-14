@@ -2,6 +2,21 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.14] — 2026-06-14
+
+### Lambda-returned construct + CrewAI callback (codex + Cursor `gpt-5.3-codex`)
+
+- **Construct returned from a lambda/function** (codex r95) — a `Send`/`Command`/`interrupt` returned from a
+  lambda or function — `(lambda: Send)()('worker', {})`, `def mk(): return Send` then `mk()(...)` — evaluates
+  to `Send(...)` at runtime and fans out, but the outer call's callee is a `Call` (not a construct `Name`), so
+  the by-name and arg-position guards both missed it and a finite bound was certified below the true
+  activations. A construct alias as a non-callee `Load` inside a lambda body or a `return` now fails closed; a
+  routing function that *calls* the construct is still a normal fan-out.
+- **CrewAI `step_callback` / `task_callback`** (Cursor r95) — a callback is arbitrary code run after every agent
+  step / task and can re-enter (a nested `kickoff()` or a loop), adding unbounded activations the
+  `n_tasks × max(budget)` model does not see. A non-`None` `step_callback` (Agent or Crew) or `task_callback`
+  (Crew) now fails closed (`no-mapeable:crewai-callback`); the default `None` still certifies.
+
 ## [0.2.13] — 2026-06-14
 
 ### File-path scanning + batch multiplicity (codex + Cursor `gpt-5.3-codex`)
