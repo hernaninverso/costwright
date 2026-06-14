@@ -2,6 +2,31 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.2] — 2026-06-14
+
+### Whole-tool soundness audit — fusion / report / caps / cli hardened (codex + Cursor `gpt-5.3-codex`)
+
+The adversarial audit was extended past the analyzer to every module. Both auditors independently confirmed
+`fusion.py` is conservative (the Clopper-Pearson upper `_cp_upper` is ≥ an independent high-precision
+Clopper-Pearson on 700+ adversarial `(k, m, η)` including η<2⁻⁵³; the cost side always reports the WORST unit
+category; `composition.joint_guarantee` is always false; malformed cost/risk input fails closed). Fixes:
+
+- **fusion.py** — `_inflate_alpha` clamps ε≥0 and floors at the base α (a negative ε no longer *decreases* α,
+  which would understate risk); `conditional_analysis_from_epsilon` now RECOMPUTES ε-upper and the channel-1
+  bound from the primitives (k, m, δ_eps, α, c; m capped at 1e9) instead of shipping the caller's reported
+  numbers, so its standalone output is authoritative — matching the `fuse()` recompute.
+- **caps.py** — an *effective* token cap now requires the constructor's CORRECT kwarg (per provider, after the
+  reasoning-model adjustment) present as a positive-int literal. A wrong kwarg for the constructor (`max_tokens`
+  on OpenAI's Responses API, whose cap is `max_output_tokens`; `max_tokens` on `ChatOllama`, whose cap is
+  `num_predict`) or a non-literal / non-positive value (`None`/`-1`/variable/`True`) is flagged `ineffective`,
+  not treated as bounded. A file that does not parse but mentions an LLM constructor surfaces a `parse_error`
+  finding instead of being silently counted as "all capped".
+- **cli.py** — `--fail-on` tiers are now monotonic and complete: a `parse_error` (a unit costwright could not
+  analyze) no longer silently passes, and a `non_certifiable` unit also trips the stricter `default-dependent`
+  threshold. `reject ⊆ non-certifiable ⊆ default-dependent`.
+- **report.py** — `pretty()` uses a defensive badge lookup so the human output never crashes on an unexpected
+  category (the JSON `public_category` mapping was already fail-closed; `node_executions_ceiling == bound_factor`).
+
 ## [0.2.1] — 2026-06-14
 
 ### Soundness hardening — ~35 understatement paths closed (adversarial audit, codex + Cursor `gpt-5.3-codex`)
