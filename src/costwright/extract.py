@@ -639,6 +639,48 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             break
     if _construct_escaped:
         ex.features.append({"feature": "construct-escaped", "line": 0})
+    # INTER-PROCEDURAL node-helper guard (Cursor r71): a function whose body adds nodes, CALLED ≥2 times or
+    # inside a loop, materializes N runtime nodes from ONE textual add_node site → the flat node count
+    # undercounts → fail closed. A node-adding helper called exactly once (not in a loop) is counted correctly.
+    def _adds_nodes(fn):
+        stk = list(fn.body)
+        while stk:
+            x = stk.pop()
+            if isinstance(x, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                continue   # a nested function's add_node is ITS own
+            if isinstance(x, ast.Call):
+                if isinstance(x.func, ast.Attribute) and x.func.attr in ("add_node", "add_sequence"):
+                    return True
+                if isinstance(x.func, ast.Name) and x.func.id in ex.addnode_aliases:
+                    return True
+            stk.extend(ast.iter_child_nodes(x))
+        return False
+    _node_fns = {fn.name for fn in ast.walk(tree)
+                 if isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)) and _adds_nodes(fn)}
+    if _node_fns:
+        _par = {}
+        for p in ast.walk(tree):
+            for c in ast.iter_child_nodes(p):
+                _par[id(c)] = p
+
+        def _call_in_loop(node):
+            cur = _par.get(id(node))
+            while cur is not None:
+                if isinstance(cur, (ast.For, ast.AsyncFor, ast.While, ast.ListComp, ast.SetComp,
+                                    ast.DictComp, ast.GeneratorExp)):
+                    return True
+                if isinstance(cur, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+                    return False
+                cur = _par.get(id(cur))
+            return False
+        _counts, _loopcall = {}, False
+        for c in ast.walk(tree):
+            if isinstance(c, ast.Call) and isinstance(c.func, ast.Name) and c.func.id in _node_fns:
+                _counts[c.func.id] = _counts.get(c.func.id, 0) + 1
+                if _call_in_loop(c):
+                    _loopcall = True
+        if _loopcall or any(v >= 2 for v in _counts.values()):
+            ex.features.append({"feature": "node-helper-multicall", "line": 0})
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
     # si hay conditional-literal cuyos dsts incluyen un nodo definido, lo tratamos como posible ciclo

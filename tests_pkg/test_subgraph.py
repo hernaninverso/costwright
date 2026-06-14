@@ -276,6 +276,48 @@ def test_e2e_multiple_explicit_bounds_combine(tmp_path):
     assert rc["bound_factor"] == 50001, rc     # SUM(1, 50000), not the first (1)
 
 
+def test_e2e_flat_node_helper_multicall_fails_closed(tmp_path):
+    # audit-3 Cursor r71 (flat path, inter-procedural): a function that adds nodes — `def add(name):
+    # g.add_node(name, n)` — called MULTIPLE times (`add('a'); add('b'); add('c')`) or inside a loop
+    # materializes N runtime nodes from ONE textual site → the flat count undercounts. Now a node-adding helper
+    # called >=2 times or in a loop fails closed. A helper called exactly once is counted correctly.
+    multicall = (
+        "from langgraph.graph import StateGraph, START\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('seed', lambda s: s)\n"
+        "def add(name):\n    g.add_node(name, lambda s: s)\n"
+        "add('a'); add('b'); add('c')\n"
+        "g.add_edge(START, 'seed')\n"
+        "g.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, multicall)
+    assert "bound_factor" not in r, r
+    assert r["category"] in ("no-mapeable:node-helper-multicall", "extractor-failure"), r
+
+    in_loop = (
+        "from langgraph.graph import StateGraph, START\n"
+        "g = StateGraph(dict)\n"
+        "def add(name):\n    g.add_node(name, lambda s: s)\n"
+        "for x in ['a', 'b', 'c']:\n    add(x)\n"
+        "g.add_edge(START, 'a')\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    rl = _check_file(tmp_path, in_loop)
+    assert "bound_factor" not in rl, rl
+
+    # COVERAGE: a node-adding helper called exactly ONCE is counted correctly.
+    once = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def build(g):\n    g.add_node('a', lambda s: s)\n    g.add_node('b', lambda s: s)\n"
+        "g = StateGraph(dict)\n"
+        "build(g)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', 'b'); g.add_edge('b', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    ro = _check_file(tmp_path, once)
+    assert ro["category"] == "tipa:explicit" and ro["bound_factor"] == 5, ro
+
+
 def test_e2e_flat_nonpositive_recursion_limit_fails_closed(tmp_path):
     # audit-3 r69 (flat path): an explicit recursion_limit <= 0 yielded a zero/NEGATIVE ceiling (bf=-5 for
     # recursion_limit=-5), which is nonsensical and understates any real run. The framework rejects <1 at
@@ -2000,7 +2042,9 @@ def test_e2e_cursor_closure_in_loop_is_non_certifiable(tmp_path):
         "    outer.compile().invoke({}, config={'recursion_limit': 3})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT composed 3003
+    # the node-adding closure called in a loop trips the flat node-helper-multicall guard before compose; either
+    # fail-closed reason is sound (no number).
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-helper-multicall"), r
     assert "bound_factor" not in r
 
 
