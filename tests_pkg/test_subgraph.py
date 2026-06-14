@@ -815,6 +815,60 @@ def test_e2e_bound_method_addnode_alias_fails_closed(tmp_path):
         assert "bound_factor" not in r
 
 
+def test_e2e_obscured_addnode_call_fails_closed(tmp_path):
+    # audit-3 codex r63 (escape guard): the add_node CALL itself can be obscured so node-counting silently
+    # undercounts — `g.add_node` captured into a container/arg/attribute or reached via getattr. The r63 alias
+    # recognition only covers assignments to a bare Name (add = g.add_node, partial, alias chains); ANY OTHER
+    # capture of `.add_node` as a value, or getattr(_, "add_node"), now fails closed (no-mapeable:addnode-escaped).
+    obscured = (
+        'getattr(outer, "add_node")("s", inner.compile())\n',
+        'm = {"add": outer.add_node}\nm["add"]("s", inner.compile())\n',
+        'fns = [outer.add_node]\nfns[0]("s", inner.compile())\n',
+        'def reg(fn):\n    fn("s", inner.compile())\nreg(outer.add_node)\n',
+    )
+    for call in obscured:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            "outer = StateGraph(dict)\n"
+            + call +
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:addnode-escaped", (call, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_direct_addnode_not_flagged_escaped(tmp_path):
+    # COVERAGE guard: ordinary direct add_node calls (and the r63 bare-Name aliases) must NOT trip the escape
+    # guard — a normal composing graph still composes, a plain flat graph stays flat.
+    compose_src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_file(tmp_path, compose_src)
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 50 * (1 + 1000), r
+    flat_src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_node('b', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', 'b'); g.add_edge('b', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r2 = _check_file(tmp_path, flat_src)
+    assert r2["category"] == "tipa:explicit" and r2["bound_factor"] == 5, r2
+
+
 def test_e2e_plain_function_named_add_is_not_addnode(tmp_path):
     # COVERAGE guard: a plain local function that happens to be named `add` (not bound to g.add_node) must NOT
     # be treated as an add_node alias.

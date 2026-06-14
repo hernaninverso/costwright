@@ -534,6 +534,36 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                         ex.interrupt_aliases.add(nm)
                         changed = True
     ex.visit(tree)
+    # ESCAPE GUARD (codex r63): the add_node call itself can be obscured so node-counting silently undercounts —
+    # `g.add_node` captured into a container/arg/attribute (`m={"a":g.add_node}`, `reg(g.add_node)`,
+    # `setattr(h,"a",g.add_node)`, `fns=[g.add_node]`) or reached via `getattr(g,"add_node")`. The direct call
+    # `g.add_node(...)` and the bound-method ALIASES that r63 tracks (`add=g.add_node`, partial, alias chains —
+    # all assignments to a bare Name) are recognized and counted; ANY OTHER capture of `.add_node` as a value, or
+    # a reflective `getattr(_, "add_node")`, means add_node calls may be hidden → fail closed for the unit.
+    _safe_addnode = set()
+    for nd in ast.walk(tree):
+        tv = None
+        if isinstance(nd, ast.Assign) and nd.targets and all(isinstance(t, ast.Name) for t in nd.targets):
+            tv = nd.value
+        elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and isinstance(nd.target, ast.Name) and nd.value:
+            tv = nd.value
+        if tv is None:
+            continue
+        if isinstance(tv, ast.Call) and call_name(tv).split(".")[-1] == "partial" and tv.args:
+            tv = tv.args[0]
+        if isinstance(tv, ast.Attribute) and tv.attr == "add_node":
+            _safe_addnode.add(id(tv))
+    _addnode_call_funcs = {id(c.func) for c in ast.walk(tree)
+                           if isinstance(c, ast.Call) and isinstance(c.func, ast.Attribute)
+                           and c.func.attr == "add_node"}
+    _escaped = any(isinstance(x, ast.Attribute) and x.attr == "add_node"
+                   and id(x) not in _addnode_call_funcs and id(x) not in _safe_addnode
+                   for x in ast.walk(tree))
+    _getattr_addnode = any(isinstance(x, ast.Call) and isinstance(x.func, ast.Name) and x.func.id == "getattr"
+                           and len(x.args) >= 2 and isinstance(x.args[1], ast.Constant)
+                           and x.args[1].value == "add_node" for x in ast.walk(tree))
+    if _escaped or _getattr_addnode:
+        ex.features.append({"feature": "addnode-escaped", "line": 0})
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
     # si hay conditional-literal cuyos dsts incluyen un nodo definido, lo tratamos como posible ciclo

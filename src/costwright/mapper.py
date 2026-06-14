@@ -12,7 +12,8 @@ from costwright.extract import DEFAULTS
 # subgraph-node REMOVED from BLOCKING (feature 005): composed by costwright.subgraph.compose() under the
 # no-fan-out invariant. send-fanout/dynamic-goto stay BLOCKING — they ARE the fan-out vectors, so a
 # subgraph graph that also has them is non_certifiable at step 2 BEFORE composition (soundness guard).
-BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop")
+BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop",
+            "addnode-escaped")
 HUGE_LIMIT = 10_000  # recursion_limit explícito ≥ esto = "efectivamente no acotado" (rechazo)
 
 def map_unit(ex: dict, meta: dict) -> dict:
