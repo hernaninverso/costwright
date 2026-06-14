@@ -60,7 +60,7 @@ Maps every workflow graph to the typed-budget calculus and reports, per graph un
 |---|---|
 | `certifiable` | bound is explicit in your code — real certificate |
 | `default_dependent` | bound exists only via a framework default (often vacuous) |
-| `non_certifiable` | uses a construct outside the calculus (Send fan-out, interrupts, hierarchical manager, dynamic goto, subgraph-as-node) |
+| `non_certifiable` | uses a construct outside the calculus (Send fan-out, interrupts, hierarchical manager, dynamic goto, or a subgraph too dynamic to bound — see scope below) |
 | `runaway` | genuinely unbounded (`while True` driver, `max_turns=None`, astronomically large limit) |
 | `parse_error` | the analyzer could not reconstruct the graph (reported, never silent) |
 
@@ -119,11 +119,19 @@ line spans only (no source code in output — CI-log safe). New fields are addit
 The `signature` field is reserved (`null` in OSS output): signed, independently verifiable
 certificates are a separate service — contact below.
 
-## What costwright does NOT do (honest scope)
+## What costwright does NOT do (exact scope)
 
-- It does not bound `Send` fan-out, interrupts/human-in-the-loop, CrewAI hierarchical mode,
-  dynamic `goto`, or subgraphs-passed-by-variable — those map to `non_certifiable`, never to a
-  fake bound. Conservative by construction: when in doubt, no certificate.
+- It does not bound `Send` fan-out, interrupts/human-in-the-loop, CrewAI hierarchical mode, or
+  dynamic `goto` — those map to `non_certifiable`, never to a fake bound. Conservative by
+  construction: when in doubt, no certificate.
+- **Nested subgraphs** (`graph.add_node("x", inner.compile())`) ARE composed since `0.2.0` — but
+  only when the inner graph is fully visible: a straight-line sequence of direct `add_node` calls on a
+  uniquely-bound, non-imported local `StateGraph`. Any way a static reader can't pin down the inner
+  graph's identity or node count — built in a loop/comprehension, bound more than once, passed into a
+  helper, imported, `from x import *`, `add_sequence`, a `RetryPolicy`/`error_handler` — fails closed
+  (`non_certifiable`), never a smaller composed number. Dynamic rebinding (`globals()`, `setattr`,
+  `exec`, monkeypatching) is unobservable to any static analyzer and voids the certificate, as with
+  every type checker.
 - The bound is worst-case (deliberately over-approximate). Tightening it is roadmap.
 - A token-level dollar bound additionally needs caps on every call (`costwright caps`) and a
   per-provider billing ceiling — see §3.2 of the paper for where that holds and degrades.

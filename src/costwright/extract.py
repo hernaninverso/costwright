@@ -3,7 +3,7 @@
 Emite: nodos, edges (static/conditional-literal/conditional-fn/dynamic-goto/send), ciclos,
 bounds con fuente (D2/D8), caps de tokens, features no soportadas. 100% estático (D3).
 """
-import ast, json
+import ast
 from pathlib import Path
 
 # D8 — tabla verificada 2026-06-12 (fuentes en spec.md)
@@ -45,6 +45,8 @@ class Extractor(ast.NodeVisitor):
         s.llm_calls = 0       # heurística: invocaciones a modelos dentro del archivo
         s.while_true_invokes = []
         s._in_while_true = 0
+        s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
+        s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
 
     def visit_While(s, n):
         is_true = isinstance(n.test, ast.Constant) and n.test.value is True
@@ -77,7 +79,10 @@ class Extractor(ast.NodeVisitor):
             # el costo del nodo no es 1 call (rev D5: u139). delegate() lo cubriría; el
             # harness v1 no lo implementa → feature medida.
             for a in list(n.args[1:]) + [k.value for k in n.keywords]:
-                if isinstance(a, ast.Call) and call_name(a).split(".")[-1] == "compile":
+                aliased = isinstance(a, ast.Name) and (a.id in s.compiled_vars or a.id in s.pregel_vars)
+                if (isinstance(a, ast.Call) and call_name(a).split(".")[-1] == "compile") or aliased:
+                    # subgraph node: inline X.compile() OR a var bound to .compile()/Pregel (audit-3 codex) —
+                    # an aliased compiled subgraph passed by variable must NOT certify as a normal node.
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
         elif last == "add_edge":
             a = const_or_endref(n.args[0]) if len(n.args) > 0 else None
@@ -198,13 +203,25 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         tree = ast.parse(src)
     except SyntaxError:
         return {"unit_id": meta["unit_id"], "status": "extractor-failure", "reason": "syntax"}
-    ex = Extractor(src); ex.visit(tree)
+    ex = Extractor(src)
+    # prepass (order-independent): vars bound to X.compile() / Pregel(...) so an aliased compiled subgraph
+    # passed by VARIABLE to add_node is flagged subgraph-node (sound — audit-3 codex), not silently counted
+    # as one normal node. Valid Python binds before use, so document order would also suffice; walk is robust.
+    for nd in ast.walk(tree):
+        if (isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name)
+                and isinstance(nd.value, ast.Call)):
+            cn = call_name(nd.value).split(".")[-1]
+            if cn == "compile":
+                ex.compiled_vars.add(nd.targets[0].id)
+            elif cn == "Pregel":
+                ex.pregel_vars.add(nd.targets[0].id)
+    ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
     # si hay conditional-literal cuyos dsts incluyen un nodo definido, lo tratamos como posible ciclo
     cond_back = any(e["kind"] == "conditional-literal" and e.get("dsts") and
                     any(d for d in e["dsts"] if d and d != "END") for e in ex.edges)
-    return {
+    out = {
         "unit_id": meta["unit_id"], "kind": meta["kind"], "status": "ok",
         "n_nodes": len(ex.nodes), "n_nodes_named": sum(1 for n, _ in ex.nodes if n),
         "n_nodes_dynamic": sum(1 for n, _ in ex.nodes if n is None),
@@ -212,3 +229,9 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         "bounds": ex.bounds, "caps": ex.caps, "features": ex.features,
         "llm_constructors": ex.llm_calls, "while_true_invokes": ex.while_true_invokes,
     }
+    # feature 005: only when a subgraph-node is present, run the per-graph analysis for composition
+    # (lazy import avoids a circular dependency; the flat path above is untouched for normal files).
+    if any(f["feature"] == "subgraph-node" for f in ex.features):
+        from costwright.subgraph import analyze
+        out["subgraph_analysis"] = analyze(tree)
+    return out

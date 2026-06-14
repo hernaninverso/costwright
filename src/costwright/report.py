@@ -57,6 +57,8 @@ def to_v1(mapped_units: list[dict]) -> dict:
                 "node_executions_ceiling": r.get("bound_factor"),
                 "aggregation": r.get("aggregation"),
                 "provenance": prov,
+                # feature 005: subgraph composition provenance string ("outer(50) × sub[a(25)]"), None otherwise
+                **({"composition": r["composition"]} if r.get("composition") else {}),
             },
             "reasons": ([r["reason"]] if r.get("reason") else []) + r.get("all_blocking", []),
         })
