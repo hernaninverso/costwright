@@ -788,6 +788,31 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_edge_to_undefined_node_is_not_undercount(tmp_path):
+    # audit-3 Cursor r48 raised a "ghost" node referenced only by add_edge (never add_node'd), claiming the
+    # inner node count of 1 understates a "true" 2. VERIFIED FALSE POSITIVE against real langgraph 1.x:
+    # `compile()` raises `ValueError: Found edge starting at unknown node 'ghost'` — an edge to a node never
+    # added via add_node makes the graph INVALID (it never runs), so there is no running graph to understate.
+    # Every runnable LangGraph node is created ONLY by add_node (or add_sequence, which fails closed); costwright
+    # counting add_node sites is therefore sound. This pins the behavior: the inner has ONE real node, bound is
+    # composed on that, and the phantom edge target is correctly ignored (not a node).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a')\n"
+        "inner.add_edge('a', 'ghost')\n"     # 'ghost' never add_node'd ⇒ invalid graph in real langgraph
+        "inner.add_edge('ghost', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # inner has exactly ONE add_node'd node; composed on it (inner inherits 1000). 2 × (1 + 1000×1) = 2002.
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 2 * (1 + 1000), r
+
+
 def test_e2e_codex_one_arg_add_node_subgraph_is_composed(tmp_path):
     # audit-3 codex CLI r45 WITNESS: LangGraph's 1-arg `outer.add_node(inner.compile())` puts the compiled
     # subgraph in arg0 (the node name is inferred from the runnable). The subgraph scan started at args[1:],
