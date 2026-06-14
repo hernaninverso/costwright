@@ -2,6 +2,20 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.7] — 2026-06-14
+
+### Non-integer bound value fails closed (codex `gpt-5.3-codex`)
+
+- **Float / non-finite recursion_limit, max_iter, max_turns** (codex r89) — a FLOAT bound value slipped past the
+  int-only nonpositive check: `1e309` / `-1e309` fold to ±`inf` and `5.0` is fractional-typed, so the analyzer
+  propagated a non-finite / negative / float ceiling — `recursion_limit=-1e309` **certified a `-Infinity`
+  node-executions ceiling** (false assurance). A bound value that is not a positive integer now fails closed
+  (`extractor-failure: nonint-bound`) before any arithmetic, across all three frameworks; a valid int still
+  certifies. (The subgraph path already coerced non-int invoke limits to `unresolved`.)
+- The fusion Clopper-Pearson upper bound was independently re-verified conservative against a 100-digit `Decimal`
+  binomial-tail oracle across 39 extreme `(k, m, η)` tuples, and `report.to_v1` summary counting was verified to
+  never under-count a runaway / non-certifiable unit.
+
 ## [0.2.6] — 2026-06-14
 
 ### CrewAI cost-model rebuild + Runner-subclass discovery (codex + Cursor `gpt-5.3-codex`)

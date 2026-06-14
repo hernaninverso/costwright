@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "costwright"
-version = "0.2.6"
+version = "0.2.7"
 description = "Static budget certificates for LLM-agent workflows (LangGraph / CrewAI / OpenAI Agents SDK). Backed by a machine-checked (Lean 4) cost-soundness theorem."
 readme = "README.md"
 requires-python = ">=3.10"
