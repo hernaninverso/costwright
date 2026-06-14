@@ -317,6 +317,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     all_binds = []   # (target_names, value_expr) over every binding form
     container_binds = []   # (base_name, value) when a subgraph is stashed in a container/attr (codex r55)
     func_returns = []      # (func_name, [return_value_exprs]) — subgraph factories (codex/Cursor r56)
+    func_params = {}       # func_name -> [param_names] (taint params of a fn called with a subgraph — r60)
+    name_calls = []        # (callee_name, [arg_values]) for calls to a bare-Name function (r60)
     method_stash = []      # (base_name, [arg_values]) — `c.append(inner.compile())` stash via method (r57)
     # StateGraph build/run methods: a compiled subgraph as their arg is NOT a "stash into base" (e.g.
     # `outer.add_node("s", inner.compile())` builds the graph), so they don't taint the receiver.
@@ -339,6 +341,11 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             base = _container_base(nd.args[0])
             if base is not None:
                 method_stash.append((base, [nd.args[2]]))
+        # a call to a bare-Name function — `use(inner.compile())` — passes a compiled subgraph INTO it; record
+        # so the fixpoint can taint that function's parameters (a later `add_node("s", sub)` inside it then
+        # fails closed). Inter-procedural & conservative (codex/Cursor r60).
+        if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name):
+            name_calls.append((nd.func.id, list(nd.args) + [k.value for k in nd.keywords]))
         bs = []
         if isinstance(nd, ast.Assign):
             bs = [(t, nd.value) for t in nd.targets]
@@ -367,6 +374,10 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     all_binds.append(([arg.arg], default))
             if isinstance(nd, (ast.FunctionDef, ast.AsyncFunctionDef)):
                 func_returns.append((nd.name, _own_returns(nd)))   # subgraph factory? (codex/Cursor r56)
+                params = [a.arg for a in (list(ar.posonlyargs) + list(ar.args) + list(ar.kwonlyargs))]
+                if ar.vararg: params.append(ar.vararg.arg)
+                if ar.kwarg: params.append(ar.kwarg.arg)
+                func_params[nd.name] = params   # so a call passing a compiled subgraph taints them (r60)
         for tgt, src in bs:
             all_binds.append((_names(tgt), src))
             if tgt is not None and not _names(tgt):
@@ -445,6 +456,14 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                                                     for a in args):
                 ex.compiled_vars.add(base)
                 changed = True
+        # a function CALLED with a compiled subgraph as any argument → taint ALL its parameters, so a node
+        # action that uses a parameter (`def use(sub): outer.add_node("s", sub)`) fails closed (codex/Cursor r60).
+        for callee, args in name_calls:
+            if callee in func_params and any(contains_compile(a) or _loads_any(a, ex.compiled_vars) for a in args):
+                for p in func_params[callee]:
+                    if p not in ex.compiled_vars:
+                        ex.compiled_vars.add(p)
+                        changed = True
         for names, value in all_binds:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
             # `T = S`, …) — propagate so the fan-out / dynamic-goto blocking can't be bypassed (Cursor r38/r39).

@@ -788,6 +788,44 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_subgraph_passed_as_function_arg_fails_closed(tmp_path):
+    # audit-3 r60: a compiled subgraph passed INTO a function as an argument — `def use(sub): outer.add_node(
+    # "s", sub)` called `use(inner.compile())` — was flat-counted (no inter-procedural arg flow). Now a function
+    # called with a compiled subgraph as any arg taints its parameters, so `add_node("s", sub)` fails closed.
+    for call in ("use(inner.compile())", "use(sub=inner.compile())"):
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "def use(sub=None):\n"
+            "    outer = StateGraph(dict)\n"
+            "    outer.add_node('s', sub)\n"
+            "    outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "    return outer.compile()\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            f"{call}.invoke({{}}, config={{'recursion_limit': 5}})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (call, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_function_called_without_subgraph_still_flat(tmp_path):
+    # COVERAGE guard: a function called with only NON-subgraph args must not taint its params.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def helper(x):\n"
+        "    return x\n"
+        "helper(5)\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_more_indirection_shapes_fail_closed(tmp_path):
     # audit-3 codex r59: three further same-file indirections that were flat-counted — now all fail closed.
     cases = {
