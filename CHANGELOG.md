@@ -2,6 +2,18 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.8] — 2026-06-14
+
+### Conditional-analysis alpha-tolerance understatement (codex `gpt-5.3-codex`)
+
+- **`max(alpha_base, sla_alpha)` for the conditional bound** (codex r90) — the alpha cross-check accepts
+  `alpha_base` within a symmetric `_RECHECK_TOL` (1e-9) of the risk certificate's `sla_alpha`, and the
+  conditional risk bound is monotone increasing in alpha, so a caller could pass `alpha_base = sla_alpha − tol`
+  and shave the recomputed bound by ~1e-9 (a tiny but real understatement of risk in the signed bundle). The
+  bound is now recomputed at `max(alpha_base, sla_alpha)` and that alpha is shipped, keeping the signed record
+  self-consistent. The fusion allowlist/signing path was independently re-verified to strip injected keys and
+  override forged honesty text.
+
 ## [0.2.7] — 2026-06-14
 
 ### Non-integer bound value fails closed (codex `gpt-5.3-codex`)
