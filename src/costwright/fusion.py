@@ -310,6 +310,16 @@ def cost_certificate(costwright_v1_report: dict, *, costwright_version: str, wor
         if not isinstance(cat, str) or cat not in _COST_CATEGORIES:
             got = cat if isinstance(u, dict) else type(u).__name__
             raise ValueError(f"costwright.v1 unit has missing/unknown category: {got!r}")
+        # a CERTIFIED-or-DEFAULT unit MUST carry a valid finite POSITIVE INTEGER ceiling — category alone is not
+        # enough; a "certifiable" unit with a missing / None / negative / zero / non-int node_executions_ceiling
+        # is false assurance (codex r96). The fail-closed categories (non_certifiable / runaway / parse_error)
+        # legitimately carry no number, so only the certified ones are checked.
+        if cat in ("certifiable", "default_dependent"):
+            bound = u.get("bound")
+            ceil = bound.get("node_executions_ceiling") if isinstance(bound, dict) else None
+            if not (isinstance(ceil, int) and not isinstance(ceil, bool) and ceil >= 1):
+                raise ValueError(f"costwright.v1 unit category={cat!r} but node_executions_ceiling is not a "
+                                 f"positive integer: {ceil!r}")
     cats = {u["category"] for u in units}
     worst = next((c for c in _COST_SEVERITY if c in cats), None)
     status = worst if worst is not None else "no_graph_units"   # worst is None only when units == []

@@ -71,12 +71,45 @@ def test_cost_rejects_non_costwright_v1():
             pass
 
 
+def test_cost_certified_unit_requires_a_valid_positive_integer_ceiling():
+    # codex r96: cost_certificate validated only the CATEGORY — a unit with category 'certifiable' but a missing
+    # / None / negative / zero / non-int node_executions_ceiling was accepted and reported status 'certifiable'
+    # (false assurance). A certified-or-default unit must carry a positive-integer ceiling; fail-closed
+    # categories legitimately carry no number.
+    def _rep(ceil, cat="certifiable"):
+        u = {"category": cat, "file": "x.py", "span": {"line": 1}, "framework": "langgraph", "reasons": []}
+        if ceil is not _MISSING:
+            u["bound"] = {"supersteps": ceil, "node_executions_ceiling": ceil,
+                          "aggregation": "max", "provenance": "explicit"}
+        return {"schema": "costwright.v1", "units": [u], "summary": {"total": 1}}
+    for bad in (None, -5, 0, "big", True):
+        try:
+            fusion.cost_certificate(_rep(bad), costwright_version="0.1.0")
+            assert False, f"must reject certifiable with ceiling={bad!r}"
+        except ValueError:
+            pass
+    # a missing bound entirely is also rejected for a certified unit
+    try:
+        fusion.cost_certificate(_rep(_MISSING), costwright_version="0.1.0")
+        assert False, "must reject certifiable with no bound"
+    except ValueError:
+        pass
+    # a valid positive integer (incl. a huge one) is accepted; a fail-closed unit needs no number
+    assert fusion.cost_certificate(_rep(10), costwright_version="0.1.0")["status"] == "certifiable"
+    assert fusion.cost_certificate(_rep(10**9), costwright_version="0.1.0")["status"] == "certifiable"
+    assert fusion.cost_certificate(_rep(None, cat="runaway"), costwright_version="0.1.0")["status"] == "runaway"
+
+
+_MISSING = object()
+
+
 def test_cost_rejects_unknown_or_malformed_category():
     # audit-3 (codex BLOCKER): una categoría desconocida NO debe colarse y degradar el status.
+    _b = {"supersteps": 5, "node_executions_ceiling": 5, "aggregation": "max", "provenance": "explicit"}
     bad_reports = [
-        {"schema": "costwright.v1", "units": [{"category": "certifiable"}, {"category": "runaway_typo"}],
+        {"schema": "costwright.v1", "units": [{"category": "certifiable", "bound": _b}, {"category": "runaway_typo"}],
          "summary": {"total": 2}},
-        {"schema": "costwright.v1", "units": [{"category": "certifiable"}, "not-a-dict"],
+        {"schema": "costwright.v1", "units": [{"category": "certifiable", "bound": _b}, "not-a-dict"],
          "summary": {"total": 2}},
         {"schema": "costwright.v1", "units": [{"no_category": True}], "summary": {"total": 1}},
     ]

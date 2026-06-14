@@ -16,7 +16,10 @@ epsilon = pytest.importorskip("eleata_verify.epsilon")
 
 
 def _report():
-    return {"schema": "costwright.v1", "units": [{"category": "certifiable"}],
+    return {"schema": "costwright.v1",
+            "units": [{"category": "certifiable", "file": "x.py", "span": {"line": 1}, "framework": "langgraph",
+                      "bound": {"supersteps": 1000, "node_executions_ceiling": 1000,
+                                "aggregation": "max", "provenance": "framework_default"}, "reasons": []}],
             "summary": {"total": 1, "vacuous_default_bounds": 0}}
 
 
