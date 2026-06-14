@@ -2,6 +2,23 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.15] — 2026-06-14
+
+### Certified-unit ceiling validation + non-constant config key (codex + Cursor `gpt-5.3-codex`)
+
+- **`cost_certificate` requires a valid positive-integer ceiling for certified units** (codex r96) — the cost
+  bundler validated only the category, so a `costwright.v1` report with a unit category `certifiable` (or
+  `default_dependent`) but a missing / None / negative / zero / non-int `node_executions_ceiling` was accepted
+  and reported status `certifiable` — false assurance over a unit with no valid bound. A certified-or-default
+  unit now must carry a positive-integer ceiling, else `cost_certificate` raises `ValueError`. Fail-closed
+  categories legitimately carry no number.
+- **Non-constant invoke config key fails closed (flat path)** (Cursor r96) — a config dict key that is not a
+  constant string — `{'recursion_' + 'limit': 20000}` (a computed constant), a `Name` key, or a `**spread` —
+  could hide a `recursion_limit` that const-key matching misses, so the flat path defaulted to 1000 and missed
+  a runaway. The flat path now fails closed on any non-constant config key (matching the config whether it is
+  the `config=` kwarg or the 2nd positional arg), mirroring the subgraph path. Scoped to the config dict only —
+  a computed key in the input dict is untouched.
+
 ## [0.2.14] — 2026-06-14
 
 ### Lambda-returned construct + CrewAI callback (codex + Cursor `gpt-5.3-codex`)
