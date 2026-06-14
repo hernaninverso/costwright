@@ -71,6 +71,7 @@ class Extractor(ast.NodeVisitor):
         s.while_true_invokes = []
         s._in_while_true = 0
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
+        s.compiled_factory_names = set()  # function/method NAMES that return a compiled subgraph (r56/r58)
         s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
         s.send_aliases = {"Send"}        # names that resolve to langgraph Send (incl. import aliases, r37)
         s.command_aliases = {"Command"}  # names that resolve to langgraph Command (incl. import aliases)
@@ -113,7 +114,12 @@ class Extractor(ast.NodeVisitor):
                 refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
                                     and (x.id in s.compiled_vars or x.id in s.pregel_vars)
                                     for x in ast.walk(a))
-                if refs_compiled or contains_compile(a):
+                # a method/attribute call to a subgraph factory — `Factory.make()`, `obj.make()`, `self.make()`
+                # — matched by the factory method NAME (codex r58). Bare-name `make()` is already in compiled_vars.
+                calls_factory = any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute)
+                                    and x.func.attr in s.compiled_factory_names
+                                    for x in ast.walk(a))
+                if refs_compiled or contains_compile(a) or calls_factory:
                     # subgraph node: the arg CONTAINS a .compile() (inline `g.compile()` / wrapped
                     # `identity(g.compile())` — Cursor r29) OR Load-references a compiled var ANYWHERE — a bare
                     # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
@@ -413,10 +419,13 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         # an add_node action Load-references it → flagged → the Call inner can't be attributed → fail closed
         # (codex/Cursor r56). Over-tainting a factory only makes its uses fail closed (safe).
         for fname, rvals in func_returns:
-            if fname not in ex.compiled_vars and any(contains_compile(rv) or _loads_any(rv, ex.compiled_vars)
-                                                     for rv in rvals):
-                ex.compiled_vars.add(fname)
-                changed = True
+            if any(contains_compile(rv) or _loads_any(rv, ex.compiled_vars) for rv in rvals):
+                if fname not in ex.compiled_vars:
+                    ex.compiled_vars.add(fname)        # bare-name call `make()` (Load-ref ∈ compiled_vars)
+                    changed = True
+                # ALSO a factory NAME, so an attribute/method call `Factory.make()` / `obj.make()` is caught in
+                # the add_node arg scan by matching the .attr (codex r58 — classmethod/instance-method factory).
+                ex.compiled_factory_names.add(fname)
         # a compiled subgraph stashed into a container via a METHOD (`lst.append(c)`, `s.add(c)`) taints the
         # receiver — same fail-closed effect as a subscript-assign stash (codex/Cursor r57).
         for base, args in method_stash:

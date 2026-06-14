@@ -858,6 +858,49 @@ def test_e2e_subgraph_factory_function_fails_closed(tmp_path):
         assert "bound_factor" not in r
 
 
+def test_e2e_method_factory_fails_closed(tmp_path):
+    # audit-3 codex r58: a subgraph factory accessed as a METHOD/attribute — `Factory.make()` (staticmethod),
+    # `obj.make()` (instance), `self.build_inner()` — returns a compiled subgraph. The factory name `make`/
+    # `build_inner` is tainted, but the CALL is an Attribute access (`Factory.make`), not a bare Name, so the
+    # arg-Load-reference check missed it → flat-counted. Now the add_node arg scan also matches a Call whose
+    # callee is an Attribute whose .attr is a known factory name → flagged → fail closed.
+    cases = (
+        "class Factory:\n    @staticmethod\n    def make():\n        inner = StateGraph(dict)\n"
+        "        inner.add_node('a', lambda s: s)\n        inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "        return inner.compile()\nouter = StateGraph(dict)\nouter.add_node('sub', Factory.make())\n",
+        "class B:\n    def make(self):\n        inner = StateGraph(dict)\n"
+        "        inner.add_node('a', lambda s: s)\n        inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "        return inner.compile()\nb = B()\nouter = StateGraph(dict)\nouter.add_node('sub', b.make())\n",
+    )
+    for head in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            + head +
+            "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (head, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_plain_method_factory_still_flat(tmp_path):
+    # COVERAGE guard: a method that returns a PLAIN callable (not a subgraph) must NOT be treated as a factory.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "class H:\n"
+        "    def fn(self):\n"
+        "        return lambda s: s\n"
+        "h = H()\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('x', h.fn())\n"
+        "g.add_edge(START, 'x'); g.add_edge('x', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_plain_factory_function_still_flat(tmp_path):
     # COVERAGE guard: a factory that returns a PLAIN callable (no compiled subgraph) must NOT taint — the
     # node is normal and the flat path applies.
