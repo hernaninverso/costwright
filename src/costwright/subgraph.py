@@ -72,6 +72,10 @@ class _GraphReceivers(ast.NodeVisitor):
         self._loop_depth = 0        # >0 while visiting a For/While/comprehension body
         self.passed_as_arg = set()  # StateGraph vars passed as a bare-Name argument → may be mutated elsewhere
         self.method_escaped = set() # StateGraph vars used as anything other than a method-call receiver
+        self.bind_scopes_fn = {}    # graph var -> set of FUNCTION-scope paths where its StateGraph() is bound
+        self.mutate_scopes_fn = {}  # graph var -> set of function-scope paths where it is add_node'd
+        self._fn_path = ()          # current function-nesting path (() = module)
+        self._fn_seq = [0]          # fresh-id generator for function scopes
 
     def _g(self, var):
         return self.graphs.setdefault(var, {"nodes": [], "edges": [], "unmodeled": None})
@@ -90,6 +94,20 @@ class _GraphReceivers(ast.NodeVisitor):
         self._loop_depth += 1
         self.generic_visit(n)
         self._loop_depth -= 1
+
+    def _enter_fn(self, n):
+        # track function nesting so we can tell WHERE a graph is built vs WHERE it is mutated. A graph mutated
+        # from a function scope different than where it was built (e.g. a closure called in a loop — Cursor
+        # codex r13) can be grown an unbounded number of times → fail closed.
+        self._fn_seq[0] += 1
+        saved = self._fn_path
+        self._fn_path = saved + (self._fn_seq[0],)
+        self.generic_visit(n)
+        self._fn_path = saved
+
+    visit_FunctionDef = _enter_fn
+    visit_AsyncFunctionDef = _enter_fn
+    visit_Lambda = _enter_fn
 
     # A graph (re)built or mutated inside a loop/comprehension runs its add_node/StateGraph() N times, but the
     # AST shows ONE call site — counting sites would UNDERSTATE the node count (codex r8). Mark such graphs
@@ -140,6 +158,7 @@ class _GraphReceivers(ast.NodeVisitor):
         cn = call_name(v).split(".")[-1]
         if cn == "StateGraph":
             self._g(tgt)
+            self.bind_scopes_fn.setdefault(tgt, set()).add(self._fn_path)
             if self._loop_depth > 0:
                 self._g(tgt)["unmodeled"] = "graph (re)built inside a loop/comprehension (node count not statically bounded)"
         elif cn == "compile" and isinstance(v.func, ast.Attribute) and isinstance(v.func.value, ast.Name):
@@ -185,6 +204,7 @@ class _GraphReceivers(ast.NodeVisitor):
             nname = const_of(arg0) if arg0 is not None else None
             nname = nname if isinstance(nname, str) else None
             self._g(recv)["nodes"].append((nname, n.lineno))
+            self.mutate_scopes_fn.setdefault(recv, set()).add(self._fn_path)
             # an add_node inside a loop/comprehension runs N times — the AST shows ONE site, so counting
             # sites would UNDERSTATE the node count (codex r8). Fail closed.
             if self._loop_depth > 0:
@@ -244,7 +264,9 @@ class _GraphReceivers(ast.NodeVisitor):
             "graphs": {v: {"nodes": [list(t) for t in g["nodes"]], "edges": g["edges"],
                            "unmodeled": g.get("unmodeled"), "ambiguous": self._ambiguous(v),
                            "passed_as_arg": v in self.passed_as_arg,
-                           "method_escaped": v in self.method_escaped}
+                           "method_escaped": v in self.method_escaped,
+                           "scope_split": len(self.bind_scopes_fn.get(v, set())
+                                              | self.mutate_scopes_fn.get(v, set())) > 1}
                        for v, g in self.graphs.items()},
             "invoke_limit": dict(self.invoke_limit),
             "subgraph_nodes": [list(t) for t in self.subgraph_nodes],
@@ -339,6 +361,12 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         # — so mutations/aliases are invisible to per-call attribution (Cursor codex r11/r12). Fail closed.
         return _nc(f"{var}: graph used as a value, not just a method-call receiver (may be mutated/aliased "
                    f"out of view — fail closed)")
+    if g.get("scope_split"):
+        # the graph is built in one function scope but mutated from another (e.g. a closure that calls
+        # `{var}.add_node` is itself invoked in a loop) → it can be grown an unbounded number of times while
+        # the AST shows one site (Cursor codex r13). Fail closed.
+        return _nc(f"{var}: built and mutated in different function scopes (a nested fn/closure may grow it "
+                   f"an unbounded number of times — fail closed)")
     # RetryPolicy / error_handler (per-node or graph-wide via set_node_defaults) re-execute beyond our
     # ≤1-per-super-step model ⇒ understatement. v1 fails closed with the reason (audit-3 codex, verified
     # vs langgraph state.py). The flat path's same retry gap is a documented follow-up.

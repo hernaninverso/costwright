@@ -358,6 +358,52 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_closure_in_loop_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-13 WITNESS: a closure `grow()` mutates an enclosing `inner` and is
+    # called in a loop. `inner.add_node` is a method-call receiver (not escaped) and is NOT lexically in the
+    # loop (it's in grow's body), so the escaped/loop guards miss it → inner undercounted. Built-in-build vs
+    # mutated-in-grow = scope split ⇒ fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def build():\n"
+        "    outer = StateGraph(dict)\n"
+        "    inner = StateGraph(dict)\n"
+        "    count = {'i': 0}\n"
+        "    def grow():\n"
+        "        count['i'] += 1\n"
+        "        inner.add_node('n' + str(count['i']), lambda s: s)\n"
+        "    for _ in range(3):\n"
+        "        grow()\n"
+        "    outer.add_node('sub', inner.compile())\n"
+        "    outer.compile().invoke({}, config={'recursion_limit': 3})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT composed 3003
+    assert "bound_factor" not in r
+
+
+def test_e2e_factory_same_scope_composes(tmp_path):
+    # a subgraph built AND mutated entirely inside ONE function (the common factory pattern) is still fully
+    # visible → composes. Guards against the scope-split rule over-rejecting the legit case.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def build():\n"
+        "    inner = StateGraph(dict)\n"
+        "    inner.add_node('a', lambda s: s)\n"
+        "    inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "    inner.compile().invoke({}, config={'recursion_limit': 25})\n"
+        "    outer = StateGraph(dict)\n"
+        "    outer.add_node('sub', inner.compile())\n"
+        "    outer.add_node('b', lambda s: s)\n"
+        "    outer.add_edge(START, 'sub'); outer.add_edge('sub', 'b'); outer.add_edge('b', END)\n"
+        "    outer.compile().invoke({}, config={'recursion_limit': 50})\n"
+        "    return outer.compile()\n"   # returns the COMPILED (immutable) graph — outer stays a method receiver
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit"
+    assert r["bound_factor"] == 50 * (2 + 25)   # 1350 — same-scope factory composes
+
+
 def test_e2e_cursor_container_passed_graph_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-12 WITNESS: a graph passed inside a CONTAINER (`mutate([inner])`)
     # evades the bare-Name passed_as_arg check; the helper mutates inner via `gs[0].add_node(...)`, so inner
