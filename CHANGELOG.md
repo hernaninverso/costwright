@@ -2,6 +2,17 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.11] — 2026-06-14
+
+### StateGraph / Crew subclass discovery (Cursor `gpt-5.3-codex`, generalizes the Runner-subclass fix)
+
+- **A subclass of a framework base is now discovered** (Cursor r92) — a `class MyGraph(StateGraph)` constructed
+  via `MyGraph(dict)` (or `class MyCrew(Crew)`) was built under the subclass name, which by-name detection did
+  not match, so `MyGraph(...).compile().invoke(recursion_limit=99999)` read as "no graph units found" / exit 0
+  — a runaway silently passing every `--fail-on` tier. The Runner-subclass fix (v0.2.6) is generalized: the
+  fixpoint now collects subclass names for `StateGraph`, `Crew`, and `Runner` (transitive + import-aliased
+  base), so a constructor call to any subclass is discovered as the right framework and analyzed normally.
+
 ## [0.2.10] — 2026-06-14
 
 ### Digest collision on ambiguous keys (codex `gpt-5.3-codex`)
