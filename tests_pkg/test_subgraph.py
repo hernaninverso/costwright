@@ -1468,6 +1468,35 @@ def test_e2e_method_factory_fails_closed(tmp_path):
         assert "bound_factor" not in r
 
 
+def test_e2e_add_sequence_factory_subgraph_fails_closed(tmp_path):
+    # Cursor r84: PARITY gap — `add_node('sub', Factory.make())` fails closed (the factory-method attribute is
+    # detected) but `add_sequence([('sub', Factory.make())])` checked only inline-.compile() and compiled-var
+    # references, NOT the factory-method attribute → it silently certified an understated flat bound. The
+    # add_sequence element scan now also matches a factory-method/attribute subgraph (compiled_factory_names).
+    factory = (
+        "from langgraph.graph import StateGraph\n"
+        "def ni(s): return s\n"
+        "inner = StateGraph(dict)\ninner.add_node('i', ni); inner.add_edge('i', 'i'); inner.set_entry_point('i')\n"
+        "class Factory:\n    @staticmethod\n    def make(): return inner.compile()\n"
+        "outer = StateGraph(dict)\n"
+    )
+    # factory-method subgraph via add_sequence → fail closed (the r84 witness)
+    r = _check_file(tmp_path, factory +
+                    "outer.add_sequence([('sub', Factory.make())])\n"
+                    "outer.add_edge('sub', 'sub'); outer.set_entry_point('sub')\n"
+                    "outer.compile().invoke({}, config={'recursion_limit': 50})\n")
+    assert r["category"] == "no-mapeable:subgraph-node", r
+    assert "bound_factor" not in r
+    # NO false positive: add_sequence over plain function nodes still certifies a finite flat bound
+    r2 = _check_file(tmp_path,
+                     "from langgraph.graph import StateGraph, START, END\n"
+                     "def a(s): return s\ndef b(s): return s\n"
+                     "g = StateGraph(dict)\ng.add_sequence([('a', a), ('b', b)])\n"
+                     "g.add_edge(START, 'a'); g.add_edge('b', END)\n"
+                     "g.compile().invoke({}, config={'recursion_limit': 10})\n")
+    assert r2["category"] == "tipa:explicit" and r2["bound_factor"] == 10, r2
+
+
 def test_e2e_plain_method_factory_still_flat(tmp_path):
     # COVERAGE guard: a method that returns a PLAIN callable (not a subgraph) must NOT be treated as a factory.
     src = (

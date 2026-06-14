@@ -176,9 +176,18 @@ class Extractor(ast.NodeVisitor):
                         continue
                     nm = const_of(elt.elts[0]) if isinstance(elt, (ast.Tuple, ast.List)) and elt.elts else None
                     s.nodes.append((nm if isinstance(nm, str) else None, n.lineno))
-                    if contains_compile(elt) or any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
-                                                    and (x.id in s.compiled_vars or x.id in s.pregel_vars)
-                                                    for x in ast.walk(elt)):
+                    # PARITY with the add_node subgraph detection (Cursor r84): an element action that is a
+                    # compiled subgraph must route to compose / fail-closed — whether it carries an inline
+                    # `.compile()`, Load-references a compiled var, OR is a factory-method/attribute whose name
+                    # is in compiled_factory_names (`Factory.make()` / `obj.sub`). add_sequence previously
+                    # checked only the first two ⇒ a factory-method subgraph silently certified an understated
+                    # flat bound.
+                    refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
+                                        and (x.id in s.compiled_vars or x.id in s.pregel_vars)
+                                        for x in ast.walk(elt))
+                    attr_subgraph = any(isinstance(x, ast.Attribute) and x.attr in s.compiled_factory_names
+                                        for x in ast.walk(elt))
+                    if contains_compile(elt) or refs_compiled or attr_subgraph:
                         s.features.append({"feature": "subgraph-node", "line": n.lineno})
             else:
                 s.features.append({"feature": "add-sequence-dynamic", "line": n.lineno})
