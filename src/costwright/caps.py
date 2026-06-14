@@ -62,15 +62,21 @@ def scan_file(path: Path):
                      "why": "el archivo no parsea (SyntaxError) y menciona un constructor LLM — los token-caps "
                             "NO se pudieron verificar; no asumir que están acotados"}], src
         return [], None
+    # `from langchain_openai import ChatOpenAI as LLM2` → an aliased constructor escapes the by-name lookup and
+    # its missing cap is silently NOT reported (codex/Cursor r81). Resolve `from X import Ctor as local` so the
+    # aliased call matches PROVIDER_CAPS.
+    alias = {a.asname: a.name for nd in ast.walk(tree) if isinstance(nd, ast.ImportFrom)
+             for a in nd.names if a.asname}
     findings = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
-        name = call_name(node)
-        if name not in PROVIDER_CAPS:
+        name = call_name(node)                 # source name (what make_patch matches + what we display)
+        resolved = alias.get(name, name)       # the real constructor, for the provider/kwarg lookup
+        if resolved not in PROVIDER_CAPS:
             continue
         kwargs_present = {k.arg for k in node.keywords if k.arg}
-        provider, kwarg, note = PROVIDER_CAPS[name]
+        provider, kwarg, note = PROVIDER_CAPS[resolved]
         # detección best-effort de reasoning model por el kwarg `model` (audit-3 gpt-5.5 P0):
         # en Chat API los o-series/GPT-5 ignoran max_tokens; el cap real es max_completion_tokens
         model_val = next((k.value.value for k in node.keywords
@@ -85,7 +91,7 @@ def scan_file(path: Path):
                         ("o1", "o3", "o4", "gpt-5")) if model_val else False
         # SOLO Chat-API constructors (audit-3 R2 gpt-5.5): el constructor `OpenAI` es
         # Responses API y su cap correcto sigue siendo max_output_tokens, reasoning o no
-        if name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
+        if resolved in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
             kwarg = "max_completion_tokens"
             note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
         # an EFFECTIVE cap = the CONSTRUCTOR'S correct kwarg (post reasoning-adjustment) present as a positive
@@ -127,7 +133,7 @@ def scan_file(path: Path):
                     "suggest_kwarg": None,
                     "why": "Anthropic: con interleaved/adaptive thinking el budget puede EXCEDER max_tokens — el techo solo vale en modo standard (budget_tokens < max_tokens)",
                 })
-            elif name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning and "max_completion_tokens" not in kwargs_present:
+            elif resolved in ("ChatOpenAI", "AzureChatOpenAI") and reasoning and "max_completion_tokens" not in kwargs_present:
                 findings.append({
                     "kind": "degraded", "constructor": name, "provider": provider,
                     "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS),

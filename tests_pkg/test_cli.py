@@ -121,6 +121,33 @@ def test_caps_syntax_error_not_all_capped(tmp_path):
     assert "all LLM constructors capped" not in r.stdout, r.stdout
 
 
+def test_aliased_import_constructors_are_detected(tmp_path):
+    # codex/Cursor r81: `from langgraph.graph import StateGraph as SG` / `from langchain_openai import
+    # ChatOpenAI as LLM2` — an aliased framework constructor escaped by-name detection, so the graph unit / the
+    # uncapped LLM was silently dropped (false 'all good'/'all capped'). Both now resolve the import alias.
+    import ast as _ast
+    from costwright import caps as cm
+    # caps: aliased uncapped LLM is flagged; make_patch matches the alias and stays valid Python
+    (tmp_path / "m.py").write_text("from langchain_openai import ChatOpenAI as LLM2\nllm = LLM2(model='gpt-4o')\n")
+    fs, src = cm.scan_file(tmp_path / "m.py")
+    assert [(x["kind"], x["constructor"]) for x in fs] == [("missing", "LLM2")], fs
+    added = [ln[1:] for ln in cm.make_patch(Path("m.py"), src, fs, 100).splitlines()
+             if ln.startswith("+") and not ln.startswith("+++")]
+    assert added and "max_tokens=100" in added[0]
+    _ast.parse(added[0].strip())   # valid Python
+    # an aliased reasoning model still gets the correct kwarg
+    (tmp_path / "r.py").write_text("from langchain_openai import ChatOpenAI as LLM2\nllm = LLM2('gpt-5')\n")
+    assert cm.scan_file(tmp_path / "r.py")[0][0]["suggest_kwarg"] == "max_completion_tokens"
+    # cli._find_units: an aliased StateGraph is still discovered as a langgraph unit
+    make(tmp_path, "g.py",
+         "from langgraph.graph import StateGraph as SG, START, END\n"
+         "g = SG(dict)\ng.add_node('x', lambda s: s)\n"
+         "g.add_edge(START, 'x'); g.add_edge('x', END)\n"
+         "g.compile().invoke({}, config={'recursion_limit': 5})\n")
+    rep = json.loads(run("check", str(tmp_path), "--json").stdout)
+    assert any(u["framework"] == "langgraph" for u in rep["units"]), rep
+
+
 def test_caps_make_patch_valid_python_and_correct_kwarg(tmp_path):
     # codex/Cursor r76: make_patch inserted the kwarg right after '(', producing Ctor(kwarg=…, "positional") =
     # SyntaxError; and a reasoning model passed POSITIONALLY (ChatOpenAI("gpt-5")) escaped reasoning detection

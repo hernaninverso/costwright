@@ -47,6 +47,10 @@ def _find_units(root: Path, max_files: int):
         except SyntaxError:
             units.append({"file": py, "kind": "unknown", "line": 0, "syntax_error": True})
             continue
+        # resolve `from langgraph.graph import StateGraph as SG` so an aliased framework constructor is still
+        # discovered as a unit (codex/Cursor r81) — otherwise the graph is silently dropped from the report.
+        alias = {a.asname: a.name for nd in _ast.walk(tree) if isinstance(nd, _ast.ImportFrom)
+                 for a in nd.names if a.asname}
         for node in _ast.walk(tree):
             if not isinstance(node, _ast.Call):
                 continue
@@ -55,6 +59,7 @@ def _find_units(root: Path, max_files: int):
                 f"{f.value.id}.{f.attr}" if isinstance(f, _ast.Attribute)
                 and isinstance(f.value, _ast.Name) else
                 (f.attr if isinstance(f, _ast.Attribute) else ""))
+            nm = alias.get(nm, nm)
             kind = None
             if nm == "StateGraph":
                 kind = "langgraph"
