@@ -319,6 +319,19 @@ class Extractor(ast.NodeVisitor):
 
     def _scan_invoke(s, n):
         """Busca recursion_limit / max_turns en el config del call-site (D2)."""
+        # `.batch([i1, i2, ...])` / `.abatch(...)` runs ONE full graph execution PER input, so the call's total
+        # node-activations = N × the per-input ceiling — reporting the per-input limit alone UNDERSTATES the
+        # batch call's cost (Cursor r94). A LITERAL input list pins N; a non-literal / starred / absent inputs
+        # list is an UNBOUNDED multiplicity → record an unresolved bound so the mapper fails closed.
+        method = n.func.attr if isinstance(n.func, ast.Attribute) else None
+        if method in ("batch", "abatch"):
+            arg0 = n.args[0] if n.args else None
+            if isinstance(arg0, (ast.List, ast.Tuple)) and not any(isinstance(e, ast.Starred) for e in arg0.elts):
+                bn = len(arg0.elts)
+                if bn >= 1:
+                    s.bounds.append({"param": "batch_n", "value": bn, "source": "explicit", "line": n.lineno})
+            else:
+                s.bounds.append({"param": "batch_n", "value": None, "source": "explicit", "line": n.lineno})
         # a **kwargs spread on an invoke/run call is OPAQUE — it could carry a max_turns / recursion_limit that
         # DISABLES the cap (e.g. `Runner.run(a, **{"max_turns": None})`, `app.invoke({}, **opts)`) and the bound
         # would be unrecoverable → record an UNRESOLVED bound so the mapper fails closed (codex/Cursor r79).

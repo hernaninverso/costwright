@@ -318,6 +318,32 @@ def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
         assert r["category"] == "tipa:explicit" and r["bound_factor"] == 2, (body, r)
 
 
+def test_e2e_langgraph_batch_multiplicity(tmp_path):
+    # Cursor r94: `.batch([N inputs])` runs ONE graph execution PER input, so the call's node-activation ceiling
+    # is N × the per-input ceiling — reporting only the per-input recursion_limit understated the batch call
+    # (a 3-input batch at recursion_limit=2 does 6 activations, not 2). A literal batch list pins N; a
+    # non-literal / starred / absent inputs list is an unbounded multiplicity → fail closed.
+    base = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "app = g.compile()\n"
+    )
+    # literal batch of 3 at recursion_limit 2 → 3 × 2 = 6
+    r = _check_file(tmp_path, base + "app.batch([{'x': 1}, {'x': 2}, {'x': 3}], config={'recursion_limit': 2})\n")
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 6, r
+    # batch with the framework default per-input limit → 2 × 1000
+    r2 = _check_file(tmp_path, base + "app.batch([{'x': 1}, {'x': 2}])\n")
+    assert r2["category"] == "tipa:framework-default" and r2["bound_factor"] == 2000, r2
+    # a single invoke is unchanged (1 input) → 5
+    r3 = _check_file(tmp_path, base + "app.invoke({}, config={'recursion_limit': 5})\n")
+    assert r3["category"] == "tipa:explicit" and r3["bound_factor"] == 5, r3
+    # a DYNAMIC batch (non-literal input list) is an unbounded multiplicity → fail closed
+    r4 = _check_file(tmp_path, base + "inputs = make_inputs()\napp.batch(inputs, config={'recursion_limit': 2})\n")
+    assert r4["category"] == "extractor-failure" and "bound_factor" not in r4, r4
+
+
 def test_e2e_crewai_n_tasks_and_default_budget(tmp_path):
     # codex r86 + r86b: the CrewAI per-run worst case = n_tasks × max(agent max_iter). The old model summed only
     # the EXPLICIT agent budgets, so (a) a single agent reused across k tasks understated k× (it reported

@@ -109,14 +109,25 @@ def map_unit(ex: dict, meta: dict) -> dict:
     # agents / Agents-SDK handoffs run SEQUENTIALLY within one execution ⇒ the worst case is the SUM of their
     # iteration budgets (conservative; a single agent contributes its own max_iter).
     if kind == "langgraph":
+        # `.batch([N])` runs ONE graph execution per input ⇒ the call's ceiling is N × the per-input ceiling
+        # (Cursor r94). A literal N pins the multiplier; a dynamic/starred batch recorded value=None and already
+        # failed closed via the unresolved-bound check above. Take the MAX literal multiplier (worst batch call).
+        batch_mult = max([b["value"] for b in explicit if b["param"] == "batch_n"], default=1)
         rl = [b for b in explicit if b["param"] == "recursion_limit"]
         if rl:
-            return {**base, "category": "tipa:explicit",
-                    **bound_term(max(b["value"] for b in rl), "explicit"), "cyclic": cyclic}
-        n = DEFAULTS["langgraph_recursion_limit_modern"]
-        return {**base, "category": "tipa:framework-default",
-                **bound_term(n, "framework-default(1000 moderno; 25 legacy)"),
-                "cyclic": cyclic, "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)"}
+            term = bound_term(max(b["value"] for b in rl), "explicit")
+            cat = "tipa:explicit"
+        else:
+            term = bound_term(DEFAULTS["langgraph_recursion_limit_modern"],
+                              "framework-default(1000 moderno; 25 legacy)")
+            cat = "tipa:framework-default"
+        if batch_mult > 1:
+            term = {**term, "bound_factor": term["bound_factor"] * batch_mult,
+                    "bound_source": term["bound_source"] + f" ×batch({batch_mult})"}
+        out = {**base, "category": cat, **term, "cyclic": cyclic}
+        if cat == "tipa:framework-default":
+            out["default_caveat"] = "default=1000 ⟹ certificado casi vacuo (D8)"
+        return out
     if kind == "crewai":
         # per-run worst case for a SEQUENTIAL crew = n_tasks × max(agent iteration budget). Each of the n_tasks
         # tasks runs ITS agent up to that agent's max_iter ⇒ ≤ n_tasks × max_budget activations (codex r86 +
