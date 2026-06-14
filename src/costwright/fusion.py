@@ -543,8 +543,16 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
     # and shave the recomputed bound by ~tol (an understatement; codex r90). Recompute with the LARGER of the
     # two alphas (both attest the SAME SLA α within tol) ⇒ conservative; ship that alpha so the record verifies.
     alpha_auth = max(alpha, sla_alpha)
-    bound_auth = _inflate_alpha(alpha_auth, eps_auth, cov)
-    jc_auth = 1.0 - delta - delta_eps
+    # the (ii) inflation chains several float ops (1+α, ε(1+α), c−ε, division, +α) whose rounding can leave the
+    # result a few ULPs BELOW the exact value — a tiny risk UNDERSTATEMENT (codex r91 class: shipped bound <
+    # Decimal-exact by ~8e-17). Nudge the SHIPPED bound UP by a relative+absolute margin that dominates the
+    # accumulated rounding (same discipline as _cp_upper's), clamped to 1.0, so it is PROVABLY ≥ the true bound.
+    bound_auth = min(1.0, _inflate_alpha(alpha_auth, eps_auth, cov) * (1.0 + 1e-12) + 1e-15)
+    # `1.0 − δ − δ_eps` in float can land a few ULPs ABOVE the exact value, OVERSTATING the joint confidence
+    # (= understating the failure probability δ+δ_eps) — codex r91: 1−.49−.49 = 0.02000000000000018 > 0.02.
+    # Bound the failure probability from ABOVE (nextafter-up dominates the sum's rounding) and the confidence
+    # from BELOW (nextafter-down on the final subtraction) so the SHIPPED confidence is PROVABLY ≤ true 1−δ−δ_eps.
+    jc_auth = math.nextafter(1.0 - math.nextafter(delta + delta_eps, math.inf), -math.inf)
     if not (math.isfinite(bound_auth) and math.isfinite(eps_auth) and 0.0 < jc_auth < 1.0):
         raise ValueError("channel1_budget_cap_risk: recomputed values are not finite / in range")
     bound_verification = ("recomputed: eps_upper via Clopper-Pearson(k,m,delta_eps); bound via TV-coupling "

@@ -244,9 +244,11 @@ def test_alpha_below_sla_within_tol_does_not_understate_bound():
     true_bound = fusion._inflate_alpha(sla, eps, 0.80)          # the bound at the AUTHORITATIVE sla_alpha
     assert d["channel1_conditional_risk_upper"] >= true_bound   # never understates the true-alpha bound
     assert d["alpha_base"] == sla                               # ships the conservative (larger) alpha, not low
-    # the signed record is self-consistent: bound == inflate(shipped alpha, recomputed eps, coverage)
+    # the signed record is self-consistent: bound is the inflation at the shipped alpha/eps/coverage, nudged UP
+    # by a minimal conservative margin (so float rounding never understates it) — never BELOW the inflation.
     recomputed = fusion._inflate_alpha(d["alpha_base"], d["eps_upper"], d["coverage_used"])
-    assert abs(d["channel1_conditional_risk_upper"] - recomputed) <= 1e-15
+    assert d["channel1_conditional_risk_upper"] >= recomputed
+    assert d["channel1_conditional_risk_upper"] - recomputed <= 1e-11
 
 
 # --- audit-3 BLOCKER fixes (2026-06-13): allowlist, recomputed confidence, m=0, δ+η<1 ---------------
@@ -272,6 +274,46 @@ def test_confidence_recomputed_not_caller_declared():
     ca["channel1_budget_cap_risk"]["conditional_bound_confidence"] = 0.999999
     d = _fuse(ca)["conditional_analyses"]["channel1_budget_cap_risk"]
     assert abs(d["conditional_bound_confidence"] - 0.90) < 1e-9   # costwright overwrote it
+
+
+def test_conditional_bound_never_understated_by_float_rounding():
+    # codex r91 class: the (ii) inflation chains float ops (1+α, ε(1+α), c−ε, division, +α) whose rounding can
+    # leave the shipped risk bound a few ULPs BELOW the exact value (~8e-17). The shipped bound is now nudged UP
+    # by a minimal conservative margin, so it is PROVABLY ≥ the Decimal-exact inflation across the grid.
+    from decimal import Decimal, getcontext
+    getcontext().prec = 60
+
+    def true_bound(a, e, c):
+        A, E, C = Decimal(str(a)), Decimal(str(e)), Decimal(str(c))
+        if E >= C:
+            return Decimal(1)
+        return min(Decimal(1), max(A, A + E * (1 + A) / (C - E)))
+
+    for c in (0.8, 0.5, 0.2, 0.999):
+        for m in (10, 600, 100000):
+            for k in (0, 1, m // 2):
+                d = _fuse(_channel1(coverage=c, m=m, k=k, delta_eps=0.05))[
+                    "conditional_analyses"]["channel1_budget_cap_risk"]
+                tb = true_bound(d["alpha_base"], d["eps_upper"], d["coverage_used"])
+                got = Decimal(str(d["channel1_conditional_risk_upper"]))
+                assert got >= tb, (c, m, k, got, tb)             # never understates the true inflation
+                assert got - tb <= Decimal("1e-11")              # margin is minimal
+
+
+def test_confidence_never_overstated_by_float_rounding():
+    # codex r91: `1.0 − δ − δ_eps` in float can round a few ULPs ABOVE the exact value, OVERSTATING the joint
+    # confidence (= understating the failure probability) — `1−.49−.49` floats to 0.02000000000000018 > 0.02.
+    # fusion now bounds the failure probability from above and the confidence from below (nextafter), so the
+    # shipped confidence is PROVABLY ≤ the exact 1−δ−δ_eps, with a minimal (~2 ULP) downward margin.
+    from decimal import Decimal
+    for dl, de in ((0.49, 0.49), (0.05, 0.05), (1e-6, 1e-6), (0.499999, 0.499999), (0.3, 0.6)):
+        if dl + de >= 1.0:
+            continue
+        d = _fuse(_channel1(delta=dl, delta_eps=de))["conditional_analyses"]["channel1_budget_cap_risk"]
+        true_jc = Decimal(1) - Decimal(str(d["delta"])) - Decimal(str(d["delta_eps"]))
+        got = Decimal(str(d["conditional_bound_confidence"]))
+        assert got <= true_jc, (dl, de, got, true_jc)        # never overstates confidence
+        assert true_jc - got <= Decimal("1e-12")             # margin is minimal (ULP-level, not arbitrary)
 
 
 def test_delta_plus_delta_eps_ge_one_rejected():
