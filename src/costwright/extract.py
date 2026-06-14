@@ -309,7 +309,20 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     all_binds = []   # (target_names, value_expr) over every binding form
     container_binds = []   # (base_name, value) when a subgraph is stashed in a container/attr (codex r55)
     func_returns = []      # (func_name, [return_value_exprs]) — subgraph factories (codex/Cursor r56)
+    method_stash = []      # (base_name, [arg_values]) — `c.append(inner.compile())` stash via method (r57)
+    # StateGraph build/run methods: a compiled subgraph as their arg is NOT a "stash into base" (e.g.
+    # `outer.add_node("s", inner.compile())` builds the graph), so they don't taint the receiver.
+    _GRAPH_METHODS = {"add_node", "add_edge", "add_conditional_edges", "add_sequence", "set_entry_point",
+                      "set_finish_point", "set_conditional_entry_point", "compile", "invoke", "ainvoke",
+                      "stream", "astream", "batch", "abatch"}
     for nd in ast.walk(tree):
+        # a compiled subgraph passed as an ARG to a method call on a bare Name — `lst.append(inner.compile())`,
+        # `reg.add(c)`, `d.update({"k": c})` — stashes it INTO that receiver; taint the receiver so a later
+        # `add_node("s", lst[0])` Load-references it → flagged → fail closed (codex/Cursor r57). Excludes the
+        # graph-building methods (those CONSUME a subgraph to build, not store it).
+        if (isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute)
+                and isinstance(nd.func.value, ast.Name) and nd.func.attr not in _GRAPH_METHODS):
+            method_stash.append((nd.func.value.id, list(nd.args) + [k.value for k in nd.keywords]))
         bs = []
         if isinstance(nd, ast.Assign):
             bs = [(t, nd.value) for t in nd.targets]
@@ -403,6 +416,13 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             if fname not in ex.compiled_vars and any(contains_compile(rv) or _loads_any(rv, ex.compiled_vars)
                                                      for rv in rvals):
                 ex.compiled_vars.add(fname)
+                changed = True
+        # a compiled subgraph stashed into a container via a METHOD (`lst.append(c)`, `s.add(c)`) taints the
+        # receiver — same fail-closed effect as a subscript-assign stash (codex/Cursor r57).
+        for base, args in method_stash:
+            if base not in ex.compiled_vars and any(contains_compile(a) or _loads_any(a, ex.compiled_vars)
+                                                    for a in args):
+                ex.compiled_vars.add(base)
                 changed = True
         for names, value in all_binds:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,

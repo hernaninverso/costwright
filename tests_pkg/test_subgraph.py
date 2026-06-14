@@ -788,6 +788,52 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_compiled_subgraph_stashed_via_method_fails_closed(tmp_path):
+    # audit-3 codex/Cursor r57: a compiled subgraph stashed into a container via a METHOD call —
+    # `lst.append(inner.compile())`, `reg.add(c)`, `d.update({"k": c})` — then read back as an add_node action.
+    # The subscript-assign taint (r55) missed method mutation, so it flat-counted. Now a compiled subgraph
+    # passed as an arg to any non-graph method taints the receiver → the later subscript add_node arg is
+    # flagged → fail closed.
+    cases = (
+        ("lst = []\nlst.append(inner.compile())\n", "lst[0]"),
+        ("d = {}\nd.update({'k': inner.compile()})\n", "d['k']"),
+    )
+    for stash, action in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            + stash +
+            "outer = StateGraph(dict)\n"
+            f"outer.add_node('s', {action})\n"
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (stash, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_invoke_method_does_not_taint_host(tmp_path):
+    # COVERAGE guard: the graph-build/run methods (add_node/.../invoke/batch) must NOT taint their receiver —
+    # `app.invoke({}, config=...)` passes inputs, not a stashed subgraph. The aliased subgraph still composes.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "ci = inner.compile()\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', ci)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app.invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 50 * (1 + 1000), r
+
+
 def test_e2e_subgraph_factory_function_fails_closed(tmp_path):
     # audit-3 codex/Cursor r56: a function that RETURNS a compiled subgraph is a factory —
     # `def make(): ...; return inner.compile()` then `outer.add_node("s", make())`. The compiled-var tracker
