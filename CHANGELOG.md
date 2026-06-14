@@ -2,6 +2,46 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.1] — 2026-06-14
+
+### Soundness hardening — ~35 understatement paths closed (adversarial audit, codex + Cursor `gpt-5.3-codex`)
+
+A second, exhaustive adversarial soundness pass (the cardinal rule: a bound must **never** understate the true
+per-run worst-case node-activation count). Every finding below was a real understatement reproduced by running
+the analyzer, then fixed and pinned with a regression test. Two reported findings were adjudicated **false
+positives** and documented: an edge to a node never `add_node`'d is an *invalid* graph (LangGraph `compile()`
+raises), and the per-run ceiling for a `batch([N])` host is correct (it is N independent per-run runs; the
+aggregate is out of the per-run metric).
+
+**Subgraph composition (feature 005) — both escape dimensions closed.** A compiled subgraph reaching `add_node`
+through *any* same-file indirection now composes or fails closed (never silently flattens to one node): module-
+attribute / `getattr` / `vars` / `__dict__` / `globals` reflection (bound **and** direct-called), reflective
+namespace access, 1-arg `add_node(inner.compile())`, container/attribute stash (by assignment, by method
+`append`/`add`/`update`, by `setattr`), subgraph **factory** functions (bare / classmethod / instance / `self`
+/ nested / list-&-dict-comprehension / module-level / ternary / generator-`yield`), augmented assignment,
+**function-parameter pass-through**, class attribute, decorator-returns-subgraph; a file mixing one attributable
+and one un-attributable subgraph now fails closed (completeness guard). The `add_node` **call** can also be
+obscured — captured into a container/argument/attribute or via `getattr` — which now fails closed
+(`addnode-escaped`), while the recognized bare-Name/`partial`/alias-chain forms are counted. A
+`Send`/`Command`/`interrupt` passed as a call **argument** (higher-order `idfn(Send)(...)`, `partial`,
+`append`) fails closed (`construct-escaped`).
+
+**Flat (non-subgraph) path — pre-existing understatements fixed.**
+- `add_sequence([...])` now counts one node per element (was zero); a non-literal sequence fails closed.
+- the `linear` bound (= supersteps) is used only for a true chain; **static fan-out** (a source with ≥2
+  successors, e.g. `START`→many) now bounds at `supersteps × n_nodes`.
+- a node `RetryPolicy` / `error_handler` / `**kwargs` / graph-wide `set_node_defaults` re-executes a node →
+  fail closed (`node-unmodeled-retry`).
+- `add_node` inside a loop/comprehension, or in a **helper function called ≥2 times / in a loop**, materializes
+  N runtime nodes from one site → fail closed (`node-in-loop` / `node-helper-multicall`).
+- an explicit bound `< 1` (recursion_limit/max_iter/max_turns ≤ 0) no longer yields a zero/negative ceiling →
+  fail closed.
+- **multiple** explicit bounds of one param now combine instead of taking the first: LangGraph invokes are
+  separate runs → `max(recursion_limit)`; CrewAI agents / Agents-SDK handoffs are sequential → `sum`.
+
+Cross-module imported factories and fully-dynamic reflection (`eval`/`exec`/non-literal `getattr`/monkeypatching)
+remain a documented limitation of any static analyzer — they void the certificate rather than producing a number.
+
 ## [0.2.0] — 2026-06-14
 
 ### Added — nested subgraph bound composition (feature 005)
