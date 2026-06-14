@@ -98,7 +98,7 @@ def pretty(report: dict, verbose: bool = False) -> str:
                 bound = f"≤{b['supersteps']} supersteps{extra} ({b['provenance']})"
             else:
                 bound = ", ".join(u["reasons"]) or "—"
-            out.append(f"  {_BADGE[u['category']]} {u['file']:<{w}} :{u['span']['line']:<5}"
+            out.append(f"  {_BADGE.get(u['category'], '?')} {u['file']:<{w}} :{u['span']['line']:<5}"
                        f" {u['category']:<18} {bound}")
         out.append("")
     out.append(f"  {s['total']} graph units | ✓ {s['certifiable']} certifiable"
