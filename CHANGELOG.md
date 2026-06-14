@@ -2,6 +2,18 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.10] — 2026-06-14
+
+### Digest collision on ambiguous keys (codex `gpt-5.3-codex`)
+
+- **`canonical()` / `digest()` reject non-string dict keys and tuples** (codex r92) —
+  `json.dumps(sort_keys=True)` silently coerces a non-string dict key (`int`/`bool`/`None`) to a string, so
+  `{1: "x"}` and `{"1": "x"}` canonicalized identically and produced the **same digest** — two
+  structurally-distinct bundles sharing a digest is a false tamper-evidence collision. A tuple likewise
+  serializes as a JSON list, colliding with the list. `canonical()` now walks the object and fails closed on
+  any non-string key or tuple before serializing, so the digest is a true fingerprint (joining the existing
+  NaN/Infinity rejection).
+
 ## [0.2.9] — 2026-06-14
 
 ### Conservative float-rounding of every shipped fusion risk number (codex `gpt-5.3-codex` + systematic)
