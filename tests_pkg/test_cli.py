@@ -148,6 +148,25 @@ def test_aliased_import_constructors_are_detected(tmp_path):
     assert any(u["framework"] == "langgraph" for u in rep["units"]), rep
 
 
+def test_aliased_runner_call_is_discovered_and_not_dropped(tmp_path):
+    # codex r84: `from agents import Runner as R` then `R.run(..., max_turns=None)` was DROPPED by _find_units
+    # — the literal `"Runner.run"` precheck missed the aliased call, and the AST resolved the full dotted
+    # string `R.run` (never matching the alias map keyed on `R`). A runaway (max_turns=None disables the bound)
+    # silently passed `--fail-on reject` with exit 0. Now the receiver alias is resolved and the precheck is lax.
+    for recv_alias, method in (("R", "run"), ("Rn", "run_sync"), ("Rs", "run_streamed")):
+        d = tmp_path / f"{recv_alias}dir"; d.mkdir()
+        (d / "w.py").write_text(f"from agents import Runner as {recv_alias}\n"
+                                f"{recv_alias}.{method}(agent, input='x', max_turns=None)\n")
+        r = run("check", str(d), "--fail-on", "reject")
+        assert r.returncode == 1, (recv_alias, method, r.returncode, r.stdout, r.stderr)
+        rep = json.loads(run("check", str(d), "--json").stdout)
+        assert any(u["framework"] == "agents_sdk" for u in rep["units"]), rep
+    # no false unit: an unrelated `.run()` on a non-Runner receiver (no agents import) is not discovered
+    d2 = tmp_path / "unrelated"; d2.mkdir()
+    (d2 / "w.py").write_text("class TaskRunner:\n    def run(self): pass\nTaskRunner().run()\n")
+    assert run("check", str(d2)).returncode == 0
+
+
 def test_caps_dynamic_model_requires_max_completion_tokens(tmp_path):
     # codex r83: a Chat-API model name that is NOT a string constant — `"gpt-" + "5"` (BinOp concat), a Name
     # bound elsewhere, an f-string, os.environ[...] — could resolve to a reasoning model at runtime, where

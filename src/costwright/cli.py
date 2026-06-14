@@ -39,8 +39,10 @@ def _find_units(root: Path, max_files: int):
             src = py.read_text(encoding="utf-8", errors="ignore")
         except OSError:
             continue
-        # precheck laxo (audit-3: "Crew (" con espacio se perdía con "Crew(")
-        if not any(k in src for k in ("StateGraph", "Crew", "Runner.run")):
+        # precheck laxo (audit-3: "Crew (" con espacio se perdía con "Crew("). "Runner" (no "Runner.run")
+        # porque un `from agents import Runner as R` + `R.run(...)` no contiene la cadena "Runner.run" pero el
+        # import sí trae "Runner" (codex r84) — el AST resuelve el alias del receptor abajo.
+        if not any(k in src for k in ("StateGraph", "Crew", "Runner")):
             continue
         try:
             tree = _ast.parse(src)
@@ -55,11 +57,18 @@ def _find_units(root: Path, max_files: int):
             if not isinstance(node, _ast.Call):
                 continue
             f = node.func
-            nm = f.id if isinstance(f, _ast.Name) else (
-                f"{f.value.id}.{f.attr}" if isinstance(f, _ast.Attribute)
-                and isinstance(f.value, _ast.Name) else
-                (f.attr if isinstance(f, _ast.Attribute) else ""))
-            nm = alias.get(nm, nm)
+            # resolve the import alias of the RECEIVER, not just a bare Name: `from agents import Runner as R`
+            # then `R.run(...)` has receiver Name `R` → resolve to `Runner` BEFORE composing `Runner.run`
+            # (codex r84). The old code resolved the full dotted string `R.run`, which never matched the
+            # alias map (keyed on `R`), so an aliased Runner call was silently dropped.
+            if isinstance(f, _ast.Name):
+                nm = alias.get(f.id, f.id)
+            elif isinstance(f, _ast.Attribute) and isinstance(f.value, _ast.Name):
+                nm = f"{alias.get(f.value.id, f.value.id)}.{f.attr}"
+            elif isinstance(f, _ast.Attribute):
+                nm = f.attr
+            else:
+                nm = ""
             kind = None
             if nm == "StateGraph":
                 kind = "langgraph"
