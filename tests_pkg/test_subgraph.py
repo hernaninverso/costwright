@@ -244,6 +244,65 @@ def _check_file(tmp_path, src):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_flat_add_sequence_counts_nodes(tmp_path):
+    # audit-3 codex r65 (flat path): `g.add_sequence([(name, action), ...])` adds ONE node per element; the flat
+    # extractor counted ZERO → understated. Now a literal sequence is counted element-by-element. With a
+    # conditional edge (cyclic) the bound is supersteps × n_nodes.
+    seq = "[" + ", ".join(f"('n{i}', lambda s: s)" for i in range(20)) + "]"
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        f"g.add_sequence({seq})\n"
+        "g.add_edge(START, 'n0')\n"
+        "g.add_conditional_edges('n0', lambda s: 'n1', {'n1': 'n1'})\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["bound_factor"] is not None and r["bound_factor"] >= 20, r   # not the old n_nodes=0 → bf=5
+
+    # a non-literal add_sequence (unknown node count) fails closed
+    dyn = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "nodes = [('a', lambda s: s)]\n"
+        "g = StateGraph(dict)\n"
+        "g.add_sequence(nodes)\n"
+        "g.add_edge(START, 'a')\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    rd = _check_file(tmp_path, dyn)
+    assert rd["category"] == "no-mapeable:add-sequence-dynamic" and "bound_factor" not in rd, rd
+
+
+def test_e2e_flat_fanout_from_start_is_not_understated(tmp_path):
+    # audit-3 codex r65 (flat path): the `linear` optimization (bound = supersteps, 1 node/super-step) is unsound
+    # when the graph FANS OUT — START→n0..n9 all activate in super-step 1, so true per-run ≥ 10 (with rl=3). The
+    # old all-static heuristic wrongly classed it linear → bf=3. Now any source with ≥2 static successors makes
+    # the bound supersteps × n_nodes.
+    nodes = "\n".join(f"g.add_node('n{i}', lambda s: s)" for i in range(10))
+    edges = "\n".join(f"g.add_edge(START, 'n{i}'); g.add_edge('n{i}', END)" for i in range(10))
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        f"{nodes}\n{edges}\n"
+        "g.compile().invoke({}, config={'recursion_limit': 3})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["bound_factor"] is not None and r["bound_factor"] >= 10, r   # 3 × 10 = 30, not the old 3
+
+
+def test_e2e_flat_true_chain_stays_linear(tmp_path):
+    # COVERAGE guard: a true chain (each node exactly one successor) keeps the tight linear bound = supersteps.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s); g.add_node('b', lambda s: s); g.add_node('c', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', 'b'); g.add_edge('b', 'c'); g.add_edge('c', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["bound_factor"] == 5, r   # linear: supersteps, not 5×3
+
+
 def test_e2e_nested_certifiable(tmp_path):
     src = (
         "from langgraph.graph import StateGraph, START, END\n"

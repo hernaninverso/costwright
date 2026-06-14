@@ -13,7 +13,7 @@ from costwright.extract import DEFAULTS
 # no-fan-out invariant. send-fanout/dynamic-goto stay BLOCKING — they ARE the fan-out vectors, so a
 # subgraph graph that also has them is non_certifiable at step 2 BEFORE composition (soundness guard).
 BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop",
-            "addnode-escaped")
+            "addnode-escaped", "add-sequence-dynamic")
 HUGE_LIMIT = 10_000  # recursion_limit explícito ≥ esto = "efectivamente no acotado" (rechazo)
 
 def map_unit(ex: dict, meta: dict) -> dict:
@@ -68,7 +68,16 @@ def map_unit(ex: dict, meta: dict) -> dict:
 
     # término del cálculo + cota (D2: presupuesto global n·Σ; lineal probada → n·max)
     n_nodes = max(ex["n_nodes"], 1)
-    linear = (not cyclic) and all(e["kind"] == "static" for e in ex["edges"])
+    # the `linear` (1 node per super-step ⇒ bound = supersteps) optimization is sound ONLY for a true CHAIN.
+    # If any source (incl. START) has ≥2 distinct static successors, the graph FANS OUT — multiple nodes run in
+    # one super-step (e.g. START→n0..n_k all activate in super-step 1), so the bound must be supersteps × n_nodes
+    # (codex r65). Conditional edges already make it non-linear (not all-static).
+    _dsts = {}
+    for e in ex["edges"]:
+        if e["kind"] == "static" and e.get("src") is not None and e.get("dst") is not None:
+            _dsts.setdefault(e["src"], set()).add(e["dst"])
+    static_fanout = any(len(d) >= 2 for d in _dsts.values())
+    linear = (not cyclic) and all(e["kind"] == "static" for e in ex["edges"]) and not static_fanout
 
     def bound_term(n, source):
         agg = "max" if linear else "sum"

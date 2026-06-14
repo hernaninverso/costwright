@@ -126,6 +126,25 @@ class Extractor(ast.NodeVisitor):
                     # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
                     # to compose (resolves a clean alias, else fails closed).
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
+        elif last == "add_sequence":
+            # `g.add_sequence([(name, action), ...])` adds ONE node per element — the FLAT path must count them
+            # all or it understates (codex r65). A static list/tuple literal is counted element-by-element; a
+            # non-literal sequence (unknown length) fails closed; an element carrying a compiled subgraph routes
+            # to compose / fail-closed like an add_node subgraph arg.
+            seq = n.args[0] if n.args else (n.keywords[0].value if n.keywords else None)
+            if isinstance(seq, (ast.List, ast.Tuple)):
+                for elt in seq.elts:
+                    if isinstance(elt, ast.Starred):
+                        s.features.append({"feature": "add-sequence-dynamic", "line": n.lineno})
+                        continue
+                    nm = const_of(elt.elts[0]) if isinstance(elt, (ast.Tuple, ast.List)) and elt.elts else None
+                    s.nodes.append((nm if isinstance(nm, str) else None, n.lineno))
+                    if contains_compile(elt) or any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
+                                                    and (x.id in s.compiled_vars or x.id in s.pregel_vars)
+                                                    for x in ast.walk(elt)):
+                        s.features.append({"feature": "subgraph-node", "line": n.lineno})
+            else:
+                s.features.append({"feature": "add-sequence-dynamic", "line": n.lineno})
         elif last == "add_edge":
             a = const_or_endref(n.args[0]) if len(n.args) > 0 else None
             b = const_or_endref(n.args[1]) if len(n.args) > 1 else None
