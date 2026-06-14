@@ -80,6 +80,7 @@ class _GraphReceivers(ast.NodeVisitor):
         self.mutate_scopes_fn = {}  # graph var -> set of function-scope paths where it is add_node'd
         self.compile_escaped = set()# graph vars whose .compile() result is captured in an untracked way
         self.invoke_saw_default = set()  # graph vars with ≥1 invoke that uses the framework default limit
+        self.alias_escaped = set()  # graph vars whose compiled alias escapes (may be invoked out of view)
         self._fn_path = ()          # current function-nesting path (() = module)
         self._fn_seq = [0]          # fresh-id generator for function scopes
 
@@ -316,6 +317,7 @@ class _GraphReceivers(ast.NodeVisitor):
                            "passed_as_arg": v in self.passed_as_arg,
                            "method_escaped": v in self.method_escaped,
                            "compile_escaped": v in self.compile_escaped,
+                           "alias_escaped": v in self.alias_escaped,
                            "scope_split": len(self.bind_scopes_fn.get(v, set())
                                               | self.mutate_scopes_fn.get(v, set())) > 1}
                        for v, g in self.graphs.items()},
@@ -423,6 +425,25 @@ def analyze(tree) -> dict:
         if isinstance(nd, ast.Name) and isinstance(nd.ctx, ast.Load):
             if not (id(nd) in attr_value and attr_value[id(nd)] in called_attrs):
                 R.method_escaped.add(nd.id)
+    # A compiled alias `app = outer.compile()` that ESCAPES means `outer` may be invoked with a
+    # recursion_limit we never see → fail closed (Cursor r25). A compiled alias is escaped if it has a use
+    # that is NEITHER a method-call receiver NOR the action arg of an add_node (the LEGIT compose use, e.g.
+    # `outer.add_node("sub", compiled)`). compiled_from is complete here (earlier pre-pass).
+    addnode_args = set()
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute) and nd.func.attr == "add_node":
+            for a in list(nd.args) + [k.value for k in nd.keywords]:
+                if isinstance(a, ast.Name):
+                    addnode_args.add(id(a))
+    alias_escaped_names = set()
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Name) and isinstance(nd.ctx, ast.Load):
+            ok = (id(nd) in attr_value and attr_value[id(nd)] in called_attrs) or id(nd) in addnode_args
+            if not ok:
+                alias_escaped_names.add(nd.id)
+    for alias, srcg in R.compiled_from.items():
+        if alias in alias_escaped_names:
+            R.alias_escaped.add(srcg)
     R.visit(tree)
     return R.to_dict()
 
@@ -467,6 +488,10 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         # framework limit could understate (Cursor codex r19). Fail closed.
         return _nc(f"{var}: its compile() result is captured in an untracked alias (its invoke limit is out "
                    f"of view — fail closed)")
+    if g.get("alias_escaped"):
+        # this graph's compiled alias escapes (passed to a helper that may invoke it), so it could be invoked
+        # with a recursion_limit we never see → fail closed (Cursor codex r25).
+        return _nc(f"{var}: its compiled alias escapes (may be invoked with an unseen recursion_limit — fail closed)")
     if g.get("scope_split"):
         # the graph is built in one function scope but mutated from another (e.g. a closure that calls
         # `{var}.add_node` is itself invoked in a loop) → it can be grown an unbounded number of times while

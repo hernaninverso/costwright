@@ -425,6 +425,30 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_compiled_alias_escapes_to_helper_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-25 WITNESS: `def run(x): x.invoke(config={recursion_limit:5000});
+    # run(app)`. The compiled alias `app` is passed to a helper that invokes it via a param → outer's real
+    # limit (5000) is out of view → defaulted to 1000 → composed 2000 (true 10000). A compiled alias that
+    # escapes (passed as a value) → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def run(x):\n"
+        "    x.invoke({}, config={'recursion_limit': 5000})\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 1})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "run(app)\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the defaulted undercount 2000
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_negative_recursion_limit_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-24 WITNESS: `config={'recursion_limit': -1}` produced a nonsensical
     # NEGATIVE composed bound (-4). A valid recursion_limit is a positive int; anything else → fail closed.
