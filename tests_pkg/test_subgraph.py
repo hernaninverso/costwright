@@ -788,6 +788,47 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_compiled_subgraph_in_container_fails_closed(tmp_path):
+    # audit-3 codex r55 (also surfaced in my own probe): a compiled subgraph stashed in a CONTAINER value —
+    # `d["k"] = inner.compile()` (subscript target) — then used as an add_node action `outer.add_node("s",
+    # d["k"])`. The compiled-var tracker only followed Name bindings, so `d["k"]` was not recognized as a
+    # subgraph → the flat path counted "s" as ONE ordinary node → bf understated (5 instead of 5005+). Now the
+    # container base name `d` is tainted into compiled_vars, so the add_node arg Load-references it → flagged →
+    # the subscript inner can't be attributed → completeness guard fails closed.
+    for stash in ("d = {}\nd['k'] = inner.compile()\n", "class R: pass\nr = R()\nr.sub = inner.compile()\n"):
+        action = "d['k']" if "d['k']" in stash else "r.sub"
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            + stash +
+            "outer = StateGraph(dict)\n"
+            f"outer.add_node('s', {action})\n"
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (stash, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_plain_container_action_still_flat(tmp_path):
+    # COVERAGE guard: a container that holds a PLAIN function (never a compiled subgraph) must NOT taint — the
+    # node is a normal node and the flat path applies. `d['fn'] = lambda` then add_node('x', d['fn']).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "d = {}\n"
+        "d['fn'] = lambda s: s\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('x', d['fn'])\n"
+        "g.add_edge(START, 'x'); g.add_edge('x', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_mixed_attributed_and_unattributed_subgraph_fails_closed(tmp_path):
     # audit-3 codex r53 WITNESS: a file with TWO compiled-subgraph add_node sites — one attributable
     # (`outer.add_node("s", small.compile())`) and one NOT (`box[0].add_node("huge", big.compile())`, subscript

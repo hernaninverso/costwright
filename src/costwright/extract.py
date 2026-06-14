@@ -266,6 +266,13 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
         return []
 
+    def _container_base(t):
+        # root Name of a Subscript/Attribute assignment-target chain: `d["k"]`→"d", `obj.sub`→"obj",
+        # `reg[i].x`→"reg". Used to TAINT the container when a compiled subgraph is stashed in it (codex r55).
+        while isinstance(t, (ast.Subscript, ast.Attribute)):
+            t = t.value
+        return t.id if isinstance(t, ast.Name) else None
+
     def _match_names(p):   # names captured by a match-case pattern (Cursor r35)
         out = []
         if isinstance(p, ast.MatchAs):
@@ -285,6 +292,7 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         return out
 
     all_binds = []   # (target_names, value_expr) over every binding form
+    container_binds = []   # (base_name, value) when a subgraph is stashed in a container/attr (codex r55)
     for nd in ast.walk(tree):
         bs = []
         if isinstance(nd, ast.Assign):
@@ -312,6 +320,10 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     all_binds.append(([arg.arg], default))
         for tgt, src in bs:
             all_binds.append((_names(tgt), src))
+            if tgt is not None and not _names(tgt):
+                base = _container_base(tgt)   # Subscript/Attribute target → taint the container (codex r55)
+                if base is not None:
+                    container_binds.append((base, src))
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
                 for nm in _names(tgt):
                     ex.pregel_vars.add(nm)
@@ -358,6 +370,15 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     if nm not in ex.compiled_vars:
                         ex.compiled_vars.add(nm)
                         changed = True
+        # a compiled subgraph stashed in a CONTAINER/attribute (`d["k"] = inner.compile()`, `reg.sub = c`) taints
+        # the base name: a later `add_node("s", d["k"])` Load-references `d` ∈ compiled_vars → flagged as a possible
+        # subgraph node → the analyzer can't attribute the subscript inner → the completeness guard fails closed.
+        # Over-tainting a container only makes its uses fail closed (safe). (codex r55)
+        for base, value in container_binds:
+            if (contains_compile(value) or _loads_any(value, ex.compiled_vars)) and base not in ex.compiled_vars:
+                ex.compiled_vars.add(base)
+                changed = True
+        for names, value in all_binds:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
             # `T = S`, …) — propagate so the fan-out / dynamic-goto blocking can't be bypassed (Cursor r38/r39).
             # Over-flagging only makes a call block (fail closed), which is the safe direction.
