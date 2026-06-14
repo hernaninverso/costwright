@@ -109,12 +109,40 @@ def map_unit(ex: dict, meta: dict) -> dict:
                 **bound_term(n, "framework-default(1000 moderno; 25 legacy)"),
                 "cyclic": cyclic, "default_caveat": "default=1000 ⟹ certificado casi vacuo (D8)"}
     if kind == "crewai":
-        mi = [b for b in explicit if b["param"] == "max_iter"]
-        if mi:
-            return {**base, "category": "tipa:explicit",
-                    **bound_term(sum(b["value"] for b in mi), "explicit"), "cyclic": cyclic}
-        return {**base, "category": "tipa:framework-default",
-                **bound_term(DEFAULTS["crewai_max_iter"], "framework-default(20)"), "cyclic": cyclic}
+        # per-run worst case for a SEQUENTIAL crew = n_tasks × max(agent iteration budget). Each of the n_tasks
+        # tasks runs ITS agent up to that agent's max_iter ⇒ ≤ n_tasks × max_budget activations (codex r86 +
+        # r86b). The OLD model summed only the EXPLICIT agent budgets, which (a) ignored n_tasks entirely
+        # (a single agent reused across k tasks understated k×) and (b) omitted the default 20 of unannotated
+        # agents in a mixed crew. Both are fixed here; everything not statically pinned fails closed.
+        crews = ex.get("crewai_crews") or []
+        budgets = ex.get("crewai_agent_budgets") or []
+        if not crews:
+            return {**base, "category": "extractor-failure", "reason": "crewai-no-crew"}
+        # each Crew() is a separate kickoff = a separate run ⇒ per-run worst case is the MAX over crews. A task
+        # count that is absent (None) or dynamic ("dynamic") leaves the run length unpinned → fail closed.
+        if any(not isinstance(c["tasks"], int) for c in crews):
+            return {**base, "category": "extractor-failure", "reason": "crewai-tasks-unpinned"}
+        n_tasks = max(c["tasks"] for c in crews)
+        if n_tasks < 1:
+            return {**base, "category": "extractor-failure", "reason": "crewai-empty-tasks"}
+        if not budgets:
+            return {**base, "category": "extractor-failure", "reason": "crewai-no-visible-agents"}
+        # if a crew references MORE agents than the visible Agent() constructors, or its agents= is dynamic, at
+        # least one agent is imported/unbounded — its max_iter could exceed any visible budget → fail closed.
+        if any(c["agents"] == "dynamic" or (isinstance(c["agents"], int) and c["agents"] > len(budgets))
+               for c in crews):
+            return {**base, "category": "extractor-failure", "reason": "crewai-agents-not-visible"}
+        # a None budget = a spread / non-constant max_iter (already caught by the unresolved-bound check above);
+        # defensive re-check so a future path cannot certify an unrecoverable budget.
+        if any(b is None for b in budgets):
+            return {**base, "category": "extractor-failure", "reason": "unresolved-bound", "params": ["max_iter"]}
+        has_default = any(b == "default" for b in budgets)
+        ceil = max(DEFAULTS["crewai_max_iter"] if b == "default" else b for b in budgets)
+        n = n_tasks * ceil
+        cat = "tipa:framework-default" if has_default else "tipa:explicit"
+        src = f"n_tasks({n_tasks})×max_iter(default {DEFAULTS['crewai_max_iter']})" if has_default \
+            else f"n_tasks({n_tasks})×max_iter({ceil})"
+        return {**base, "category": cat, **bound_term(n, src), "cyclic": cyclic}
     if kind == "agents_sdk":
         mt = [b for b in explicit if b["param"] == "max_turns"]
         if mt:

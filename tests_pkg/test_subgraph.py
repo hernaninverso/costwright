@@ -303,21 +303,60 @@ def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
         r = _check_kind(tmp_path, "from crewai import Crew, Agent, Process\n" + body + "\n", "crewai")
         assert r["category"] == "no-mapeable:hierarchical-manager" and "bound_factor" not in r, (body, r)
 
-    # sequential (literal, string, or default — no manager) is NOT a manager loop ⇒ certifiable
+    # sequential (literal, string, or default — no manager) is NOT a manager loop ⇒ certifiable. The per-run
+    # bound is n_tasks × max(agent max_iter): 1 task × max_iter 2 = 2 (codex r86 model).
     for body in (
-        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=Process.sequential)",
-        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process='sequential')",
-        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)])",
+        "a=Agent(role='r', goal='g', backstory='b', max_iter=2)\n"
+        "Crew(agents=[a], tasks=[Task(description='t', agent=a)], process=Process.sequential)",
+        "a=Agent(role='r', goal='g', backstory='b', max_iter=2)\n"
+        "Crew(agents=[a], tasks=[Task(description='t', agent=a)], process='sequential')",
+        "a=Agent(role='r', goal='g', backstory='b', max_iter=2)\n"
+        "Crew(agents=[a], tasks=[Task(description='t', agent=a)])",
     ):
-        src = "from crewai import Crew, Agent, Process\n" + body + "\n"
+        src = "from crewai import Crew, Agent, Task, Process\n" + body + "\n"
         r = _check_kind(tmp_path, src, "crewai")
         assert r["category"] == "tipa:explicit" and r["bound_factor"] == 2, (body, r)
 
 
+def test_e2e_crewai_n_tasks_and_default_budget(tmp_path):
+    # codex r86 + r86b: the CrewAI per-run worst case = n_tasks × max(agent max_iter). The old model summed only
+    # the EXPLICIT agent budgets, so (a) a single agent reused across k tasks understated k× (it reported
+    # max_iter, true ≈ k × max_iter), and (b) a mixed crew omitted the default-20 budget of an unannotated agent
+    # (one explicit agent reset the bound to just that agent's budget). Both are conservative-by-construction now.
+    H = "from crewai import Agent, Task, Crew, Process\n"
+    # (a) n_tasks scaling: 1 agent max_iter=20 reused across 5 tasks → 5 × 20 = 100 (was 20, a 5× understatement)
+    r = _check_kind(tmp_path, H +
+                    "a=Agent(role='x', goal='g', backstory='b', max_iter=20)\n"
+                    "Crew(agents=[a], tasks=[Task(description='1', agent=a), Task(description='2', agent=a),"
+                    " Task(description='3', agent=a), Task(description='4', agent=a), Task(description='5', agent=a)],"
+                    " process=Process.sequential)\n", "crewai")
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 100, r
+    # (b) default-budget inclusion: a (max_iter=1) + b (default 20), 2 tasks → 2 × max(1,20) = 40 ≥ true 21
+    r2 = _check_kind(tmp_path, H +
+                     "a=Agent(role='a', goal='g', backstory='b', max_iter=1)\nb=Agent(role='b', goal='g', backstory='b')\n"
+                     "Crew(agents=[a,b], tasks=[Task(description='t1', agent=a), Task(description='t2', agent=b)],"
+                     " process=Process.sequential)\n", "crewai")
+    assert r2["category"] == "tipa:framework-default" and r2["bound_factor"] == 40, r2
+    # fail closed: a dynamic / absent task list, or a crew referencing more agents than visible ctors
+    for body, why in (
+        ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\ntl=[]\nCrew(agents=[a], tasks=tl, process=Process.sequential)",
+         "crewai-tasks-unpinned"),
+        ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\nCrew(agents=[a], process=Process.sequential)",
+         "crewai-tasks-unpinned"),
+        ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\nCrew(agents=[a,b], tasks=[Task(description='t', agent=a)], process=Process.sequential)",
+         "crewai-agents-not-visible"),
+        ("Crew(agents=[r], tasks=[Task(description='t', agent=r)], process=Process.sequential)",
+         "crewai-no-visible-agents"),
+    ):
+        rf = _check_kind(tmp_path, H + body + "\n", "crewai")
+        assert rf["category"] == "extractor-failure" and rf.get("reason") == why and "bound_factor" not in rf, (body, rf)
+
+
 def test_e2e_multiple_explicit_bounds_combine(tmp_path):
     # audit-3 codex r70: MULTIPLE explicit bounds of the same param were collapsed to the FIRST → understated.
-    # LangGraph invokes are separate runs ⇒ per-run worst case = MAX recursion_limit. CrewAI agents / Agents-SDK
-    # handoffs are sequential ⇒ SUM of iteration budgets.
+    # LangGraph invokes are separate runs ⇒ per-run worst case = MAX recursion_limit. For CrewAI the per-run
+    # worst case is n_tasks × max(agent max_iter) — each task runs its agent up to max_iter (codex r86 model;
+    # the old "sum of agent budgets" both ignored n_tasks and could be dominated by one agent).
     lg = (
         "from langgraph.graph import StateGraph, START, END\n"
         "g = StateGraph(dict)\n"
@@ -331,12 +370,15 @@ def test_e2e_multiple_explicit_bounds_combine(tmp_path):
     assert r["bound_factor"] == 50, r          # MAX(5, 50), not the first (5)
 
     crew = (
-        "from crewai import Agent\n"
+        "from crewai import Agent, Task, Crew, Process\n"
         "a1 = Agent(role='r1', goal='g', backstory='b', max_iter=1)\n"
         "a2 = Agent(role='r2', goal='g', backstory='b', max_iter=50000)\n"
+        "c = Crew(agents=[a1, a2], tasks=[Task(description='t1', agent=a1), Task(description='t2', agent=a2)],"
+        " process=Process.sequential)\n"
+        "c.kickoff()\n"
     )
     rc = _check_kind(tmp_path, crew, "crewai")
-    assert rc["bound_factor"] == 50001, rc     # SUM(1, 50000), not the first (1)
+    assert rc["bound_factor"] == 2 * 50000, rc     # n_tasks(2) × max_iter(max(1, 50000)) — not the first, not the sum
 
 
 def test_e2e_flat_node_helper_multicall_fails_closed(tmp_path):

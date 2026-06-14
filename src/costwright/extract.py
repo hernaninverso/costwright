@@ -71,6 +71,12 @@ class Extractor(ast.NodeVisitor):
         s.while_true_invokes = []
         s._in_while_true = 0
         s._loop_depth = 0   # >0 inside any For/While/comprehension — add_node here builds N runtime nodes (r68)
+        # CrewAI cost model (codex r86 + r86b): a SEQUENTIAL crew runs each task with up to its agent's max_iter
+        # iterations ⇒ per-run worst case = n_tasks × max(agent budget). One entry per Agent() ctor (its max_iter
+        # budget: int | "default"=20 | None=unrecoverable), and one entry per Crew() ctor (its literal task /
+        # agent counts, or None when dynamic) — the mapper combines them and fails closed on any None.
+        s.crewai_agent_budgets = []   # int | "default" | None, one per Agent() constructor
+        s.crewai_crews = []           # {"tasks": int|None, "agents": int|None}, one per Crew() constructor
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
         s.compiled_factory_names = set()  # function/method NAMES that return a compiled subgraph (r56/r58)
         s.addnode_aliases = set()  # names bound to `g.add_node` (bound-method alias / partial) — r63
@@ -231,13 +237,20 @@ class Extractor(ast.NodeVisitor):
         elif last in ("Agent",):
             mi = next((k for k in n.keywords if k.arg == "max_iter"), None)
             if mi is not None:
-                s.bounds.append({"param": "max_iter", "value": const_of(mi.value),
+                v = const_of(mi.value)
+                s.bounds.append({"param": "max_iter", "value": v,
                                  "source": "explicit", "line": n.lineno})
+                s.crewai_agent_budgets.append(v)   # int, or None if non-constant (→ unresolved-bound, fail closed)
             elif any(k.arg is None for k in n.keywords):
                 # a **kwargs spread on the Agent could carry max_iter (huge or disabling) → unrecoverable; do NOT
                 # fall back to the framework default 20 (that would understate) → fail closed (codex/Cursor r80).
                 s.bounds.append({"param": "max_iter", "value": None, "source": "explicit", "line": n.lineno})
-            # CrewAI Agent sin max_iter → default 20 (lo decide el mapper por-kind)
+                s.crewai_agent_budgets.append(None)
+            else:
+                # CrewAI Agent without max_iter → framework default 20. RECORD it (codex r86): omitting the
+                # default for unannotated agents understated a mixed crew (one explicit agent reset the bound to
+                # only that agent's budget). The mapper takes max over all agent budgets, defaults included.
+                s.crewai_agent_budgets.append("default")
         elif last == "Crew":
             # a hierarchical Crew runs a MANAGER that re-delegates (an unbounded loop) → fail closed. A
             # `manager_agent=` or `manager_llm=` kwarg implies hierarchical coordination (codex/Cursor r80), as
@@ -252,6 +265,20 @@ class Extractor(ast.NodeVisitor):
                                     and "hierarchical" not in ast.dump(proc.value))
             if has_manager or spread or (proc is not None and not confirmed_sequential):
                 s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
+
+            # task / agent counts for the per-run model (n_tasks × max agent budget). A clean literal list/tuple
+            # gives an exact count; ABSENT ⇒ None; present but non-literal/starred ⇒ "dynamic". The mapper
+            # requires a literal task count and fails closed on "dynamic" (run length / agent set not pinned).
+            def _lit_count(kw):
+                if kw is None:
+                    return None        # the kwarg is absent
+                if not isinstance(kw.value, (ast.List, ast.Tuple)) \
+                        or any(isinstance(e, ast.Starred) for e in kw.value.elts):
+                    return "dynamic"   # present but not a clean literal list
+                return len(kw.value.elts)
+            tasks_kw = next((k for k in n.keywords if k.arg == "tasks"), None)
+            agents_kw = next((k for k in n.keywords if k.arg == "agents"), None)
+            s.crewai_crews.append({"tasks": _lit_count(tasks_kw), "agents": _lit_count(agents_kw)})
 
         # caps de tokens en cualquier call (constructores de modelos, llamadas)
         for k in n.keywords:
@@ -722,6 +749,7 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         "edges": ex.edges, "has_static_cycle": has_cycle, "cond_may_cycle": cond_back,
         "bounds": ex.bounds, "caps": ex.caps, "features": ex.features,
         "llm_constructors": ex.llm_calls, "while_true_invokes": ex.while_true_invokes,
+        "crewai_agent_budgets": ex.crewai_agent_budgets, "crewai_crews": ex.crewai_crews,
     }
     # feature 005: only when a subgraph-node is present, run the per-graph analysis for composition
     # (lazy import avoids a circular dependency; the flat path above is untouched for normal files).
