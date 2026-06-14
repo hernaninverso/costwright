@@ -2,6 +2,28 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.3] — 2026-06-14
+
+### Continued whole-tool audit — false-assurance paths in the secondary features (codex + Cursor `gpt-5.3-codex`)
+
+- **CrewAI hierarchical via alias** — a hierarchical Crew runs a manager that re-delegates (an unbounded loop).
+  The detection caught the literal `process=Process.hierarchical`/`"hierarchical"` but NOT an aliased
+  `mode = Process.hierarchical; process=mode` (enum or string), which certified a finite bound. Now only a
+  confirmed-sequential LITERAL is safe; a hierarchical literal/alias/variable/computed value fails closed.
+- **`**kwargs` spread on invoke/run** — `Runner.run(a, **{"max_turns": None})` (None disables the cap) or
+  `app.invoke({}, **opts)` let a disabling/overriding bound survive unseen, so the analyzer fell back to the
+  framework default and certified. Any `**` spread on an invoke/run call now records an unresolved bound and
+  fails closed.
+- **fusion honesty-field injection** — the conditional-analysis allowlist copied caller values for the
+  honesty/provenance strings, so a caller could inject `disclaimer="GUARANTEED SAFE"`, `note`,
+  `open_channels=["none"]`, `channel_covered`/`source_estimator` into the signed bundle. These are now FORCED to
+  costwright's own constants; only measured primitives come from the caller (and ε is recomputed).
+- **caps `make_patch`** — inserted the cap kwarg right after `(`, producing `Ctor(kwarg=…, "positional")` =
+  SyntaxError when the constructor had a positional arg; the suggested fix was invalid Python. Now the kwarg is
+  inserted as the LAST argument (AST `end_col_offset`), robust to positional args / strings / nesting; a
+  reasoning model passed positionally (`ChatOpenAI("gpt-5")`) is recognized so the correct kwarg is suggested.
+- **caps `--cap < 1`** rejected (a 0/negative cap would emit an inert `max_tokens=0`).
+
 ## [0.2.2] — 2026-06-14
 
 ### Whole-tool soundness audit — fusion / report / caps / cli hardened (codex + Cursor `gpt-5.3-codex`)
