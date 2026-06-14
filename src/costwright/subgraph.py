@@ -75,6 +75,7 @@ class _GraphReceivers(ast.NodeVisitor):
         self.bind_scopes_fn = {}    # graph var -> set of FUNCTION-scope paths where its StateGraph() is bound
         self.mutate_scopes_fn = {}  # graph var -> set of function-scope paths where it is add_node'd
         self.compile_escaped = set()# graph vars whose .compile() result is captured in an untracked way
+        self.invoke_saw_default = set()  # graph vars with ≥1 invoke that uses the framework default limit
         self._fn_path = ()          # current function-nesting path (() = module)
         self._fn_seq = [0]          # fresh-id generator for function scopes
 
@@ -275,22 +276,24 @@ class _GraphReceivers(ast.NodeVisitor):
                 for k in n.keywords:
                     if k.arg == "config":
                         cfg = k.value
-                if cfg is not None:
-                    if isinstance(cfg, ast.Dict) and all(kk is not None and const_of(kk) is not None
-                                                         for kk in cfg.keys):
-                        # inline dict literal whose EVERY key is a constant (no ** spread, no computed key
-                        # like `'recursion_' + 'limit'` — Cursor r21 — which could be recursion_limit at
-                        # runtime). Read recursion_limit (non-constant value → unresolved). An ABSENT key
-                        # means the framework default applies (leave unset) — the real runtime limit, sound.
-                        for kk, vv in zip(cfg.keys, cfg.values):
-                            if const_of(kk) == "recursion_limit":
-                                self._merge_invoke_limit(src, const_of(vv) if const_of(vv) is not None
-                                                         else "unresolved")
-                    else:
-                        # config is a named variable / call, has a ** spread, or a non-constant key → we can't
-                        # be sure of the recursion_limit; it could exceed the default → unresolved → fail
-                        # closed (Cursor r16/r21).
-                        self._merge_invoke_limit(src, "unresolved")
+                if cfg is None:
+                    self.invoke_saw_default.add(src)   # no config → this run uses the framework default 1000
+                elif isinstance(cfg, ast.Dict) and all(kk is not None and const_of(kk) is not None
+                                                       for kk in cfg.keys):
+                    # inline dict literal whose EVERY key is a constant (no ** spread, no computed key like
+                    # `'recursion_' + 'limit'` — Cursor r21). Read recursion_limit (non-constant value →
+                    # unresolved). NO recursion_limit key → this run uses the default 1000 (Cursor r22:
+                    # must still contribute to the max over invoke sites, not be ignored).
+                    rl_vals = [const_of(vv) for kk, vv in zip(cfg.keys, cfg.values)
+                               if const_of(kk) == "recursion_limit"]
+                    if not rl_vals:
+                        self.invoke_saw_default.add(src)
+                    for v in rl_vals:
+                        self._merge_invoke_limit(src, v if v is not None else "unresolved")
+                else:
+                    # config is a named variable / call, has a ** spread, or a non-constant key → we can't be
+                    # sure of the recursion_limit; it could exceed the default → unresolved → fail closed.
+                    self._merge_invoke_limit(src, "unresolved")
         self.generic_visit(n)
 
     def to_dict(self):
@@ -305,6 +308,7 @@ class _GraphReceivers(ast.NodeVisitor):
                                               | self.mutate_scopes_fn.get(v, set())) > 1}
                        for v, g in self.graphs.items()},
             "invoke_limit": dict(self.invoke_limit),
+            "invoke_saw_default": sorted(self.invoke_saw_default),
             "subgraph_nodes": [list(t) for t in self.subgraph_nodes],
             "ambiguous_names": sorted(n for n in (set(self.store_count) | self.imported) if self._ambiguous(n)),
         }
@@ -462,12 +466,19 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         return _nc(f"{var}: {g['unmodeled']}")
 
     rl = A["invoke_limit"].get(var)
+    default = DEFAULTS["langgraph_recursion_limit_modern"]
+    saw_default = var in set(A.get("invoke_saw_default", []))   # ≥1 invoke uses the framework default 1000
     if rl == "unresolved":
         return _nc(f"{var}: recursion_limit is a non-constant expression")
     if isinstance(rl, int):
-        outer_steps, cat, prov = rl, "certifiable", f"{var}(explicit {rl})"
+        if saw_default and default > rl:
+            # this graph is ALSO invoked with NO explicit limit somewhere → that run uses the default, which
+            # is LARGER than the explicit one → the worst case is the default run (Cursor r22).
+            outer_steps, cat, prov = default, "default_dependent", f"{var}(default {default} ≥ explicit {rl})"
+        else:
+            outer_steps, cat, prov = rl, "certifiable", f"{var}(explicit {rl})"
     else:                                                   # no explicit limit ⇒ inherits parent's, else default
-        outer_steps = max(parent_limit, DEFAULTS["langgraph_recursion_limit_modern"])
+        outer_steps = max(parent_limit, default)
         cat, prov = "default_dependent", f"{var}(default/inherited {outer_steps})"
     if cat == "certifiable" and outer_steps >= HUGE_LIMIT:
         return _runaway(f"{var}: recursion_limit {outer_steps} ≥ {HUGE_LIMIT}")

@@ -425,6 +425,29 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_mixed_explicit_and_default_invoke_uses_default(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-22 WITNESS: outer invoked twice — once with explicit
+    # recursion_limit 50, once with NO config (runtime default 1000). MAX-over-explicit gave 50 → composed
+    # 50050, but the no-config run is the worst case (1000). A no-config / no-recursion_limit invoke must
+    # contribute the default to the max.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app.invoke({}, config={'recursion_limit': 50})\n"
+        "app.invoke({})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # worst run is the no-config one (default 1000); inner inherits 1000 → 1000 × (1 + 1000) = 1,001,000
+    assert r["bound_factor"] == 1000 * (1 + 1000)
+    assert r["bound_factor"] > 50050
+
+
 def test_e2e_cursor_starred_invoke_args_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-20 WITNESS: `payload = ({}, {'recursion_limit': 5000});
     # app.invoke(*payload)` hides config behind a star-unpack → positional read sees no config → defaulted to
