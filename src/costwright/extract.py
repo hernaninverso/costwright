@@ -260,6 +260,15 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             names = [n for c in nd.cases for n in _match_names(c.pattern)]
             if names:
                 all_binds.append((names, nd.subject))
+        elif isinstance(nd, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            # a parameter DEFAULT `def f(x=inner.compile())` binds x to the default's value (Cursor r36).
+            ar = nd.args
+            pos = list(ar.posonlyargs) + list(ar.args)
+            for arg, default in zip(pos[len(pos) - len(ar.defaults):], ar.defaults):
+                all_binds.append(([arg.arg], default))
+            for arg, default in zip(ar.kwonlyargs, ar.kw_defaults):
+                if default is not None:
+                    all_binds.append(([arg.arg], default))
         for tgt, src in bs:
             all_binds.append((_names(tgt), src))
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":

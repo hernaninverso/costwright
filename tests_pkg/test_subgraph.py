@@ -566,6 +566,27 @@ def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_param_default_compile_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-36: a compiled subgraph hidden in a parameter DEFAULT
+    # `def attach(x=inner.compile()): outer.add_node('sub', x)` → x wasn't tracked → flat undercount (1).
+    # Parameter defaults are now paired with their param name and flagged → compose → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "def attach(x=inner.compile()):\n"
+        "    outer.add_node('sub', x)\n"
+        "attach()\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 1
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_match_capture_alias_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-35 (independent re-confirm): a structural-pattern-match capture
     # `match inner.compile(): case c: outer.add_node('sub', c)` binds `c` to the compiled subgraph, a form
