@@ -566,6 +566,30 @@ def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_aliased_interrupt_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-40: `I = interrupt; I('need human')` bypassed the
+    # interrupt-human-in-loop blocking. interrupt/NodeInterrupt aliases now propagate (import + assignment)
+    # → aliased interrupt detected → blocks → no number.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "from langgraph.types import interrupt\n"
+        "I = interrupt\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "def gate(state):\n"
+        "    return I('need human')\n"
+        "outer.add_node('gate', gate)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:interrupt-human-in-loop"
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_tuple_unpack_aliased_send_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-39: `S, = (Send,)` (tuple-unpack alias) bypassed the fan-out
     # blocking. Send/Command aliases now propagate through ANY binding shape (`_loads_any` fixpoint) → S(...)

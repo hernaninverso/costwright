@@ -55,6 +55,7 @@ class Extractor(ast.NodeVisitor):
         s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
         s.send_aliases = {"Send"}        # names that resolve to langgraph Send (incl. import aliases, r37)
         s.command_aliases = {"Command"}  # names that resolve to langgraph Command (incl. import aliases)
+        s.interrupt_aliases = {"interrupt", "NodeInterrupt"}  # names that resolve to interrupt (r40)
 
     def visit_While(s, n):
         is_true = isinstance(n.test, ast.Constant) and n.test.value is True
@@ -118,7 +119,7 @@ class Extractor(ast.NodeVisitor):
                 s.features.append({"feature": "dynamic-goto", "line": n.lineno})
             elif goto is not None:
                 s.edges.append({"kind": "static", "src": None, "dst": const_of(goto), "line": n.lineno})
-        elif (last == "interrupt" or last == "NodeInterrupt"
+        elif (last in s.interrupt_aliases
               or name.endswith("interrupt_before") or name.endswith("interrupt_after")):
             s.features.append({"feature": "interrupt-human-in-loop", "line": n.lineno})
         elif last in ("invoke", "stream", "ainvoke", "astream", "batch", "abatch", "kickoff",
@@ -226,6 +227,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     ex.send_aliases.add(a.asname or a.name)
                 elif a.name == "Command":
                     ex.command_aliases.add(a.asname or a.name)
+                elif a.name in ("interrupt", "NodeInterrupt"):
+                    ex.interrupt_aliases.add(a.asname or a.name)
     # prepass (order-independent): a name bound to an expression CONTAINING a `.compile()` (or to a Pregel)
     # via ANY binding form — assign / annotated / walrus / for-target / with-as, incl. tuple/list targets —
     # is treated as a possible compiled subgraph, so an aliased subgraph reaching add_node is flagged
@@ -317,6 +320,11 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                 for nm in names:
                     if nm not in ex.command_aliases:
                         ex.command_aliases.add(nm)
+                        changed = True
+            if _loads_any(value, ex.interrupt_aliases):
+                for nm in names:
+                    if nm not in ex.interrupt_aliases:
+                        ex.interrupt_aliases.add(nm)
                         changed = True
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
