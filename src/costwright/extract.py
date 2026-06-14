@@ -204,24 +204,38 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     except SyntaxError:
         return {"unit_id": meta["unit_id"], "status": "extractor-failure", "reason": "syntax"}
     ex = Extractor(src)
-    # prepass (order-independent): vars bound to X.compile() / Pregel(...) so an aliased compiled subgraph
-    # passed by VARIABLE to add_node is flagged subgraph-node (sound — audit-3 codex), not silently counted
-    # as one normal node. Valid Python binds before use, so document order would also suffice; walk is robust.
+    # prepass (order-independent): a name bound to an expression CONTAINING a `.compile()` (or to a Pregel)
+    # via ANY binding form — assign / annotated / walrus / for-target / with-as, incl. tuple/list targets —
+    # is treated as a possible compiled subgraph, so an aliased subgraph reaching add_node is flagged
+    # subgraph-node (→ compose, which resolves a clean `c = g.compile()` alias or FAILS CLOSED for an opaque
+    # binding) instead of silently counted as one normal node by the flat path (audit-3 codex r26/r27/r28).
+    def _has_compile(node):
+        return any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "compile"
+                   for x in ast.walk(node))
+
+    def _names(t):
+        if isinstance(t, ast.Name): return [t.id]
+        if isinstance(t, ast.Starred): return _names(t.value)
+        if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
+        return []
+
     for nd in ast.walk(tree):
-        tv = None
-        if (isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name)
-                and isinstance(nd.value, ast.Call)):
-            tv = (nd.targets[0].id, nd.value)
-        elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
-            tv = (nd.target.id, nd.value)   # walrus  (c := g.compile())  — Cursor r26
-        elif isinstance(nd, ast.AnnAssign) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
-            tv = (nd.target.id, nd.value)   # annotated  c: T = g.compile()  — Cursor r27
-        if tv is not None:
-            cn = call_name(tv[1]).split(".")[-1]
-            if cn == "compile":
-                ex.compiled_vars.add(tv[0])
-            elif cn == "Pregel":
-                ex.pregel_vars.add(tv[0])
+        binds = []   # (target_node, source_expr)
+        if isinstance(nd, ast.Assign):
+            binds = [(t, nd.value) for t in nd.targets]
+        elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and nd.value is not None:
+            binds = [(nd.target, nd.value)]
+        elif isinstance(nd, (ast.For, ast.AsyncFor)):
+            binds = [(nd.target, nd.iter)]
+        elif isinstance(nd, (ast.With, ast.AsyncWith)):
+            binds = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
+        for tgt, src in binds:
+            if _has_compile(src):
+                for nm in _names(tgt):
+                    ex.compiled_vars.add(nm)
+            if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
+                for nm in _names(tgt):
+                    ex.pregel_vars.add(nm)
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —

@@ -425,6 +425,48 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_with_as_compile_alias_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-28 WITNESS: a `with ... as c:` (and `for c in [...]`) bound compiled
+    # alias reached add_node without being flagged → flat undercount (25 vs 26). Now ANY name bound to a
+    # compile-containing expression flags subgraph-node → compose; an opaque binding like this (not a clean
+    # `c = g.compile()`) fails closed (can't resolve which graph), never the flat undercount.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import contextlib\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 25})\n"
+        "outer = StateGraph(dict)\n"
+        "with contextlib.nullcontext(inner.compile()) as c:\n"
+        "    outer.add_node('sub', c)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 25
+    assert "bound_factor" not in r
+
+
+def test_e2e_cursor_for_target_compile_alias_is_non_certifiable(tmp_path):
+    # same class (Cursor r28): `for c in [inner.compile()]: outer.add_node('sub', c)` → opaque binding → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 25})\n"
+        "outer = StateGraph(dict)\n"
+        "for c in [inner.compile()]:\n"
+        "    outer.add_node('sub', c)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_annotated_compile_alias_composes(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-27 WITNESS: `c: object = inner.compile()` (annotated assignment)
     # wasn't recognized as a subgraph-node → fell to the flat path (bound 25, undercount of 26). AnnAssign
