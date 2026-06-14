@@ -40,6 +40,25 @@ def contains_compile(node):
     return any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "compile"
                for x in ast.walk(node))
 
+
+def literal_reflective_attr(func):
+    """If `func` is a CONSTANT-LITERAL reflective name lookup — `getattr(_, "X")`, `vars(_)["X"]`,
+    `_.__dict__["X"]`, `globals()["X"]`, `locals()["X"]` — return the looked-up name string X, else None.
+    Used to catch a Send/Command/interrupt invoked DIRECTLY through such an expression, e.g.
+    `getattr(lgtypes, "Send")("sub", {})` (codex/Cursor r47), which binds no name so alias propagation
+    never sees it. Precise: `getattr(llm, "invoke")` returns "invoke", not a construct ⇒ no false block."""
+    if (isinstance(func, ast.Call) and isinstance(func.func, ast.Name) and func.func.id == "getattr"
+            and len(func.args) >= 2 and isinstance(func.args[1], ast.Constant)
+            and isinstance(func.args[1].value, str)):
+        return func.args[1].value
+    if isinstance(func, ast.Subscript) and isinstance(func.slice, ast.Constant) and isinstance(func.slice.value, str):
+        base = func.value
+        if ((isinstance(base, ast.Call) and isinstance(base.func, ast.Name)
+                and base.func.id in {"vars", "globals", "locals"})
+                or (isinstance(base, ast.Attribute) and base.attr == "__dict__")):
+            return func.slice.value
+    return None
+
 class Extractor(ast.NodeVisitor):
     def __init__(s, src):
         s.src = src
@@ -114,15 +133,19 @@ class Extractor(ast.NodeVisitor):
                 s.edges.append({"kind": "conditional-literal", "src": None, "dsts": dsts, "line": n.lineno})
             else:
                 s.edges.append({"kind": "conditional-fn", "src": None, "dsts": None, "line": n.lineno})
-        elif last in s.send_aliases:
+        # a construct invoked DIRECTLY through a literal reflective access — `getattr(lgtypes,"Send")(...)`,
+        # `globals()["S"](...)` — binds no name, so the callee itself resolves it (codex/Cursor r47). The
+        # looked-up name hits send/command/interrupt aliases just like a plain `last` would ("Send" is in
+        # send_aliases as the base; propagated aliases like "S" are there too).
+        elif last in s.send_aliases or literal_reflective_attr(n.func) in s.send_aliases:
             s.features.append({"feature": "send-fanout", "line": n.lineno})
-        elif last in s.command_aliases:
+        elif last in s.command_aliases or literal_reflective_attr(n.func) in s.command_aliases:
             goto = next((k.value for k in n.keywords if k.arg == "goto"), None)
             if goto is not None and const_of(goto) is None and not isinstance(goto, ast.List):
                 s.features.append({"feature": "dynamic-goto", "line": n.lineno})
             elif goto is not None:
                 s.edges.append({"kind": "static", "src": None, "dst": const_of(goto), "line": n.lineno})
-        elif (last in s.interrupt_aliases
+        elif (last in s.interrupt_aliases or literal_reflective_attr(n.func) in s.interrupt_aliases
               or name.endswith("interrupt_before") or name.endswith("interrupt_after")):
             s.features.append({"feature": "interrupt-human-in-loop", "line": n.lineno})
         elif last in ("invoke", "stream", "ainvoke", "astream", "batch", "abatch", "kickoff",

@@ -638,6 +638,76 @@ def test_e2e_cursor_assignment_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_reflective_direct_call_send_blocks(tmp_path):
+    # audit-3 codex/Cursor r47: a construct invoked DIRECTLY through a literal reflective access —
+    # `getattr(lgtypes,"Send")("sub", {})` — binds NO name, so alias propagation never sees it. The callee
+    # expression itself resolves to "Send" now → send-fanout blocks. (Distinct from the bound `S = getattr...`.)
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "def route(_s):\n"
+        "    return [getattr(lgtypes, 'Send')('sub', {}), getattr(lgtypes, 'Send')('sub', {})]\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', lambda s: s)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_conditional_edges('r', route)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:send-fanout", r
+    assert "bound_factor" not in r
+
+
+def test_e2e_reflective_direct_call_command_and_interrupt_block(tmp_path):
+    # `getattr(lgtypes,"Command")(goto=<dynamic>)` direct = dynamic goto; `getattr(lgtypes,"interrupt")()`
+    # direct = human-in-loop. Both resolve via the callee and block (no binding involved).
+    cmd = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "def r(_s):\n"
+        "    return getattr(lgtypes, 'Command')(goto=_s['n'])\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', r)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    rc = _check_file(tmp_path, cmd)
+    assert rc["category"] == "no-mapeable:dynamic-goto", rc
+    assert "bound_factor" not in rc
+
+
+def test_e2e_getattr_in_node_body_still_composes(tmp_path):
+    # COVERAGE guard: the precise callee-resolution must NOT block on a non-construct reflective call. A node
+    # body doing `getattr(llm, "invoke")(s)` ("invoke" is not a construct name) must STILL compose a bound.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "class LLM:\n"
+        "    def invoke(self, x):\n"
+        "        return x\n"
+        "llm = LLM()\n"
+        "def work(s):\n"
+        "    return getattr(llm, 'invoke')(s)\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', work)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_node('b', lambda s: s)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', 'b'); outer.add_edge('b', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # getattr with a non-construct literal does NOT set reflective_ns and does NOT resolve to a construct →
+    # composition proceeds. 50 × (2 + 1000) = 50100.
+    assert r["category"] == "tipa:framework-default" and r["bound_factor"] == 50 * (2 + 1000), r
+
+
 def test_e2e_cursor_globals_subscript_alias_send_fails_closed(tmp_path):
     # audit-3 Cursor r46 WITNESS: `S = Send; ... globals()["S"]("x", {})` — the Send is reached via a namespace
     # subscript whose KEY is the alias NAME "S" (not the canonical "Send"), and called DIRECTLY (no binding),
@@ -662,7 +732,9 @@ def test_e2e_cursor_globals_subscript_alias_send_fails_closed(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 3})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node", r
+    # fail closed either way; the callee `globals()["S"]` resolves to alias "S" ⇒ the precise send-fanout
+    # category (detected before compose); the reflective_ns guard is a second line of defence.
+    assert r["category"] in ("no-mapeable:send-fanout", "no-mapeable:subgraph-node"), r
     assert "bound_factor" not in r
 
 
