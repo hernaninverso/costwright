@@ -244,6 +244,42 @@ def _check_file(tmp_path, src):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_flat_retry_policy_fails_closed(tmp_path):
+    # audit-3 codex r67 (flat path): a node with a RetryPolicy(max_attempts=k) runs up to k× per super-step, so
+    # the flat bound (recursion_limit × n_nodes, retry=1) understates. The subgraph path already fails closed on
+    # retry; the FLAT path must too. `retry=`, `retry_policy=`, `error_handler=`, `**kwargs`, and graph-wide
+    # set_node_defaults now flag node-unmodeled-retry → fail closed.
+    cases = (
+        "g.add_node('a', lambda s: s, retry=object())\n",
+        "g.add_node('a', lambda s: s, retry_policy=object())\n",
+        "g.add_node('a', lambda s: s, error_handler='h')\n",
+        "opts = {'retry': 1}\ng.add_node('a', lambda s: s, **opts)\n",
+        "g.set_node_defaults(retry_policy=object())\ng.add_node('a', lambda s: s)\n",
+    )
+    for stmt in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "g = StateGraph(dict)\n"
+            + stmt +
+            "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+            "g.compile().invoke({}, config={'recursion_limit': 3})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:node-unmodeled-retry", (stmt, r)
+        assert "bound_factor" not in r
+
+    # a NON-retry kwarg (metadata) must NOT block
+    ok = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s, metadata={'x': 1})\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, ok)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_flat_add_sequence_counts_nodes(tmp_path):
     # audit-3 codex r65 (flat path): `g.add_sequence([(name, action), ...])` adds ONE node per element; the flat
     # extractor counted ZERO → understated. Now a literal sequence is counted element-by-element. With a
@@ -2206,8 +2242,10 @@ def test_e2e_kwargs_spread_on_node_is_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"
-    assert "kwargs" in r["reason"]
+    # fail closed either way: the flat retry/kwargs guard (node-unmodeled-retry) may fire before compose, or the
+    # composition path absorbs it (subgraph-node) — both are sound (no number).
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-unmodeled-retry"), r
+    assert "bound_factor" not in r
 
 
 def test_e2e_set_node_defaults_retry_non_certifiable(tmp_path):
@@ -2227,8 +2265,8 @@ def test_e2e_set_node_defaults_retry_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"
-    assert "RetryPolicy" in r["reason"]
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-unmodeled-retry"), r
+    assert "bound_factor" not in r
 
 
 def test_e2e_error_handler_non_certifiable(tmp_path):
@@ -2247,8 +2285,8 @@ def test_e2e_error_handler_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"
-    assert "error_handler" in r["reason"]
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-unmodeled-retry"), r
+    assert "bound_factor" not in r
 
 
 def test_e2e_backward_compatible_no_subgraph(tmp_path):

@@ -126,6 +126,17 @@ class Extractor(ast.NodeVisitor):
                     # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
                     # to compose (resolves a clean alias, else fails closed).
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
+            # per-node RetryPolicy / error_handler / **kwargs re-execute or add nodes beyond the ≤1-per-
+            # super-step model — the FLAT path must fail closed too, not just composition (codex r67, mirrors
+            # subgraph.py _mark_unmodeled). A RetryPolicy(max_attempts=k) runs the node up to k× per super-step.
+            for k in n.keywords:
+                if k.arg is None or k.arg in ("retry", "retry_policy", "error_handler"):
+                    s.features.append({"feature": "node-unmodeled-retry", "line": n.lineno})
+        elif last == "set_node_defaults":
+            # graph-wide RetryPolicy / error_handler — same unmodeled re-execution (codex r67).
+            for k in n.keywords:
+                if k.arg is None or k.arg in ("retry", "retry_policy", "error_handler"):
+                    s.features.append({"feature": "node-unmodeled-retry", "line": n.lineno})
         elif last == "add_sequence":
             # `g.add_sequence([(name, action), ...])` adds ONE node per element — the FLAT path must count them
             # all or it understates (codex r65). A static list/tuple literal is counted element-by-element; a
