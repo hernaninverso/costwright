@@ -208,13 +208,18 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     # passed by VARIABLE to add_node is flagged subgraph-node (sound — audit-3 codex), not silently counted
     # as one normal node. Valid Python binds before use, so document order would also suffice; walk is robust.
     for nd in ast.walk(tree):
+        tv = None
         if (isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name)
                 and isinstance(nd.value, ast.Call)):
-            cn = call_name(nd.value).split(".")[-1]
+            tv = (nd.targets[0].id, nd.value)
+        elif isinstance(nd, ast.NamedExpr) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Call):
+            tv = (nd.target.id, nd.value)   # walrus  (c := g.compile())  — Cursor r26
+        if tv is not None:
+            cn = call_name(tv[1]).split(".")[-1]
             if cn == "compile":
-                ex.compiled_vars.add(nd.targets[0].id)
+                ex.compiled_vars.add(tv[0])
             elif cn == "Pregel":
-                ex.pregel_vars.add(nd.targets[0].id)
+                ex.pregel_vars.add(tv[0])
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —

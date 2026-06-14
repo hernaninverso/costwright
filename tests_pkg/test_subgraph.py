@@ -425,6 +425,27 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_walrus_compile_alias_composes(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-26 WITNESS: `(c := inner.compile()); outer.add_node('sub', c)`. The
+    # walrus-bound alias `c` was not recognized as a subgraph-node by the flat extractor → fell to the flat
+    # path (bound 25, undercount of the composed 26). The walrus is now flagged → routes to compose → 26.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "(c := inner.compile())\n"
+        "c.invoke({}, config={'recursion_limit': 25})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', c)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["bound_factor"] == 1 * (1 + 25)   # composed 26, not the flat-path undercount 25
+    assert r.get("composed") is True
+
+
 def test_e2e_cursor_compiled_alias_escapes_to_helper_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-25 WITNESS: `def run(x): x.invoke(config={recursion_limit:5000});
     # run(app)`. The compiled alias `app` is passed to a helper that invokes it via a param → outer's real
