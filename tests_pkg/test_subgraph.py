@@ -358,6 +358,27 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_positional_config_is_read(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-17 WITNESS: config passed POSITIONALLY `app.invoke({}, {...})`
+    # (not config=) was ignored → defaulted to 1000 → composed bound 1,001,000, understating the true 5000
+    # limit. Reading the 2nd positional arg now composes the correct (large) ceiling, not the undercount.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "app = outer.compile()\n"
+        "app.invoke({}, {'recursion_limit': 5000})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # outer explicit 5000; inner inherits 5000 → 5000 × (n_total 1 + inner 5000×1) = 25,005,000 (not 1,001,000)
+    assert r["bound_factor"] == 5000 * (1 + 5000)
+    assert r["bound_factor"] > 1_001_000
+
+
 def test_e2e_cursor_named_config_dict_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-16 WITNESS: recursion_limit carried via a NAMED dict
     # (`cfg = {"recursion_limit": 5000}; app.invoke(config=cfg)`) is not read by the inline-dict path →

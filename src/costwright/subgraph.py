@@ -263,14 +263,18 @@ class _GraphReceivers(ast.NodeVisitor):
                         and isinstance(ic.func.value, ast.Name)):
                     src = ic.func.value.id
             if src is not None:
+                # config is the 2nd argument of invoke/ainvoke/stream/astream — POSITIONAL (`invoke(input,
+                # config)`, Cursor r17) or keyword (`config=`). Read whichever is present.
+                cfg = n.args[1] if len(n.args) > 1 else None
                 for k in n.keywords:
-                    if k.arg != "config":
-                        continue
-                    if isinstance(k.value, ast.Dict) and all(kk is not None for kk in k.value.keys):
+                    if k.arg == "config":
+                        cfg = k.value
+                if cfg is not None:
+                    if isinstance(cfg, ast.Dict) and all(kk is not None for kk in cfg.keys):
                         # inline dict literal, no ** spread → read recursion_limit (non-constant value →
                         # unresolved). An ABSENT key means the framework default applies (leave unset →
                         # default handling) — that IS the real runtime limit, so it's sound.
-                        for kk, vv in zip(k.value.keys, k.value.values):
+                        for kk, vv in zip(cfg.keys, cfg.values):
                             if const_of(kk) == "recursion_limit":
                                 self._merge_invoke_limit(src, const_of(vv) if const_of(vv) is not None
                                                          else "unresolved")
