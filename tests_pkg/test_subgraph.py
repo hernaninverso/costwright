@@ -350,6 +350,19 @@ def test_e2e_crewai_n_tasks_and_default_budget(tmp_path):
     ):
         rf = _check_kind(tmp_path, H + body + "\n", "crewai")
         assert rf["category"] == "extractor-failure" and rf.get("reason") == why and "bound_factor" not in rf, (body, rf)
+    # allow_delegation=True (or a non-constant flag) makes an agent invoke ANOTHER agent's max_iter loop inside
+    # a task — a recursive delegation tree that n_tasks × max(budget) does not bound → fail closed (Cursor r86).
+    for deleg in ("True", "flag"):
+        rd = _check_kind(tmp_path, H + ("flag=True\n" if deleg == "flag" else "") +
+                         f"a=Agent(role='x', goal='g', backstory='b', max_iter=5, allow_delegation={deleg})\n"
+                         "Crew(agents=[a], tasks=[Task(description='1', agent=a)], process=Process.sequential)\n", "crewai")
+        assert rd["category"] == "no-mapeable:agent-delegation" and "bound_factor" not in rd, (deleg, rd)
+    # allow_delegation=False is the default behaviour and still certifies: 2 tasks × max_iter 5 = 10
+    rok = _check_kind(tmp_path, H +
+                      "a=Agent(role='x', goal='g', backstory='b', max_iter=5, allow_delegation=False)\n"
+                      "Crew(agents=[a], tasks=[Task(description='1', agent=a), Task(description='2', agent=a)],"
+                      " process=Process.sequential)\n", "crewai")
+    assert rok["category"] == "tipa:explicit" and rok["bound_factor"] == 10, rok
 
 
 def test_e2e_multiple_explicit_bounds_combine(tmp_path):

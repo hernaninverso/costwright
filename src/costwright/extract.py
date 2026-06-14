@@ -235,6 +235,12 @@ class Extractor(ast.NodeVisitor):
                 if k.arg in ("interrupt_before", "interrupt_after"):
                     s.features.append({"feature": "interrupt-human-in-loop", "line": n.lineno})
         elif last in ("Agent",):
+            # allow_delegation=True gives the agent "delegate/ask coworker" tools — using one invokes ANOTHER
+            # agent's executor (its own max_iter loop) INSIDE this task's loop ⇒ a recursive delegation tree that
+            # n_tasks × max(budget) does NOT bound (Cursor r86). Fail closed unless it is a constant False.
+            deleg = next((k for k in n.keywords if k.arg == "allow_delegation"), None)
+            if deleg is not None and not (isinstance(deleg.value, ast.Constant) and deleg.value.value is False):
+                s.features.append({"feature": "agent-delegation", "line": n.lineno})
             mi = next((k for k in n.keywords if k.arg == "max_iter"), None)
             if mi is not None:
                 v = const_of(mi.value)

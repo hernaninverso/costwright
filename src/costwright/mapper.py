@@ -14,7 +14,7 @@ from costwright.extract import DEFAULTS
 # subgraph graph that also has them is non_certifiable at step 2 BEFORE composition (soundness guard).
 BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop",
             "addnode-escaped", "add-sequence-dynamic", "construct-escaped", "node-unmodeled-retry",
-            "node-in-loop", "node-helper-multicall")
+            "node-in-loop", "node-helper-multicall", "agent-delegation")
 HUGE_LIMIT = 10_000  # recursion_limit explícito ≥ esto = "efectivamente no acotado" (rechazo)
 
 def map_unit(ex: dict, meta: dict) -> dict:
