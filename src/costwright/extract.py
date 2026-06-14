@@ -34,6 +34,12 @@ def const_of(node):
         return -node.operand.value
     return None
 
+def contains_compile(node):
+    """True if the AST subtree contains any `<...>.compile()` call — used to flag a possible compiled
+    subgraph wherever it appears (alias binding, or an add_node arg like `identity(g.compile())`)."""
+    return any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "compile"
+               for x in ast.walk(node))
+
 class Extractor(ast.NodeVisitor):
     def __init__(s, src):
         s.src = src
@@ -80,9 +86,10 @@ class Extractor(ast.NodeVisitor):
             # harness v1 no lo implementa → feature medida.
             for a in list(n.args[1:]) + [k.value for k in n.keywords]:
                 aliased = isinstance(a, ast.Name) and (a.id in s.compiled_vars or a.id in s.pregel_vars)
-                if (isinstance(a, ast.Call) and call_name(a).split(".")[-1] == "compile") or aliased:
-                    # subgraph node: inline X.compile() OR a var bound to .compile()/Pregel (audit-3 codex) —
-                    # an aliased compiled subgraph passed by variable must NOT certify as a normal node.
+                if aliased or contains_compile(a):
+                    # subgraph node: a var bound to .compile()/Pregel, OR the arg CONTAINS a .compile() — inline
+                    # `g.compile()` or wrapped `identity(g.compile())` (Cursor r29). Must NOT certify as a
+                    # normal node; routes to compose (resolves a clean alias, else fails closed).
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
         elif last == "add_edge":
             a = const_or_endref(n.args[0]) if len(n.args) > 0 else None
@@ -209,10 +216,6 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
     # is treated as a possible compiled subgraph, so an aliased subgraph reaching add_node is flagged
     # subgraph-node (→ compose, which resolves a clean `c = g.compile()` alias or FAILS CLOSED for an opaque
     # binding) instead of silently counted as one normal node by the flat path (audit-3 codex r26/r27/r28).
-    def _has_compile(node):
-        return any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "compile"
-                   for x in ast.walk(node))
-
     def _names(t):
         if isinstance(t, ast.Name): return [t.id]
         if isinstance(t, ast.Starred): return _names(t.value)
@@ -230,7 +233,7 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         elif isinstance(nd, (ast.With, ast.AsyncWith)):
             binds = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
         for tgt, src in binds:
-            if _has_compile(src):
+            if contains_compile(src):
                 for nm in _names(tgt):
                     ex.compiled_vars.add(nm)
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":

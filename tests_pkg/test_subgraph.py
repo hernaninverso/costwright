@@ -425,6 +425,28 @@ def test_e2e_cursor_computed_config_key_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_wrapped_compile_arg_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-29 WITNESS: the add_node action arg WRAPS a compile in a function
+    # call — `outer.add_node('sub', identity(inner.compile()))`. Not a direct inline compile nor a Name, so
+    # it wasn't flagged → flat undercount (25 vs 26). Now an arg that CONTAINS a `.compile()` anywhere flags
+    # subgraph-node → compose → fail closed (the wrapped value isn't a resolvable clean alias).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def identity(x): return x\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 25})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', identity(inner.compile()))\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 25
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_with_as_compile_alias_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-28 WITNESS: a `with ... as c:` (and `for c in [...]`) bound compiled
     # alias reached add_node without being flagged → flat undercount (25 vs 26). Now ANY name bound to a
