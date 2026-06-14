@@ -225,6 +225,24 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
         return []
 
+    def _match_names(p):   # names captured by a match-case pattern (Cursor r35)
+        out = []
+        if isinstance(p, ast.MatchAs):
+            if p.name: out.append(p.name)
+            if p.pattern: out.extend(_match_names(p.pattern))
+        elif isinstance(p, ast.MatchStar):
+            if p.name: out.append(p.name)
+        elif isinstance(p, ast.MatchMapping):
+            if p.rest: out.append(p.rest)
+            for sub in p.patterns: out.extend(_match_names(sub))
+        elif isinstance(p, ast.MatchSequence):
+            for sub in p.patterns: out.extend(_match_names(sub))
+        elif isinstance(p, ast.MatchClass):
+            for sub in list(p.patterns) + list(p.kwd_patterns): out.extend(_match_names(sub))
+        elif isinstance(p, ast.MatchOr):
+            for sub in p.patterns: out.extend(_match_names(sub))
+        return out
+
     all_binds = []   # (target_names, value_expr) over every binding form
     for nd in ast.walk(tree):
         bs = []
@@ -236,6 +254,12 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             bs = [(nd.target, nd.iter)]
         elif isinstance(nd, (ast.With, ast.AsyncWith)):
             bs = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
+        elif isinstance(nd, ast.Match):
+            # `match <subject>: case <pat>:` binds the case's captured names to (part of) the subject; if the
+            # subject is a compiled graph, those captures could be it (Cursor r35).
+            names = [n for c in nd.cases for n in _match_names(c.pattern)]
+            if names:
+                all_binds.append((names, nd.subject))
         for tgt, src in bs:
             all_binds.append((_names(tgt), src))
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
