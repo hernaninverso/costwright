@@ -286,7 +286,16 @@ def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
         r = _check_kind(tmp_path, src, "crewai")
         assert r["category"] == "no-mapeable:hierarchical-manager" and "bound_factor" not in r, (body, r)
 
-    # sequential (literal, string, or default) is NOT a manager loop ⇒ certifiable
+    # a custom manager (manager_agent= / manager_llm=) is the same re-delegation loop (codex/Cursor r80).
+    for body in (
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], manager_llm='gpt-4')",
+        "m = Agent(role='mgr', goal='g', backstory='b', max_iter=3)\n"
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], manager_agent=m)",
+    ):
+        r = _check_kind(tmp_path, "from crewai import Crew, Agent, Process\n" + body + "\n", "crewai")
+        assert r["category"] == "no-mapeable:hierarchical-manager" and "bound_factor" not in r, (body, r)
+
+    # sequential (literal, string, or default — no manager) is NOT a manager loop ⇒ certifiable
     for body in (
         "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=Process.sequential)",
         "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process='sequential')",

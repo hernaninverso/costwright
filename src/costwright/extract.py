@@ -226,17 +226,18 @@ class Extractor(ast.NodeVisitor):
                                  "source": "explicit", "line": n.lineno})
             # CrewAI Agent sin max_iter → default 20 (lo decide el mapper por-kind)
         elif last == "Crew":
+            # a hierarchical Crew runs a MANAGER that re-delegates (an unbounded loop) → fail closed. A
+            # `manager_agent=` or `manager_llm=` kwarg implies hierarchical coordination (codex/Cursor r80), as
+            # does any `process=` that is NOT a confirmed-sequential LITERAL (`Process.sequential` / "sequential")
+            # — a hierarchical literal, a VARIABLE (`mode = Process.hierarchical; process=mode` — codex r75), or
+            # any computed expression could be the manager loop.
+            has_manager = any(k.arg in ("manager_agent", "manager_llm") for k in n.keywords)
             proc = next((k for k in n.keywords if k.arg == "process"), None)
-            if proc is not None:
-                # a hierarchical Crew runs a MANAGER that re-delegates (an unbounded loop) → fail closed. The
-                # only SAFE value is a confirmed-sequential LITERAL (`Process.sequential` / "sequential"). A
-                # hierarchical literal, a VARIABLE (`mode = Process.hierarchical; process=mode` — codex r75), or
-                # any computed expression could be the manager → conservatively flag hierarchical-manager.
-                dump = ast.dump(proc.value)
-                confirmed_sequential = (isinstance(proc.value, (ast.Attribute, ast.Constant))
-                                        and "sequential" in dump and "hierarchical" not in dump)
-                if not confirmed_sequential:
-                    s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
+            confirmed_sequential = (proc is not None and isinstance(proc.value, (ast.Attribute, ast.Constant))
+                                    and "sequential" in ast.dump(proc.value)
+                                    and "hierarchical" not in ast.dump(proc.value))
+            if has_manager or (proc is not None and not confirmed_sequential):
+                s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
 
         # caps de tokens en cualquier call (constructores de modelos, llamadas)
         for k in n.keywords:
