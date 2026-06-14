@@ -334,6 +334,30 @@ def test_e2e_add_sequence_fails_closed(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-11 WITNESS: `add = inner.add_node; add("a",...); add("b",...)`.
+    # The aliased calls have recv=None, so the nodes are NOT attributed to inner → site-counting sees 0
+    # inner nodes → composed bound 2 while the true worst case is 3 (UNDERSTATEMENT). A graph whose
+    # method/attribute is captured as a value must fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "add = inner.add_node\n"
+        "add('a', lambda s: s)\n"
+        "add('b', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge(START, 'b')\n"
+        "inner.add_edge('a', END); inner.add_edge('b', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 1})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the understated bound 2
+    assert "bound_factor" not in r
+
+
 def test_e2e_graph_passed_to_helper_fails_closed(tmp_path):
     # nodes added by a helper the graph is passed INTO are attributed to the helper's param, not `inner`,
     # so inner's node count is undercounted → fail closed (codex r8 follow-on).
