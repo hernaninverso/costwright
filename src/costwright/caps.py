@@ -89,11 +89,26 @@ def scan_file(path: Path):
             model_val = node.args[0].value
         reasoning = any(model_val.startswith(p) for p in
                         ("o1", "o3", "o4", "gpt-5")) if model_val else False
+        # the model arg may be PRESENT but NOT a resolvable string constant — `"gpt-" + "5"` (BinOp concat),
+        # a Name bound elsewhere, an f-string, `os.environ[...]` (codex r83). We then CANNOT tell whether it
+        # resolves to a reasoning model, so we cannot certify `max_tokens` is effective.
+        model_node = next((k.value for k in node.keywords if k.arg == "model"), None)
+        if model_node is None and node.args:
+            model_node = node.args[0]
+        model_dynamic = model_node is not None and not (
+            isinstance(model_node, ast.Constant) and isinstance(model_node.value, str))
         # SOLO Chat-API constructors (audit-3 R2 gpt-5.5): el constructor `OpenAI` es
         # Responses API y su cap correcto sigue siendo max_output_tokens, reasoning o no
         if resolved in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
             kwarg = "max_completion_tokens"
             note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
+        elif resolved in ("ChatOpenAI", "AzureChatOpenAI") and model_dynamic:
+            # a dynamic model name could resolve to a reasoning model at runtime, where Chat-API max_tokens is
+            # IGNORED. The only cap that holds REGARDLESS is max_completion_tokens (caps reasoning AND
+            # non-reasoning Chat models). Require it; fail closed on a max_tokens-only call (codex r83).
+            kwarg = "max_completion_tokens"
+            note = ("modelo dinámico (no es una constante): si resuelve a un reasoning model, max_tokens es "
+                    "IGNORADO — usar max_completion_tokens (acota reasoning y no-reasoning)")
         # an EFFECTIVE cap = the CONSTRUCTOR'S correct kwarg (post reasoning-adjustment) present as a positive
         # integer LITERAL. A cap kwarg that is the WRONG one for this constructor (e.g. max_tokens on OpenAI's
         # Responses API, whose cap is max_output_tokens — codex r73) or whose value is None/negative/variable/

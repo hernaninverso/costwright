@@ -148,6 +148,38 @@ def test_aliased_import_constructors_are_detected(tmp_path):
     assert any(u["framework"] == "langgraph" for u in rep["units"]), rep
 
 
+def test_caps_dynamic_model_requires_max_completion_tokens(tmp_path):
+    # codex r83: a Chat-API model name that is NOT a string constant — `"gpt-" + "5"` (BinOp concat), a Name
+    # bound elsewhere, an f-string, os.environ[...] — could resolve to a reasoning model at runtime, where
+    # max_tokens is IGNORED. Before the fix the analyzer saw a non-constant model ⇒ assumed non-reasoning ⇒
+    # accepted `max_tokens=1` as an effective cap ⇒ "all capped" false assurance. Now a dynamic model on
+    # ChatOpenAI/AzureChatOpenAI requires max_completion_tokens (the cap that holds for reasoning AND
+    # non-reasoning Chat models); a max_tokens-only call is flagged 'ineffective'.
+    from costwright import caps as cm
+    flagged = {
+        'from langchain_openai import ChatOpenAI\nx = ChatOpenAI(model="gpt-"+"5", max_tokens=1)\n',  # concat
+        'from langchain_openai import ChatOpenAI\nx = ChatOpenAI(model=m, max_tokens=1)\n',           # Name var
+        'from langchain_openai import AzureChatOpenAI\nx = AzureChatOpenAI(model=f"{base}", max_tokens=1)\n',
+    }
+    for code in flagged:
+        f = tmp_path / "dyn.py"
+        f.write_text(code)
+        fs, _ = cm.scan_file(f)
+        assert fs and fs[0]["kind"] == "ineffective" \
+            and fs[0]["suggest_kwarg"] == "max_completion_tokens", (code, fs)
+    # NO false positives: a dynamic model WITH max_completion_tokens is effective; a CONSTANT non-reasoning
+    # model with max_tokens is fine; an absent model arg keeps the non-reasoning default assumption.
+    clean = {
+        'from langchain_openai import ChatOpenAI\nx = ChatOpenAI(model=m, max_completion_tokens=100)\n',
+        'from langchain_openai import ChatOpenAI\nx = ChatOpenAI(model="gpt-4o", max_tokens=1)\n',
+        'from langchain_openai import ChatOpenAI\nx = ChatOpenAI(max_tokens=1)\n',
+    }
+    for code in clean:
+        f = tmp_path / "ok.py"
+        f.write_text(code)
+        assert cm.scan_file(f)[0] == [], code
+
+
 def test_caps_make_patch_valid_python_and_correct_kwarg(tmp_path):
     # codex/Cursor r76: make_patch inserted the kwarg right after '(', producing Ctor(kwarg=…, "positional") =
     # SyntaxError; and a reasoning model passed POSITIONALLY (ChatOpenAI("gpt-5")) escaped reasoning detection
