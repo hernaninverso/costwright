@@ -566,6 +566,28 @@ def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_tuple_unpack_alias_chain_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-33 WITNESS: `compiled = inner.compile(); (alias,) = (compiled,);
+    # outer.add_node('sub', alias)`. The alias is bound via a tuple-unpack of a Name (r31 only handled
+    # `alias = compiled`). Name-alias propagation now covers element-wise tuple/list unpack → flagged →
+    # compose → fail closed, never the flat undercount (10).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "compiled = inner.compile()\n"
+        "(alias,) = (compiled,)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', alias)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 10
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_subgraph_inherits_parent_limit_not_standalone(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-30 WITNESS (CORE MODEL fix): inner's standalone
     # `inner.compile().invoke(recursion_limit=1)` is a SEPARATE run and does NOT constrain inner's execution

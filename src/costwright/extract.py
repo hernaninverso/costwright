@@ -222,40 +222,41 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
         return []
 
+    all_binds = []   # (target_names, value_expr) over every binding form
     for nd in ast.walk(tree):
-        binds = []   # (target_node, source_expr)
+        bs = []
         if isinstance(nd, ast.Assign):
-            binds = [(t, nd.value) for t in nd.targets]
+            bs = [(t, nd.value) for t in nd.targets]
         elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and nd.value is not None:
-            binds = [(nd.target, nd.value)]
+            bs = [(nd.target, nd.value)]
         elif isinstance(nd, (ast.For, ast.AsyncFor)):
-            binds = [(nd.target, nd.iter)]
+            bs = [(nd.target, nd.iter)]
         elif isinstance(nd, (ast.With, ast.AsyncWith)):
-            binds = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
-        for tgt, src in binds:
-            if contains_compile(src):
-                for nm in _names(tgt):
-                    ex.compiled_vars.add(nm)
+            bs = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
+        for tgt, src in bs:
+            all_binds.append((_names(tgt), src))
             if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
                 for nm in _names(tgt):
                     ex.pregel_vars.add(nm)
-    # propagate through plain Name-alias chains: `alias = compiled` (Cursor r31). Fixpoint so chains of any
-    # length are covered. A flagged alias reaching add_node routes to compose, which fails closed (it isn't a
-    # clean `c = g.compile()` it can resolve), never the flat undercount.
-    name_aliases = []   # (target, source) for `x = y` where both are bare Names
-    for nd in ast.walk(tree):
-        if isinstance(nd, ast.Assign) and len(nd.targets) == 1 and isinstance(nd.targets[0], ast.Name) and isinstance(nd.value, ast.Name):
-            name_aliases.append((nd.targets[0].id, nd.value.id))
-        elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and isinstance(nd.target, ast.Name) and isinstance(nd.value, ast.Name):
-            name_aliases.append((nd.target.id, nd.value.id))
+
+    def _loads_any(value, names):
+        return any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in names
+                   for x in ast.walk(value))
+
+    # A name is a POSSIBLE compiled subgraph if its binding value contains a `.compile()` OR Load-references
+    # another compiled var — covering ALL alias chains in one fixpoint: `alias = compiled`, `(a,) = (c,)`,
+    # `a = c[0]`, `a = wrap(c)`, … (Cursor r31/r33). A flagged name reaching add_node routes to compose
+    # (resolves a clean `c = g.compile()`, else fails closed) — never the flat undercount. Over-flagging a
+    # non-graph derivation only fails closed (safe).
     changed = True
     while changed:
         changed = False
-        for tgt, src in name_aliases:
-            if src in ex.compiled_vars and tgt not in ex.compiled_vars:
-                ex.compiled_vars.add(tgt); changed = True
-            if src in ex.pregel_vars and tgt not in ex.pregel_vars:
-                ex.pregel_vars.add(tgt); changed = True
+        for names, value in all_binds:
+            if contains_compile(value) or _loads_any(value, ex.compiled_vars):
+                for nm in names:
+                    if nm not in ex.compiled_vars:
+                        ex.compiled_vars.add(nm)
+                        changed = True
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
