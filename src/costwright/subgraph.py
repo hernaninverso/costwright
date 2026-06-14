@@ -237,7 +237,11 @@ class _GraphReceivers(ast.NodeVisitor):
             # per-node RetryPolicy / error_handler re-execute beyond our ≤1-per-super-step model
             # (audit-3 BLOCKER) → fail closed in _resolve. Detection shared with set_node_defaults.
             self._mark_unmodeled(recv, n.keywords)
-            for a in list(n.args[1:]) + [k.value for k in n.keywords]:
+            # scan ALL positional args (not just args[1:]) + keywords: LangGraph's 1-arg
+            # `add_node(inner.compile())` / `add_node(compiled)` puts the subgraph in arg0 (name inferred
+            # from the runnable) — codex r45. A normal string-name arg0 never matches the compile/alias
+            # checks below, so 2-arg `add_node("sub", inner.compile())` records exactly once (no double-count).
+            for a in list(n.args) + [k.value for k in n.keywords]:
                 inner, alias = None, None
                 if (isinstance(a, ast.Call) and call_name(a).split(".")[-1] == "compile"
                         and isinstance(a.func, ast.Attribute) and isinstance(a.func.value, ast.Name)):
@@ -455,7 +459,27 @@ def analyze(tree) -> dict:
         if alias in alias_escaped_names:
             R.alias_escaped.add(srcg)
     R.visit(tree)
-    return R.to_dict()
+    d = R.to_dict()
+    d["reflective_ns"] = _has_reflective_ns(tree)
+    return d
+
+
+def _has_reflective_ns(tree) -> bool:
+    # Reflective NAMESPACE access can resolve a name (and thus a Send/Command/interrupt) in a way static
+    # name/attribute detection cannot see — codex/Cursor r46: `globals()["S"]("x", {})` with `S = Send` fans
+    # out invisibly; `vars(mod)[k]` / `mod.__dict__[k]` / `getattr(mod, var)` (dynamic) likewise. A literal
+    # `getattr(mod, "Send")` is NOT flagged here (it is resolved precisely by _refs_construct upstream). The
+    # presence of any of these in a unit that composes a subgraph ⇒ fail closed (we can't prove no fan-out).
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Attribute) and nd.attr == "__dict__":
+            return True
+        if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name):
+            fid = nd.func.id
+            if fid in {"globals", "locals", "vars", "eval", "exec", "setattr"}:
+                return True
+            if fid == "getattr" and not (len(nd.args) >= 2 and isinstance(nd.args[1], ast.Constant)):
+                return True   # dynamic attr name — unresolvable
+    return False
 
 
 def _nc(prov):       return {"category": "non_certifiable", "bound_factor": None, "prov": prov}
@@ -555,7 +579,7 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         if r["category"] == "default_dependent":
             cat = "default_dependent"
         inner_sum += r["bound_factor"]
-        prov += f" × {node_name}[{r['prov']}]"
+        prov += f" × {node_name or '<inferred>'}[{r['prov']}]"
 
     # CONSERVATIVE per-super-step cost: EVERY node may run once (= its own wrapper execution, including the
     # subgraph wrapper — audit-3 codex: n_TOTAL, not n_normal), and a subgraph node ADDS its inner bound on
@@ -591,6 +615,16 @@ def compose(ex_flat: dict) -> dict | None:
         return {**base, "category": "no-mapeable:subgraph-node",
                 "reason": f"fan-out present ({sorted(bad)}) — composition unsound, not attempted",
                 "all_blocking": sorted(bad)}
+
+    # REFLECTIVE NAMESPACE access (globals()/locals()/vars(...)/__dict__ subscript, dynamic getattr, eval/exec/
+    # setattr) can reflectively invoke a Send/Command/interrupt that name-based detection cannot see — codex/
+    # Cursor r46: `globals()["S"]("x", {})` with `S = Send` fans out invisibly. Composing a finite number while
+    # a construct could be reflectively reached would understate → fail closed. (A literal `getattr(_, "Send")`
+    # is resolved precisely upstream and does NOT set this flag, so those still report `send-fanout`.)
+    if A.get("reflective_ns"):
+        return {**base, "category": "no-mapeable:subgraph-node",
+                "reason": "reflective namespace access (globals/locals/vars/__dict__/dynamic getattr/eval/exec) "
+                          "could hide a blocking construct — composition not attempted"}
 
     inner_vars = {iv for (_o, _n, iv, _al, _l) in A["subgraph_nodes"]}
     outers = [v for v in A["graphs"] if v not in inner_vars]

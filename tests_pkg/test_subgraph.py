@@ -638,6 +638,59 @@ def test_e2e_cursor_assignment_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_globals_subscript_alias_send_fails_closed(tmp_path):
+    # audit-3 Cursor r46 WITNESS: `S = Send; ... globals()["S"]("x", {})` — the Send is reached via a namespace
+    # subscript whose KEY is the alias NAME "S" (not the canonical "Send"), and called DIRECTLY (no binding),
+    # so neither name nor literal-construct resolution catches it → composed 6003 despite a reachable fan-out.
+    # Any reflective namespace access (globals/locals/vars/__dict__/dynamic getattr) now fails the composition.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "from langgraph.types import Send\n"
+        "S = Send\n"
+        "def route(state):\n"
+        "    return [globals()['S']('x', {}), globals()['S']('x', {})]\n"
+        "def x(s):\n"
+        "    return s\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('route', route); inner.add_node('x', x)\n"
+        "inner.add_edge(START, 'route')\n"
+        "inner.add_conditional_edges('route', lambda s: 'x', {'x': 'x'})\n"
+        "inner.add_edge('x', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 3})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node", r
+    assert "bound_factor" not in r
+
+
+def test_e2e_dynamic_getattr_fails_closed(tmp_path):
+    # a NON-literal getattr — `getattr(lgtypes, which)` — can't be statically resolved to a construct name,
+    # so it must fail the composition (it could be hiding a Send). Distinct from literal getattr(_, "Send")
+    # which is precisely resolved and reports send-fanout.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "import langgraph.types as lgtypes\n"
+        "which = 'Send'\n"
+        "S = getattr(lgtypes, which)\n"
+        "def route(_s):\n"
+        "    return [S('sub', {}), S('sub', {})]\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', lambda s: s)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_conditional_edges('r', route)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node", r
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-41: `import langgraph.types as lgtypes; S = lgtypes.Send` aliases Send
     # via a MODULE ATTRIBUTE (the binding value is `lgtypes.Send`, an ast.Attribute, not a bare Name), so the
@@ -661,6 +714,61 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     r = _check_file(tmp_path, src)
     assert r["category"] == "no-mapeable:send-fanout"   # module-attr aliased Send detected → fan-out blocks
     assert "bound_factor" not in r
+
+
+def test_e2e_codex_one_arg_add_node_subgraph_is_composed(tmp_path):
+    # audit-3 codex CLI r45 WITNESS: LangGraph's 1-arg `outer.add_node(inner.compile())` puts the compiled
+    # subgraph in arg0 (the node name is inferred from the runnable). The subgraph scan started at args[1:],
+    # so arg0 was SKIPPED → no subgraph-node feature → the flat path counted ONE node → bound understated
+    # (10 instead of composing the inner's 20-node chain). Now ALL positional args are scanned → composed.
+    src = (
+        "from langgraph.graph import StateGraph\n"
+        "inner = StateGraph(dict)\n"
+        + "".join(f"inner.add_node('n{i}', lambda s: s)\n" for i in range(20))
+        + "outer = StateGraph(dict)\n"
+        "outer.add_node(inner.compile())\n"           # 1-arg: subgraph in arg0
+        "outer.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:framework-default"
+    # 10 × (1 wrapper + 1000×20 inner) = 200010 — the inner chain is composed, NOT undercounted to 10.
+    assert r["bound_factor"] == 10 * (1 + 1000 * 20), r
+    assert r.get("composed") is True
+
+
+def test_e2e_codex_one_arg_add_node_aliased_subgraph_is_composed(tmp_path):
+    # the aliased variant of the 1-arg form: `compiled = inner.compile(); outer.add_node(compiled)`.
+    src = (
+        "from langgraph.graph import StateGraph\n"
+        "inner = StateGraph(dict)\n"
+        + "".join(f"inner.add_node('n{i}', lambda s: s)\n" for i in range(20))
+        + "compiled = inner.compile()\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node(compiled)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:framework-default"
+    assert r["bound_factor"] == 10 * (1 + 1000 * 20), r
+    assert r.get("composed") is True
+
+
+def test_e2e_two_arg_add_node_not_double_counted(tmp_path):
+    # regression guard for the args[1:]→args change: the normal 2-arg `add_node("sub", inner.compile())`
+    # must still record the subgraph exactly ONCE (arg0 is the string name, never matches compile/alias).
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START,'a'); inner.add_edge('a',END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_node('b', lambda s: s)\n"
+        "outer.add_edge(START,'sub'); outer.add_edge('sub','b'); outer.add_edge('b',END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["bound_factor"] == 50 * (2 + 1000), r   # 2 outer nodes + ONE inner bound (not doubled)
 
 
 def test_e2e_reflective_getattr_send_is_non_certifiable(tmp_path):

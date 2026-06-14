@@ -86,8 +86,11 @@ class Extractor(ast.NodeVisitor):
             s.nodes.append((nname if isinstance(nname, str) else None, n.lineno))
             # subgraph como nodo: add_node(name, X.compile()) — el handler es OTRO grafo;
             # el costo del nodo no es 1 call (rev D5: u139). delegate() lo cubriría; el
-            # harness v1 no lo implementa → feature medida.
-            for a in list(n.args[1:]) + [k.value for k in n.keywords]:
+            # harness v1 no lo implementa → feature medida. Escaneamos TODOS los args posicionales
+            # (no solo args[1:]) porque LangGraph permite `add_node(inner.compile())` de 1 arg, con el
+            # subgrafo compilado en arg0 (el nombre se infiere del runnable) — codex r45. Un arg0 que
+            # es un string-nombre normal nunca contiene .compile() → sin falso positivo.
+            for a in list(n.args) + [k.value for k in n.keywords]:
                 refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
                                     and (x.id in s.compiled_vars or x.id in s.pregel_vars)
                                     for x in ast.walk(a))
