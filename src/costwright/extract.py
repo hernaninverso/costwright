@@ -242,6 +242,12 @@ class Extractor(ast.NodeVisitor):
             deleg = next((k for k in n.keywords if k.arg == "allow_delegation"), None)
             if deleg is not None and not (isinstance(deleg.value, ast.Constant) and deleg.value.value is False):
                 s.features.append({"feature": "agent-delegation", "line": n.lineno})
+            # a step_callback is ARBITRARY code run after every agent step — it can re-enter (a nested
+            # kickoff/loop) and add unbounded activations the n_tasks × max(budget) model does not see (Cursor
+            # r95). Fail closed unless it is a constant None (the default = no callback).
+            cb = next((k for k in n.keywords if k.arg == "step_callback"), None)
+            if cb is not None and not (isinstance(cb.value, ast.Constant) and cb.value.value is None):
+                s.features.append({"feature": "crewai-callback", "line": n.lineno})
             mi = next((k for k in n.keywords if k.arg == "max_iter"), None)
             if mi is not None:
                 v = const_of(mi.value)
@@ -272,6 +278,13 @@ class Extractor(ast.NodeVisitor):
                                     and "hierarchical" not in ast.dump(proc.value))
             if has_manager or spread or (proc is not None and not confirmed_sequential):
                 s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
+            # step_callback / task_callback are ARBITRARY code run per step/task — they can re-enter (a nested
+            # kickoff/loop) and add unbounded activations beyond the n_tasks × max model (Cursor r95). Fail
+            # closed unless the value is a constant None (the default = no callback).
+            for cbk in n.keywords:
+                if cbk.arg in ("step_callback", "task_callback") and not (
+                        isinstance(cbk.value, ast.Constant) and cbk.value.value is None):
+                    s.features.append({"feature": "crewai-callback", "line": n.lineno})
 
             # task / agent counts for the per-run model (n_tasks × max agent budget). A clean literal list/tuple
             # gives an exact count; ABSENT ⇒ None; present but non-literal/starred ⇒ "dynamic". The mapper

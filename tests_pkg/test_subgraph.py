@@ -401,6 +401,23 @@ def test_e2e_crewai_n_tasks_and_default_budget(tmp_path):
                       "Crew(agents=[a], tasks=[Task(description='1', agent=a), Task(description='2', agent=a)],"
                       " process=Process.sequential)\n", "crewai")
     assert rok["category"] == "tipa:explicit" and rok["bound_factor"] == 10, rok
+    # a step_callback / task_callback is ARBITRARY per-step code that can re-enter (a nested kickoff/loop) and
+    # add unbounded activations → fail closed unless it is a constant None (Cursor r95).
+    for cb_site in (
+        "Crew(agents=[a], tasks=[Task(description='t', agent=a)], process=Process.sequential, step_callback=cb)",
+        "Crew(agents=[a], tasks=[Task(description='t', agent=a)], process=Process.sequential, task_callback=cb)",
+        "Crew(agents=[a2], tasks=[Task(description='t', agent=a2)], process=Process.sequential)",  # agent-level below
+    ):
+        agent_def = ("a2=Agent(role='x', goal='g', backstory='b', max_iter=2, step_callback=cb)\n"
+                     if "a2" in cb_site else "a=Agent(role='x', goal='g', backstory='b', max_iter=2)\n")
+        rc = _check_kind(tmp_path, H + "def cb(x): pass\n" + agent_def + cb_site + "\n", "crewai")
+        assert rc["category"] == "no-mapeable:crewai-callback" and "bound_factor" not in rc, (cb_site, rc)
+    # step_callback=None (the default) still certifies
+    rn = _check_kind(tmp_path, H +
+                     "a=Agent(role='x', goal='g', backstory='b', max_iter=2)\n"
+                     "Crew(agents=[a], tasks=[Task(description='t', agent=a)], process=Process.sequential, step_callback=None)\n",
+                     "crewai")
+    assert rn["category"] == "tipa:explicit" and rn["bound_factor"] == 2, rn
 
 
 def test_e2e_multiple_explicit_bounds_combine(tmp_path):
