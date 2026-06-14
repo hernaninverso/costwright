@@ -305,6 +305,18 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     if nm not in ex.compiled_vars:
                         ex.compiled_vars.add(nm)
                         changed = True
+            # assignment-aliasing of Send/Command (`S = Send`, then `T = S`, …) — propagate so the fan-out /
+            # dynamic-goto blocking can't be bypassed by re-binding the name (Cursor r38).
+            if isinstance(value, ast.Name) and value.id in ex.send_aliases:
+                for nm in names:
+                    if nm not in ex.send_aliases:
+                        ex.send_aliases.add(nm)
+                        changed = True
+            if isinstance(value, ast.Name) and value.id in ex.command_aliases:
+                for nm in names:
+                    if nm not in ex.command_aliases:
+                        ex.command_aliases.add(nm)
+                        changed = True
     ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —

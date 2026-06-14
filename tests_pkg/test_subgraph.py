@@ -566,6 +566,30 @@ def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_assignment_aliased_send_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-38: `S = Send` (assignment aliasing after a plain import) bypassed
+    # the fan-out blocking. Send/Command aliases now propagate through assignment chains (fixpoint) → S(...)
+    # detected as Send → send-fanout blocks → no number.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "from langgraph.types import Send\n"
+        "S = Send\n"
+        "def route(_s):\n"
+        "    return [S('sub', {}), S('sub', {})]\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', lambda s: s)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_conditional_edges('r', route)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:send-fanout"
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_aliased_send_fanout_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-37: `from langgraph.types import Send as S` then `S(...)` bypassed
     # the send-fanout blocking (only literal `Send(...)` was detected) → composed a number despite fan-out.
