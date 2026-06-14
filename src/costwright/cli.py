@@ -27,14 +27,22 @@ def _find_units(root: Path, max_files: int):
     units = []
     truncated = False
     n = 0
-    for py in sorted(root.rglob("*.py")):
-        if any(part in EXCLUDE_DIRS for part in py.parts):
-            continue
-        # audit-3 (deepseek P0): NO seguir symlinks — un repo hostil podría apuntar
-        # fuera del árbol escaneado (path traversal del scanner)
-        if py.is_symlink() or any(p.is_symlink() for p in py.parents
-                                  if root in p.parents or p == root):
-            continue
+    # `root.rglob("*.py")` returns NOTHING when root is a FILE, so `check path/to/wf.py` scanned zero files and
+    # reported a false "all clear" / exit 0 (codex r94). Scan the file directly when root is a file; rglob the
+    # tree when it is a directory.
+    is_dir = root.is_dir()
+    candidates = sorted(root.rglob("*.py")) if is_dir else [root]
+    for py in candidates:
+        # the EXCLUDE_DIRS / symlink-traversal guards apply to TREE discovery (a hostile repo); a file the user
+        # pointed at EXPLICITLY is scanned as-is (their choice).
+        if is_dir:
+            if any(part in EXCLUDE_DIRS for part in py.parts):
+                continue
+            # audit-3 (deepseek P0): NO seguir symlinks — un repo hostil podría apuntar
+            # fuera del árbol escaneado (path traversal del scanner)
+            if py.is_symlink() or any(p.is_symlink() for p in py.parents
+                                      if root in p.parents or p == root):
+                continue
         n += 1
         if n > max_files:
             truncated = True   # at least one eligible file beyond the cap was NOT scanned
@@ -119,9 +127,12 @@ def cmd_check(args) -> int:
         return 2
     try:
         found, truncated = _find_units(root, args.max_files)
+        # relative paths are reported against the directory; when root is a single file, use its parent so the
+        # rel path is the filename (not "." from relative_to(root)).
+        rel_base = root if root.is_dir() else root.parent
         mapped = []
         for u in found:
-            rel = str(u["file"].relative_to(root))
+            rel = str(u["file"].relative_to(rel_base))
             if u.get("syntax_error"):
                 mapped.append({"category": "extractor-failure", "reason": "syntax",
                                "kind": u["kind"], "rel_path": rel, "line": 0})
@@ -180,9 +191,10 @@ def cmd_caps(args) -> int:
         return 2
     try:
         per_file, scanned = caps_mod.scan_path(root, args.max_files)
+        rel_base = root if root.is_dir() else root.parent      # filename, not "." , when root is a file (codex r94)
         if args.json:
             out = {"schema": "costwright.caps.v1", "files_scanned": scanned, "findings": [
-                {**f, "file": str(p.relative_to(root))}
+                {**f, "file": str(p.relative_to(rel_base))}
                 for p, (fs, _) in sorted(per_file.items()) for f in fs]}
             print(json.dumps(out, indent=1, ensure_ascii=False, sort_keys=True))
         else:
@@ -194,7 +206,7 @@ def cmd_caps(args) -> int:
                       f"({scanned} files scanned). Reflective/dynamic construction is not covered.")
                 return 0
             for p, (fs, _) in sorted(per_file.items()):
-                rel = p.relative_to(root)
+                rel = p.relative_to(rel_base)
                 for f in fs:
                     if f["kind"] == "missing":
                         print(f"  ✗ {rel}:{f['line']}  {f['constructor']}(...) sin cap "

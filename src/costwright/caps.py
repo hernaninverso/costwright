@@ -214,17 +214,23 @@ def make_patch(path: Path, src: str, findings, cap_value: int) -> str:
 
 
 def scan_path(root: Path, max_files: int = 5000):
-    """Escanea un árbol; devuelve (findings_por_archivo, n_escaneados)."""
+    """Escanea un árbol; devuelve (findings_por_archivo, n_escaneados). `root.rglob` no devuelve nada cuando
+    root es un ARCHIVO (codex r94) → escanear el archivo directo en ese caso."""
     out = {}
     n = 0
-    for py in sorted(root.rglob("*.py")):
-        if any(part in EXCLUDE_DIRS for part in py.parts):
-            continue
-        # NO seguir symlinks — un repo hostil podría apuntar fuera del árbol escaneado
-        # (path traversal del scanner). Mismo guard que cli._find_units y pack.build_tarball.
-        if py.is_symlink() or any(p.is_symlink() for p in py.parents
-                                  if root in p.parents or p == root):
-            continue
+    is_dir = root.is_dir()
+    candidates = sorted(root.rglob("*.py")) if is_dir else [root]
+    for py in candidates:
+        # los guards EXCLUDE_DIRS / symlink son para el DESCUBRIMIENTO de árbol; un archivo apuntado explícitamente
+        # se escanea tal cual.
+        if is_dir:
+            if any(part in EXCLUDE_DIRS for part in py.parts):
+                continue
+            # NO seguir symlinks — un repo hostil podría apuntar fuera del árbol escaneado
+            # (path traversal del scanner). Mismo guard que cli._find_units y pack.build_tarball.
+            if py.is_symlink() or any(p.is_symlink() for p in py.parents
+                                      if root in p.parents or p == root):
+                continue
         n += 1
         if n > max_files:
             break

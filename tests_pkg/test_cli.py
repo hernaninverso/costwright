@@ -55,6 +55,24 @@ def test_fail_on_policy():
         assert "policy" in r.stderr
 
 
+def test_check_and_caps_accept_a_file_path():
+    # codex r94: `root.rglob("*.py")` returns NOTHING when root is a FILE, so `check path/to/wf.py` scanned zero
+    # files and reported a false "all clear" / exit 0. A file path is now scanned directly (check AND caps).
+    with tempfile.TemporaryDirectory() as td:
+        bad = make(td, "wf.py", FIX_NONCERT)        # a non_certifiable unit
+        r = run("check", str(bad), "--fail-on", "non-certifiable")
+        assert r.returncode == 1, (r.returncode, r.stdout, r.stderr)
+        rep = json.loads(run("check", str(bad), "--json").stdout)
+        assert rep["summary"]["total"] == 1 and rep["units"][0]["file"] == "wf.py", rep
+        good = make(td, "good.py", FIX_DEFAULT)
+        gr = run("check", str(good), "--fail-on", "reject")
+        assert gr.returncode == 0                    # a certifiable file passes
+        # caps on a file path finds the uncapped constructor (not a vacuous "all capped")
+        cap_file = make(td, "llm.py", "from langchain_openai import ChatOpenAI\nx = ChatOpenAI(model='gpt-4o')\n")
+        cj = json.loads(run("caps", str(cap_file), "--json").stdout)
+        assert cj["files_scanned"] == 1 and [f["file"] for f in cj["findings"]] == ["llm.py"], cj
+
+
 def test_scan_truncation_never_reads_as_clean():
     # codex r93: a --max-files cap smaller than the eligible files SILENTLY truncated the scan, so the rollup
     # read "all clear" (exit 0) while unscanned files could hold anything. A truncated scan now (a) rejects a
