@@ -305,14 +305,15 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                     if nm not in ex.compiled_vars:
                         ex.compiled_vars.add(nm)
                         changed = True
-            # assignment-aliasing of Send/Command (`S = Send`, then `T = S`, …) — propagate so the fan-out /
-            # dynamic-goto blocking can't be bypassed by re-binding the name (Cursor r38).
-            if isinstance(value, ast.Name) and value.id in ex.send_aliases:
+            # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
+            # `T = S`, …) — propagate so the fan-out / dynamic-goto blocking can't be bypassed (Cursor r38/r39).
+            # Over-flagging only makes a call block (fail closed), which is the safe direction.
+            if _loads_any(value, ex.send_aliases):
                 for nm in names:
                     if nm not in ex.send_aliases:
                         ex.send_aliases.add(nm)
                         changed = True
-            if isinstance(value, ast.Name) and value.id in ex.command_aliases:
+            if _loads_any(value, ex.command_aliases):
                 for nm in names:
                     if nm not in ex.command_aliases:
                         ex.command_aliases.add(nm)
