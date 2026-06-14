@@ -48,6 +48,14 @@ HUGE_LIMIT = 10_000
 _FANOUT_FEATURES = {"send-fanout", "dynamic-goto"}   # break the no-fan-out invariant ⇒ do NOT compose
 # Runnable methods that RUN a compiled graph and accept a recursion_limit via config (Cursor r13: batch was
 # missing). Any OTHER method on a compiled-graph alias is treated as a possible unread invocation → fail closed.
+# NOTE — PER-RUN metric (codex/Cursor r50): the certificate's node_executions_ceiling is the worst case for ONE
+# graph run; `recursion_limit` is a per-run LangGraph concept. `batch`/`abatch` run the graph once per input
+# element — i.e. N INDEPENDENT runs, each separately bounded by the same per-run ceiling — exactly like calling
+# `invoke` in a loop (which costwright also reports per-run, never multiplying by the loop count). The aggregate
+# cost of a batch call is (per-run ceiling) × (batch cardinality); that cardinality is outside the per-run
+# metric (and usually dynamic), so it is the caller's to apply. We intentionally do NOT multiply by a literal
+# batch length (it would make the metric depend on calling syntax and diverge from the flat path) nor fail
+# closed (it would reject a soundly per-run-bounded workload). The flat path treats batch identically.
 _INVOKE_METHODS = ("invoke", "ainvoke", "stream", "astream", "batch", "abatch",
                    "astream_events", "astream_log", "batch_as_completed", "abatch_as_completed")
 

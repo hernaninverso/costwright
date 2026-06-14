@@ -55,6 +55,16 @@ static analyzer and voids the certificate, as with every type checker — docume
 
 The flat (non-subgraph) analysis path — 99% of files — is untouched.
 
+### Metric: the ceiling is PER RUN
+
+`node_executions_ceiling` bounds **one** graph execution (`recursion_limit` is a per-run LangGraph concept).
+`batch`/`abatch` run the graph **once per input element** — N independent runs, each separately bounded by the
+same per-run ceiling, exactly like calling `invoke` in a loop (which is also reported per-run, never multiplied
+by the loop count). The aggregate cost of a batch call is `(per-run ceiling) × (batch cardinality)`; that
+cardinality is outside the per-run metric and is the caller's to apply. costwright deliberately does not fold a
+literal batch length into the number (it would make the metric depend on calling syntax) nor fail closed on a
+soundly per-run-bounded batch.
+
 ## [0.1.0]
 
 Initial release: static budget-ceiling certificates for LangGraph / CrewAI / OpenAI Agents SDK,

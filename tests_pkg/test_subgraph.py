@@ -788,6 +788,25 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_batch_host_is_per_run_not_aggregate(tmp_path):
+    # audit-3 Cursor r50 filed a "batch([6000]) totals 6000 > per-run 5005 ⇒ understate" BLOCKER. codex
+    # adjudicated it a per-run-vs-aggregate SEMANTIC false positive: the certificate's node_executions_ceiling
+    # is PER RUN (recursion_limit is per-run). `batch([N])` runs the graph N INDEPENDENT times, each bounded by
+    # the same per-run ceiling — identical to calling invoke in a loop, which costwright also reports per-run.
+    # The aggregate is (per-run)×(cardinality), outside the per-run metric. This pins: a batch host reports the
+    # SAME per-run ceiling as invoke, NOT a number multiplied by the batch length. (Multiplying would make the
+    # metric depend on calling syntax and diverge from the flat path; codex recommended against it.)
+    inner = "inner = StateGraph(dict)\ninner.add_node('a', lambda s: s)\ninner.add_edge(START,'a'); inner.add_edge('a',END)\n"
+    outer = ("outer = StateGraph(dict)\nouter.add_node('sub', inner.compile())\n"
+             "outer.add_edge(START,'sub'); outer.add_edge('sub',END)\napp = outer.compile()\n")
+    head = "from langgraph.graph import StateGraph, START, END\n" + inner + outer
+    r_invoke = _check_file(tmp_path, head + "app.invoke({}, config={'recursion_limit': 5})\n")
+    r_batch = _check_file(tmp_path, head + "app.batch([{} for _ in range(6000)], config={'recursion_limit': 5})\n")
+    # both report the SAME per-run ceiling 5 × (1 + 1000) = 5005 — batch cardinality is not folded in.
+    assert r_invoke["bound_factor"] == 5 * (1 + 1000), r_invoke
+    assert r_batch["bound_factor"] == r_invoke["bound_factor"], (r_batch, r_invoke)
+
+
 def test_e2e_edge_to_undefined_node_is_not_undercount(tmp_path):
     # audit-3 Cursor r48 raised a "ghost" node referenced only by add_edge (never add_node'd), claiming the
     # inner node count of 1 understates a "true" 2. VERIFIED FALSE POSITIVE against real langgraph 1.x:
