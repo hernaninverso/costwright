@@ -48,8 +48,19 @@ def scan_file(path: Path):
     """Devuelve CapFindings: constructores LLM sin ningún cap kwarg."""
     try:
         src = path.read_text(encoding="utf-8", errors="ignore")
+    except OSError:
+        return [], None
+    try:
         tree = ast.parse(src)
-    except (SyntaxError, OSError):
+    except SyntaxError:
+        # a file that DOESN'T PARSE could hide an uncapped LLM constructor — reporting "all capped" for it is
+        # false assurance (codex r73). If the text mentions a known LLM constructor, surface that the caps
+        # could NOT be verified; an unrelated broken file (no LLM constructor text) is skipped (no noise).
+        if any(c in src for c in PROVIDER_CAPS):
+            return [{"kind": "parse_error", "constructor": None, "provider": None, "line": 0,
+                     "suggest_kwarg": None,
+                     "why": "el archivo no parsea (SyntaxError) y menciona un constructor LLM — los token-caps "
+                            "NO se pudieron verificar; no asumir que están acotados"}], src
         return [], None
     findings = []
     for node in ast.walk(tree):
@@ -59,12 +70,6 @@ def scan_file(path: Path):
         if name not in PROVIDER_CAPS:
             continue
         kwargs_present = {k.arg for k in node.keywords if k.arg}
-        # a cap kwarg only bounds tokens if its VALUE is a positive integer LITERAL. `max_tokens=None`,
-        # `max_tokens=-1`, `max_tokens=var`, `max_tokens=True` are present-but-ineffective (codex r72).
-        effective_caps = {k.arg for k in node.keywords
-                          if k.arg in CAP_KWARGS and isinstance(k.value, ast.Constant)
-                          and isinstance(k.value.value, int) and not isinstance(k.value.value, bool)
-                          and k.value.value > 0}
         provider, kwarg, note = PROVIDER_CAPS[name]
         # detección best-effort de reasoning model por el kwarg `model` (audit-3 gpt-5.5 P0):
         # en Chat API los o-series/GPT-5 ignoran max_tokens; el cap real es max_completion_tokens
@@ -78,17 +83,30 @@ def scan_file(path: Path):
         if name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
             kwarg = "max_completion_tokens"
             note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
-        if kwargs_present & CAP_KWARGS and not effective_caps:
-            # un cap kwarg está presente pero su valor NO es un entero positivo literal → no acota (codex r72)
+        # an EFFECTIVE cap = the CONSTRUCTOR'S correct kwarg (post reasoning-adjustment) present as a positive
+        # integer LITERAL. A cap kwarg that is the WRONG one for this constructor (e.g. max_tokens on OpenAI's
+        # Responses API, whose cap is max_output_tokens — codex r73) or whose value is None/negative/variable/
+        # True (codex r72) is NOT effective.
+        correct_effective = any(k.arg == kwarg and isinstance(k.value, ast.Constant)
+                                and isinstance(k.value.value, int) and not isinstance(k.value.value, bool)
+                                and k.value.value > 0 for k in node.keywords)
+        if not correct_effective:
+            if kwargs_present & CAP_KWARGS:
+                findings.append({
+                    "kind": "ineffective", "constructor": name, "provider": provider,
+                    "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS), "suggest_kwarg": kwarg,
+                    "why": f"el cap presente no acota: falta el kwarg correcto `{kwarg}` como entero positivo "
+                           "(o el valor es None/negativo/variable/True, o es el kwarg equivocado para este "
+                           "constructor)",
+                })
+                continue
             findings.append({
-                "kind": "ineffective", "constructor": name, "provider": provider,
-                "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS), "suggest_kwarg": kwarg,
-                "why": "el cap está presente pero su valor no es un entero positivo literal "
-                       "(None / negativo / variable / True) — no acota efectivamente los tokens",
+                "kind": "missing", "constructor": name, "provider": provider,
+                "line": node.lineno, "suggest_kwarg": kwarg, "note": note,
             })
             continue
-        if kwargs_present & CAP_KWARGS:
-            # tiene un cap EFECTIVO — chequear degradaciones conocidas (§3.2)
+        if correct_effective:
+            # tiene un cap EFECTIVO (el kwarg correcto, entero positivo) — chequear degradaciones conocidas (§3.2)
             if provider == "gemini" and "thinking_budget" not in kwargs_present:
                 findings.append({
                     "kind": "degraded", "constructor": name, "provider": provider,
@@ -112,10 +130,6 @@ def scan_file(path: Path):
                     "why": "reasoning model: max_tokens es ignorado en Chat API; el techo real es max_completion_tokens",
                 })
             continue
-        findings.append({
-            "kind": "missing", "constructor": name, "provider": provider,
-            "line": node.lineno, "suggest_kwarg": kwarg, "note": note,
-        })
     return findings, src
 
 

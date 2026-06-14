@@ -139,7 +139,7 @@ def cmd_caps(args) -> int:
                               f"→ agregar {f['suggest_kwarg']}=<N>"
                               + (f"   [{f['note']}]" if f.get("note") else ""))
                     else:
-                        print(f"  ▲ {rel}:{f['line']}  {f['constructor']}: {f['why']}")
+                        print(f"  ▲ {rel}:{f['line']}  {f['constructor'] or '(file)'}: {f['why']}")
             print(f"\n  {total} finding(s) in {len(per_file)} file(s) "
                   f"({scanned} scanned). Use --patch to emit a unified diff.")
         if args.patch:

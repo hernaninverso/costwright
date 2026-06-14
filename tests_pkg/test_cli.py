@@ -84,20 +84,41 @@ def test_fail_on_tiers_monotonic(tmp_path):
 
 
 def test_caps_ineffective_cap_flagged(tmp_path):
-    # codex r72: a cap kwarg present with a NON-positive-int-literal value (None/negative/variable/True) is not
-    # an effective cap and must be flagged, not treated as capped.
+    # codex r72/r73: a cap kwarg is EFFECTIVE only if it is the constructor's CORRECT kwarg present as a
+    # positive-int literal. A None/negative/variable/True value, or the WRONG kwarg for the constructor
+    # (max_tokens on OpenAI's Responses API, whose cap is max_output_tokens; max_tokens on ChatOllama, whose
+    # cap is num_predict), is NOT effective and must be flagged.
     from costwright import caps as cm
-    for ctor, kind in (("ChatOpenAI(model='gpt-4', max_tokens=None)", "ineffective"),
-                       ("ChatOpenAI(model='gpt-4', max_tokens=LIM)", "ineffective"),
-                       ("ChatOpenAI(model='gpt-4')", "missing"),
-                       ("ChatOpenAI(model='gpt-4', max_tokens=128)", None)):
-        f = tmp_path / "m.py"
-        f.write_text(f"from langchain_openai import ChatOpenAI\nLIM=5\nllm={ctor}\n")
-        kinds = [x["kind"] for x in cm.scan_file(f)[0]]
+    cases = (
+        ("from x import ChatOpenAI\nllm=ChatOpenAI(model='gpt-4', max_tokens=None)", "ineffective"),
+        ("from x import ChatOpenAI\nL=5\nllm=ChatOpenAI(model='gpt-4', max_tokens=L)", "ineffective"),
+        ("from x import OpenAI\nllm=OpenAI(max_tokens=10)", "ineffective"),          # wrong kwarg for Responses
+        ("from x import ChatOllama\nllm=ChatOllama(max_tokens=100)", "ineffective"),  # Ollama needs num_predict
+        ("from x import ChatOpenAI\nllm=ChatOpenAI(model='gpt-4')", "missing"),
+        ("from x import OpenAI\nllm=OpenAI(max_output_tokens=10)", None),             # correct
+        ("from x import ChatOpenAI\nllm=ChatOpenAI(model='gpt-4', max_tokens=128)", None),
+        ("from x import ChatOllama\nllm=ChatOllama(num_predict=100)", None),
+    )
+    for code, kind in cases:
+        (tmp_path / "m.py").write_text(code)
+        kinds = [x["kind"] for x in cm.scan_file(tmp_path / "m.py")[0]]
         if kind is None:
-            assert kinds == [], (ctor, kinds)
+            assert kinds == [], (code, kinds)
         else:
-            assert kind in kinds, (ctor, kinds)
+            assert kind in kinds, (code, kinds)
+
+
+def test_caps_syntax_error_not_all_capped(tmp_path):
+    # codex r73: a file that does NOT parse but mentions an LLM constructor could hide an uncapped one;
+    # reporting "all capped" is false assurance. It now surfaces a parse_error finding; an unrelated broken
+    # file (no LLM constructor text) is skipped (no noise).
+    from costwright import caps as cm
+    (tmp_path / "broken.py").write_text("from x import ChatOpenAI\nChatOpenAI(max_tokens=10")  # syntax error
+    assert [f["kind"] for f in cm.scan_file(tmp_path / "broken.py")[0]] == ["parse_error"]
+    (tmp_path / "unrelated.py").write_text("def f(:\n  pass")  # broken, no LLM ctor
+    assert cm.scan_file(tmp_path / "unrelated.py")[0] == []
+    r = run("caps", str(tmp_path))
+    assert "all LLM constructors capped" not in r.stdout, r.stdout
 
 
 def test_exit_2_bad_path():
