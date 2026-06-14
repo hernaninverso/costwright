@@ -70,6 +70,7 @@ class Extractor(ast.NodeVisitor):
         s.llm_calls = 0       # heurística: invocaciones a modelos dentro del archivo
         s.while_true_invokes = []
         s._in_while_true = 0
+        s._loop_depth = 0   # >0 inside any For/While/comprehension — add_node here builds N runtime nodes (r68)
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
         s.compiled_factory_names = set()  # function/method NAMES that return a compiled subgraph (r56/r58)
         s.addnode_aliases = set()  # names bound to `g.add_node` (bound-method alias / partial) — r63
@@ -88,14 +89,37 @@ class Extractor(ast.NodeVisitor):
                 s.features.append({"feature": "interactive-repl", "line": n.lineno})
                 s.generic_visit(n); return
         if is_true: s._in_while_true += 1
+        s._loop_depth += 1
         s.generic_visit(n)
+        s._loop_depth -= 1
         if is_true: s._in_while_true -= 1
+
+    def visit_For(s, n):
+        s._loop_depth += 1
+        s.generic_visit(n)
+        s._loop_depth -= 1
+
+    visit_AsyncFor = visit_For
+
+    def _visit_comp(s, n):
+        s._loop_depth += 1
+        s.generic_visit(n)
+        s._loop_depth -= 1
+
+    visit_ListComp = _visit_comp
+    visit_SetComp = _visit_comp
+    visit_DictComp = _visit_comp
+    visit_GeneratorExp = _visit_comp
 
     def visit_Call(s, n):
         name = call_name(n)
         last = name.split(".")[-1]
 
         if last == "add_node" or (isinstance(n.func, ast.Name) and n.func.id in s.addnode_aliases):
+            # an add_node inside a loop/comprehension builds N runtime nodes from ONE textual site → the static
+            # node count undercounts → fail closed (codex r68; mirrors the subgraph path's loop guard).
+            if s._loop_depth > 0:
+                s.features.append({"feature": "node-in-loop", "line": n.lineno})
             arg0 = n.args[0] if n.args else None
             nname = const_of(arg0) if arg0 is not None else None
             if not isinstance(nname, str) and len(n.args) == 1:
@@ -138,6 +162,8 @@ class Extractor(ast.NodeVisitor):
                 if k.arg is None or k.arg in ("retry", "retry_policy", "error_handler"):
                     s.features.append({"feature": "node-unmodeled-retry", "line": n.lineno})
         elif last == "add_sequence":
+            if s._loop_depth > 0:
+                s.features.append({"feature": "node-in-loop", "line": n.lineno})
             # `g.add_sequence([(name, action), ...])` adds ONE node per element — the FLAT path must count them
             # all or it understates (codex r65). A static list/tuple literal is counted element-by-element; a
             # non-literal sequence (unknown length) fails closed; an element carrying a compiled subgraph routes

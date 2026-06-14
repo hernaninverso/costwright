@@ -244,6 +244,42 @@ def _check_file(tmp_path, src):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_flat_add_node_in_loop_fails_closed(tmp_path):
+    # audit-3 codex r68 (flat path): add_node inside a for/while/comprehension builds N runtime nodes from ONE
+    # textual site — `for i in range(100): g.add_node('leaf'+str(i), ...)` — so the static node count undercounts
+    # (n_nodes counted the site once). The subgraph path failed closed on loop-built graphs; the FLAT path now
+    # tracks loop depth and flags node-in-loop too.
+    cases = (
+        "for i in range(100):\n    g.add_node('leaf' + str(i), lambda s: s)\n",
+        "[g.add_node('n' + str(i), lambda s: s) for i in range(50)]\n",
+        "i = 0\nwhile i < 10:\n    g.add_node('n' + str(i), lambda s: s)\n    i += 1\n",
+    )
+    for loop in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "g = StateGraph(dict)\n"
+            "g.add_node('mid', lambda s: s)\n"
+            + loop +
+            "g.add_edge(START, 'mid')\n"
+            "g.compile().invoke({}, config={'recursion_limit': 3})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert "bound_factor" not in r, (loop, r)
+        assert r["category"].startswith("no-mapeable:") or r["category"] == "extractor-failure", (loop, r)
+
+    # a loop that does NOT add_node must not block
+    ok = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s); g.add_node('b', lambda s: s)\n"
+        "for x in ['a', 'b']:\n    pass\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', 'b'); g.add_edge('b', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, ok)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_flat_retry_policy_fails_closed(tmp_path):
     # audit-3 codex r67 (flat path): a node with a RetryPolicy(max_attempts=k) runs up to k× per super-step, so
     # the flat bound (recursion_limit × n_nodes, retry=1) understates. The subgraph path already fails closed on
@@ -419,7 +455,9 @@ def test_e2e_codex_loop_built_graph_is_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT a 1-node composed bound
+    # fail closed either way: the flat loop guard (node-in-loop) may fire before compose, or the composition
+    # path fails closed on the loop-built graph (subgraph-node) — both sound (no number).
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-in-loop"), r
     assert "bound_factor" not in r
 
 
@@ -593,7 +631,7 @@ def test_e2e_cursor_for_target_compile_alias_is_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-in-loop"), r
     assert "bound_factor" not in r
 
 
@@ -1997,7 +2035,7 @@ def test_e2e_loop_added_nodes_fail_closed(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 50})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-in-loop"), r
     assert "bound_factor" not in r
 
 
@@ -2043,7 +2081,8 @@ def test_e2e_codex_param_shadow_is_non_certifiable(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the module 1-node compose
+    # loop-built big_graph also trips the flat node-in-loop guard; either fail-closed reason is sound.
+    assert r["category"] in ("no-mapeable:subgraph-node", "no-mapeable:node-in-loop"), r
     assert "bound_factor" not in r
 
 
