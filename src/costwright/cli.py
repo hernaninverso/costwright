@@ -134,7 +134,10 @@ def cmd_caps(args) -> int:
         else:
             total = sum(len(fs) for fs, _ in per_file.values())
             if not total:
-                print(f"costwright caps: all LLM constructors capped ({scanned} files scanned)")
+                # NOT "all capped" — a static by-name scan cannot see every construction (a non-literal
+                # `getattr(m, var)`, a factory function, a subclass). State exactly what was checked (Cursor r83).
+                print(f"costwright caps: no uncapped LLM constructors detected by name "
+                      f"({scanned} files scanned). Reflective/dynamic construction is not covered.")
                 return 0
             for p, (fs, _) in sorted(per_file.items()):
                 rel = p.relative_to(root)

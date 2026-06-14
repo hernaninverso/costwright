@@ -180,6 +180,28 @@ def test_caps_dynamic_model_requires_max_completion_tokens(tmp_path):
         assert cm.scan_file(f)[0] == [], code
 
 
+def test_caps_reflective_getattr_constructor_fails_closed(tmp_path):
+    # Cursor r83: `importlib.import_module("langchain_openai")` + `getattr(m, "ChatOpenAI")` then `Ctor(...)`
+    # reaches a known LLM constructor by STRING; the eventual call carries the name `Ctor`, so by-name detection
+    # missed it and the CLI printed "all LLM constructors capped" (false assurance). A literal getattr of a known
+    # constructor now fails closed, and the all-clear message no longer claims completeness.
+    from costwright import caps as cm
+    witness = ('import importlib\nm = importlib.import_module("langchain_openai")\n'
+               'Ctor = getattr(m, "ChatOpenAI")\nllm = Ctor(model="gpt-4o")\n')
+    f = tmp_path / "refl.py"
+    f.write_text(witness)
+    fs, _ = cm.scan_file(f)
+    assert fs and fs[0]["kind"] == "reflective" and fs[0]["constructor"] == "ChatOpenAI", fs
+    # a getattr of an UNKNOWN name is not flagged (no noise); a non-literal getattr does not crash
+    (tmp_path / "n.py").write_text('x = getattr(mod, "NotAConstructor")\ny = getattr(mod, var)\n')
+    assert cm.scan_file(tmp_path / "n.py")[0] == []
+    # the CLI all-clear wording for a genuinely-clean file must NOT overclaim "all capped"
+    d = tmp_path / "cleandir"; d.mkdir()
+    (d / "ok.py").write_text('from langchain_openai import ChatOpenAI\nllm = ChatOpenAI(model="gpt-4o", max_tokens=128)\n')
+    out = run("caps", str(d)).stdout
+    assert "all LLM constructors capped" not in out and "not covered" in out, out
+
+
 def test_caps_make_patch_valid_python_and_correct_kwarg(tmp_path):
     # codex/Cursor r76: make_patch inserted the kwarg right after '(', producing Ctor(kwarg=…, "positional") =
     # SyntaxError; and a reasoning model passed POSITIONALLY (ChatOpenAI("gpt-5")) escaped reasoning detection

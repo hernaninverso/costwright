@@ -72,6 +72,20 @@ def scan_file(path: Path):
         if not isinstance(node, ast.Call):
             continue
         name = call_name(node)                 # source name (what make_patch matches + what we display)
+        # REFLECTIVE construction (Cursor r83): `getattr(mod, "ChatOpenAI")` / `importlib.import_module(...)`
+        # then `getattr(...)` reaches a known LLM constructor by STRING, escaping by-name call detection — the
+        # eventual `Ctor(...)` call carries the name `Ctor`, not `ChatOpenAI`. We cannot attribute that call's
+        # kwargs, so its token-cap is NOT statically verifiable → fail closed (a finding), never "all capped".
+        if name == "getattr" and len(node.args) >= 2 and isinstance(node.args[1], ast.Constant) \
+                and isinstance(node.args[1].value, str) and node.args[1].value in PROVIDER_CAPS:
+            ctor = node.args[1].value
+            findings.append({
+                "kind": "reflective", "constructor": ctor, "provider": PROVIDER_CAPS[ctor][0],
+                "line": node.lineno, "suggest_kwarg": None,
+                "why": f"constructor `{ctor}` accedido reflectivamente vía getattr — la llamada y sus kwargs no "
+                       "se pueden atribuir estáticamente; el token-cap NO se puede verificar (fail closed)",
+            })
+            continue
         resolved = alias.get(name, name)       # the real constructor, for the provider/kwarg lookup
         if resolved not in PROVIDER_CAPS:
             continue
