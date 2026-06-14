@@ -359,11 +359,24 @@ class Extractor(ast.NodeVisitor):
                 s.bounds.append({"param": "max_turns", "value": const_of(k.value),
                                  "none_literal": none_lit,
                                  "source": "explicit", "line": n.lineno})
-            if k.arg == "config" and isinstance(k.value, ast.Dict):
-                for kk, vv in zip(k.value.keys, k.value.values):
-                    if const_of(kk) == "recursion_limit":
-                        s.bounds.append({"param": "recursion_limit", "value": const_of(vv),
-                                         "source": "explicit", "line": n.lineno})
+        # the config can be the `config=` KWARG or the 2nd POSITIONAL arg of a langgraph invoke-family call
+        # (`invoke(input, config)`, `batch(inputs, config)`, `stream(input, config)`, …).
+        config_dicts = [k.value for k in n.keywords if k.arg == "config" and isinstance(k.value, ast.Dict)]
+        if method in ("invoke", "ainvoke", "stream", "astream", "batch", "abatch") \
+                and len(n.args) >= 2 and isinstance(n.args[1], ast.Dict):
+            config_dicts.append(n.args[1])
+        for cfg in config_dicts:
+            # a config dict key that is NOT a constant string — `{'recursion_' + 'limit': 20000}` (a computed
+            # constant), `{key_var: ...}`, or a `**spread` (key node is None) — could hide a recursion_limit that
+            # const-key matching MISSES → understatement / missed runaway (Cursor r96; the subgraph path already
+            # fails closed on this). Record an unresolved bound so the mapper fails closed.
+            if any(kk is None or const_of(kk) is None for kk in cfg.keys):
+                s.bounds.append({"param": "config-dynamic-key", "value": None,
+                                 "source": "explicit", "line": n.lineno})
+            for kk, vv in zip(cfg.keys, cfg.values):
+                if const_of(kk) == "recursion_limit":
+                    s.bounds.append({"param": "recursion_limit", "value": const_of(vv),
+                                     "source": "explicit", "line": n.lineno})
 
     def visit_Dict(s, n):
         # config dicts armados aparte: {"recursion_limit": N, ...}

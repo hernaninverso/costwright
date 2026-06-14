@@ -509,6 +509,32 @@ def test_e2e_flat_nonpositive_recursion_limit_fails_closed(tmp_path):
     assert r1["category"] == "tipa:explicit" and r1["bound_factor"] == 1, r1
 
 
+def test_e2e_flat_computed_config_key_fails_closed(tmp_path):
+    # Cursor r96 (flat path): a config dict key that is NOT a constant string — `{'recursion_' + 'limit': 20000}`
+    # (a computed constant that equals "recursion_limit" at runtime), a Name key, or a `**spread` — could hide a
+    # recursion_limit that const-key matching MISSES, so the bound defaulted to 1000 and a runaway (20000) was
+    # missed. The flat path now fails closed on any non-constant config key (mirroring the subgraph path). The
+    # config is matched whether it is the `config=` kwarg or the 2nd positional arg; an INPUT dict is untouched.
+    base = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "app = g.compile()\n"
+    )
+    for cfg in (
+        "app.invoke({}, {'recursion_' + 'limit': 20000})\n",          # computed key, positional config
+        "app.invoke({}, config={'recursion_' + 'limit': 5})\n",       # computed key, config= kwarg
+        "k = 'recursion_limit'\napp.invoke({}, config={k: 5})\n",     # Name key
+        "base = {}\napp.invoke({}, config={**base, 'recursion_limit': 5})\n",  # **spread
+    ):
+        r = _check_file(tmp_path, base + cfg)
+        assert r["category"] == "extractor-failure" and "bound_factor" not in r, (cfg, r)
+    # NO false positive: a literal config still certifies, and a computed key in the INPUT dict is untouched
+    ok = _check_file(tmp_path, base + "app.invoke({'k' + '1': 1}, config={'recursion_limit': 5})\n")
+    assert ok["category"] == "tipa:explicit" and ok["bound_factor"] == 5, ok
+
+
 def test_e2e_flat_noninteger_recursion_limit_fails_closed(tmp_path):
     # codex r89 (flat path): a FLOAT recursion_limit slipped past the int-only nonpositive check. `-1e309` /
     # `1e309` fold to ±inf and `5.0` is fractional-typed; the analyzer propagated a non-finite / negative /
