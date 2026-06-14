@@ -105,10 +105,16 @@ INTERF_NOTE = (
 
 def _inflate_alpha(alpha: float, eps: float, coverage: float) -> float:
     """The (ii) bound, recomputed in PURE STDLIB (mirrors eleata_verify.epsilon.inflate_alpha exactly):
-    min(1, α + ε(1+α)/(c−ε)) if ε < c, else 1.0 (saturates — says nothing). Strictly increasing in ε."""
+    min(1, α + ε(1+α)/(c−ε)) if ε < c, else 1.0 (saturates — says nothing). Strictly increasing in ε.
+
+    ε is a magnitude (a distribution-shift / CP-upper bound) and is ALWAYS ≥0 in the authoritative path
+    (`_cp_upper` never returns <0). A NEGATIVE ε is nonsensical input and would DECREASE α below its base
+    (understating the risk — codex r72: `_inflate_alpha(0.2,-0.1,0.9)=0.08 < 0.2`). Clamp ε≥0 so inflation
+    never reduces α; α also can't drop below its base (max with alpha) — conservative for any input."""
+    eps = max(eps, 0.0)
     if eps >= coverage:
         return 1.0
-    return min(1.0, alpha + eps * (1.0 + alpha) / (coverage - eps))
+    return min(1.0, max(alpha, alpha + eps * (1.0 + alpha) / (coverage - eps)))
 
 
 def _betacf(a: float, b: float, x: float) -> float:
@@ -401,16 +407,30 @@ def conditional_analysis_from_epsilon(epsilon_bound: dict, *, assumptions_attest
         raise ValueError(f"epsilon_bound missing key(s): {sorted(miss)}")
     if isinstance(assumptions_attested, (str, bytes)):    # a bare 'ACD' string is a footgun → reject
         raise ValueError("assumptions_attested must be a list/tuple of {'A','C','D'}, not a string")
+    # RECOMPUTE the derived numbers (ε_upper + channel-1 bound) from the PRIMITIVES (k, m, δ_eps, α, c) so the
+    # assembler's OUTPUT is authoritative even when used standalone — costwright NEVER ships a caller-reported
+    # ε/alpha_effective (codex r72: a caller passing eps_upper=0, alpha_effective=0 with k=9,m=10 must NOT yield
+    # 0/0). m capped at 1e9 (beyond it the betai recompute can understate — same guard as the validator).
+    _m, _k, _de = epsilon_bound["m"], epsilon_bound["k"], epsilon_bound["delta_eps"]
+    _ab, _cu = epsilon_bound["alpha_base"], epsilon_bound["coverage_used"]
+    if not (isinstance(_m, int) and not isinstance(_m, bool) and 0 <= _m <= 10**9
+            and isinstance(_k, int) and not isinstance(_k, bool) and 0 <= _k <= _m
+            and _is_num(_de) and 0.0 < _de < 1.0 and _is_num(_ab) and 0.0 <= _ab <= 1.0
+            and _is_num(_cu) and 0.0 < _cu <= 1.0):
+        raise ValueError("epsilon_bound primitives (k, m, delta_eps, alpha_base, coverage_used) out of range "
+                         "for a Clopper-Pearson recompute (m must be an int in [0, 1e9], k in [0, m])")
+    _eps_auth = _cp_upper(_k, _m, float(_de))
+    _bound_auth = _inflate_alpha(float(_ab), _eps_auth, float(_cu))
     block = {
         "kind": _INTERF_KIND,
         "channel_covered": "budget-cap-distribution-shift (channel 1 of N; N unknown)",
         "source_estimator": "eleata-verify.epsilon.interference_risk_bound",
         "verify_version": str(verify_version),
         "note": INTERF_NOTE,
-        "channel1_conditional_risk_upper": epsilon_bound["alpha_effective"],
+        "channel1_conditional_risk_upper": _bound_auth,   # RECOMPUTED, not the caller's alpha_effective
         "conditional_bound_confidence": epsilon_bound["joint_confidence"],
         "alpha_base": epsilon_bound["alpha_base"],
-        "eps_upper": epsilon_bound["eps_upper"],
+        "eps_upper": _eps_auth,                           # RECOMPUTED Clopper-Pearson upper, not the caller's
         "eps_hat": epsilon_bound["eps_hat"],
         "coverage_used": epsilon_bound["coverage_used"],
         "cap": epsilon_bound["cap"],

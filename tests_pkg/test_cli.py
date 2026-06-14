@@ -54,6 +54,52 @@ def test_fail_on_policy():
         assert r.returncode == 1, (r.returncode, r.stdout, r.stderr)
         assert "policy" in r.stderr
 
+FIX_NONCERT = '''
+from langgraph.graph import StateGraph, START, END
+g = StateGraph(dict)
+getattr(g, "add_node")("a", lambda s: s)   # obscured add_node call ⇒ no-mapeable:addnode-escaped (non_certifiable)
+g.add_edge(START, "a"); g.add_edge("a", END)
+g.compile().invoke({}, config={"recursion_limit": 5})
+'''
+FIX_PARSEERR = '''
+from langgraph.graph import StateGraph, START, END
+g = StateGraph(dict)
+g.add_node("a", lambda s: s)
+g.add_edge(START, "a"); g.add_edge("a", END)
+g.compile().invoke({}, config={"recursion_limit": -5})   # nonpositive ⇒ extractor-failure ⇒ parse_error
+'''
+
+def test_fail_on_tiers_monotonic(tmp_path):
+    # codex r72: tiers must be MONOTONIC and complete. A non_certifiable unit must trip both the
+    # non-certifiable AND the (stricter) default-dependent tier; a parse_error (couldn't analyze) must trip
+    # both too (never silently pass). reject (runaway only) stays the loosest.
+    import subprocess
+    for fix, expect in ((FIX_NONCERT, "non_certifiable"), (FIX_PARSEERR, "parse_error")):
+        with tempfile.TemporaryDirectory() as td:
+            make(td, "wf.py", fix)
+            assert run("check", td, "--fail-on", "non-certifiable").returncode == 1, expect
+            assert run("check", td, "--fail-on", "default-dependent").returncode == 1, expect
+            # reject only fails on runaway → these pass reject
+            assert run("check", td, "--fail-on", "reject").returncode == 0, expect
+
+
+def test_caps_ineffective_cap_flagged(tmp_path):
+    # codex r72: a cap kwarg present with a NON-positive-int-literal value (None/negative/variable/True) is not
+    # an effective cap and must be flagged, not treated as capped.
+    from costwright import caps as cm
+    for ctor, kind in (("ChatOpenAI(model='gpt-4', max_tokens=None)", "ineffective"),
+                       ("ChatOpenAI(model='gpt-4', max_tokens=LIM)", "ineffective"),
+                       ("ChatOpenAI(model='gpt-4')", "missing"),
+                       ("ChatOpenAI(model='gpt-4', max_tokens=128)", None)):
+        f = tmp_path / "m.py"
+        f.write_text(f"from langchain_openai import ChatOpenAI\nLIM=5\nllm={ctor}\n")
+        kinds = [x["kind"] for x in cm.scan_file(f)[0]]
+        if kind is None:
+            assert kinds == [], (ctor, kinds)
+        else:
+            assert kind in kinds, (ctor, kinds)
+
+
 def test_exit_2_bad_path():
     r = run("check", "/nonexistent/xyz")
     assert r.returncode == 2

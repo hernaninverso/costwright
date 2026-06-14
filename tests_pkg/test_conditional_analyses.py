@@ -383,8 +383,13 @@ def test_builder_maps_demoted_names():
     ca = fusion.conditional_analysis_from_epsilon(eb, assumptions_attested=["D", "A", "C"],
                                                   verify_version="0.1.0")
     d = ca["channel1_budget_cap_risk"]
-    assert d["channel1_conditional_risk_upper"] == 0.0566       # ← alpha_effective (P0-7 rename)
-    assert d["conditional_bound_confidence"] == 0.90            # ← joint_confidence
+    # channel1_conditional_risk_upper / eps_upper are now RECOMPUTED from the PRIMITIVES (k, m, δ_eps, α, c),
+    # NOT mapped from the caller's reported alpha_effective/eps_upper (codex r72 — never ship a caller number).
+    # For this CONSISTENT input the authoritative recompute ≈ the caller's reported values (caller had rounded).
+    assert d["eps_upper"] == fusion._cp_upper(0, 600, 0.05)
+    assert d["channel1_conditional_risk_upper"] == fusion._inflate_alpha(0.05, d["eps_upper"], 0.80)
+    assert abs(d["channel1_conditional_risk_upper"] - 0.0566) < 1e-3   # ≈ caller's 0.0566 (it was consistent)
+    assert d["conditional_bound_confidence"] == 0.90            # ← joint_confidence (passed through)
     assert d["assumptions_attested"] == ["A", "C", "D"]         # sorted, deduped
     assert d["assumption_assurance"] == "self_asserted"         # default
 

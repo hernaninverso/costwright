@@ -59,6 +59,12 @@ def scan_file(path: Path):
         if name not in PROVIDER_CAPS:
             continue
         kwargs_present = {k.arg for k in node.keywords if k.arg}
+        # a cap kwarg only bounds tokens if its VALUE is a positive integer LITERAL. `max_tokens=None`,
+        # `max_tokens=-1`, `max_tokens=var`, `max_tokens=True` are present-but-ineffective (codex r72).
+        effective_caps = {k.arg for k in node.keywords
+                          if k.arg in CAP_KWARGS and isinstance(k.value, ast.Constant)
+                          and isinstance(k.value.value, int) and not isinstance(k.value.value, bool)
+                          and k.value.value > 0}
         provider, kwarg, note = PROVIDER_CAPS[name]
         # detección best-effort de reasoning model por el kwarg `model` (audit-3 gpt-5.5 P0):
         # en Chat API los o-series/GPT-5 ignoran max_tokens; el cap real es max_completion_tokens
@@ -72,8 +78,17 @@ def scan_file(path: Path):
         if name in ("ChatOpenAI", "AzureChatOpenAI") and reasoning:
             kwarg = "max_completion_tokens"
             note = "reasoning model en Chat API: max_tokens es IGNORADO; usar max_completion_tokens"
+        if kwargs_present & CAP_KWARGS and not effective_caps:
+            # un cap kwarg está presente pero su valor NO es un entero positivo literal → no acota (codex r72)
+            findings.append({
+                "kind": "ineffective", "constructor": name, "provider": provider,
+                "line": node.lineno, "have": sorted(kwargs_present & CAP_KWARGS), "suggest_kwarg": kwarg,
+                "why": "el cap está presente pero su valor no es un entero positivo literal "
+                       "(None / negativo / variable / True) — no acota efectivamente los tokens",
+            })
+            continue
         if kwargs_present & CAP_KWARGS:
-            # tiene algún cap — chequear degradaciones conocidas (§3.2)
+            # tiene un cap EFECTIVO — chequear degradaciones conocidas (§3.2)
             if provider == "gemini" and "thinking_budget" not in kwargs_present:
                 findings.append({
                     "kind": "degraded", "constructor": name, "provider": provider,

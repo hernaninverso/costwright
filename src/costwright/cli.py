@@ -97,10 +97,14 @@ def cmd_check(args) -> int:
             print(report_mod.pretty(rep, verbose=args.verbose))
         # política opt-in (council 002 P0-1)
         s = rep["summary"]
+        # "exit 1 on findings of this severity OR WORSE", MONOTONIC and complete (codex r72): a unit costwright
+        # could not analyze (`parse_error`, incl. extractor-failure / nonpositive-bound) is "couldn't certify"
+        # and must NOT silently pass; and a `non_certifiable` unit is WORSE than `default_dependent`, so it must
+        # also trip the stricter default-dependent threshold. reject ⊆ non-certifiable ⊆ default-dependent.
+        not_certified = s["runaway"] > 0 or s["non_certifiable"] > 0 or s["parse_error"] > 0
         viol = {"reject": s["runaway"] > 0,
-                "default-dependent": s["runaway"] > 0 or s["default_dependent"] > 0,
-                "non-certifiable": (s["runaway"] > 0 or s["default_dependent"] > 0
-                                    or s["non_certifiable"] > 0)}
+                "non-certifiable": not_certified,
+                "default-dependent": not_certified or s["default_dependent"] > 0}
         if args.fail_on and viol.get(args.fail_on, False):
             print(f"costwright: policy --fail-on {args.fail_on} violated", file=sys.stderr)
             return 1
