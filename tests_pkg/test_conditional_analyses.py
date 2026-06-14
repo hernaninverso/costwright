@@ -232,6 +232,23 @@ def test_alpha_base_must_match_risk_sla_alpha():
     assert _reject(ca, vr=_vr(sla_alpha=0.05))
 
 
+def test_alpha_below_sla_within_tol_does_not_understate_bound():
+    # codex r90: the alpha cross-check accepts alpha_base within a SYMMETRIC _RECHECK_TOL of risk.sla_alpha, and
+    # the bound is monotone INCREASING in alpha — so alpha_base = sla_alpha − tol once shaved the recomputed
+    # bound by ~tol (an understatement of risk). fusion now recomputes the bound at max(alpha_base, sla_alpha)
+    # and SHIPS that alpha, so a slightly-lower alpha_base can never produce a smaller signed bound.
+    sla = 0.05
+    low = sla - 5e-10                                            # within _RECHECK_TOL ⇒ passes the cross-check
+    d = _fuse(_channel1(alpha=low), vr=_vr(sla_alpha=sla))["conditional_analyses"]["channel1_budget_cap_risk"]
+    eps = fusion._cp_upper(0, 600, 0.05)
+    true_bound = fusion._inflate_alpha(sla, eps, 0.80)          # the bound at the AUTHORITATIVE sla_alpha
+    assert d["channel1_conditional_risk_upper"] >= true_bound   # never understates the true-alpha bound
+    assert d["alpha_base"] == sla                               # ships the conservative (larger) alpha, not low
+    # the signed record is self-consistent: bound == inflate(shipped alpha, recomputed eps, coverage)
+    recomputed = fusion._inflate_alpha(d["alpha_base"], d["eps_upper"], d["coverage_used"])
+    assert abs(d["channel1_conditional_risk_upper"] - recomputed) <= 1e-15
+
+
 # --- audit-3 BLOCKER fixes (2026-06-13): allowlist, recomputed confidence, m=0, δ+η<1 ---------------
 def test_injected_keys_are_dropped_allowlist():
     # audit-3 BLOCKER: an injected key like {"safe": true} / {"joint_guarantee": true} must NEVER reach

@@ -538,7 +538,12 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
     # NOTE: the caller's reported eps_upper/bound/confidence are NOT trusted and NOT cross-checked — costwright
     # OVERWRITES them with the values it recomputes here (below), so a reported number cannot understate
     # risk in the signed bundle. (audit-3 2026-06-13: no asymmetric-tolerance cross-check; ship authoritative.)
-    bound_auth = _inflate_alpha(alpha, eps_auth, cov)
+    # The bound is MONOTONE INCREASING in alpha, and the alpha cross-check above accepts alpha_base within a
+    # SYMMETRIC _RECHECK_TOL of the risk cert's sla_alpha — so a caller could pass alpha_base = sla_alpha − tol
+    # and shave the recomputed bound by ~tol (an understatement; codex r90). Recompute with the LARGER of the
+    # two alphas (both attest the SAME SLA α within tol) ⇒ conservative; ship that alpha so the record verifies.
+    alpha_auth = max(alpha, sla_alpha)
+    bound_auth = _inflate_alpha(alpha_auth, eps_auth, cov)
     jc_auth = 1.0 - delta - delta_eps
     if not (math.isfinite(bound_auth) and math.isfinite(eps_auth) and 0.0 < jc_auth < 1.0):
         raise ValueError("channel1_budget_cap_risk: recomputed values are not finite / in range")
@@ -557,6 +562,7 @@ def _validate_conditional_analyses(ca: dict, risk_block: dict) -> dict:
     # --- ALLOWLIST construction (audit-3 BLOCKER fix): copy ONLY known keys from the caller, so an
     #     injected key like {"safe": true} / {"joint_guarantee": true} can NEVER reach the signed bundle. ---
     out = {key: d[key] for key in _C1_REQUIRED}
+    out["alpha_base"] = alpha_auth                    # the conservative alpha the bound is computed at (≥ caller's)
     out["eps_upper"] = eps_auth                       # authoritative (overwrites the caller's)
     out["channel1_conditional_risk_upper"] = bound_auth
     out["conditional_bound_confidence"] = jc_auth
