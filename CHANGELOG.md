@@ -2,6 +2,31 @@
 
 All notable changes to costwright. Format loosely follows [Keep a Changelog](https://keepachangelog.com).
 
+## [0.2.6] — 2026-06-14
+
+### CrewAI cost-model rebuild + Runner-subclass discovery (codex + Cursor `gpt-5.3-codex`)
+
+- **Runner subclass discovery** (codex + Cursor r85) — `class UnboundedRunner(Runner): pass` then
+  `UnboundedRunner.run_sync(..., max_turns=None)` was dropped by `_find_units` (the receiver was the subclass
+  name, not `Runner`), so a runaway passed `--fail-on reject` with exit 0. Subclass names are now collected
+  (fixpoint over transitive subclasses, base resolved via the import alias) and their `run*` calls counted.
+- **CrewAI per-run bound rebuilt to `n_tasks × max(agent budget)`** (codex r86 + r86b, Cursor r86) — the old
+  model summed only the *explicit* agent `max_iter` budgets, which **ignored the task count** (a single agent
+  reused across `k` tasks understated `k×`) and **omitted the framework default 20** of unannotated agents in a
+  mixed crew. A sequential crew runs each of `n_tasks` tasks with up to its agent's `max_iter`, so the per-run
+  worst case is `n_tasks × max(agent budget)` (default 20 included). The extractor records every agent budget
+  and each crew's literal task/agent counts; the mapper **fails closed** when the task list is absent/dynamic,
+  no agents are visible, or a crew references more agents than visible constructors.
+- **`allow_delegation=True` fails closed** (Cursor r86) — a delegating agent invokes another agent's `max_iter`
+  loop inside a task (a recursive delegation tree the model does not bound) → `no-mapeable:agent-delegation`
+  unless `allow_delegation` is a constant `False`.
+- **Task guardrail-retry fails closed** (codex r87) — a `Task(guardrail=...)` re-runs on a failed check (up to
+  `max_retries`), so its agent loop runs `(1 + retries)×`; any guarded task → `no-mapeable:crewai-task-retry`.
+- **Unknown `Task(agent=…)` fails closed** (Cursor r87) — an agent referenced only via `Task(agent=heavy)` where
+  `heavy` is imported / not a visible `Agent()` constructor could carry a far larger `max_iter` than the
+  visible agents, so `max(visible)` understated. A prepass binds Names to `Agent()` constructors; a task
+  referencing an unknown agent → `no-mapeable:crewai-agent-unknown`.
+
 ## [0.2.5] — 2026-06-14
 
 ### Continued whole-tool audit — four more understatement/false-assurance paths (codex + Cursor `gpt-5.3-codex`)
