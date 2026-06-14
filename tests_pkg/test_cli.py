@@ -54,6 +54,26 @@ def test_fail_on_policy():
         assert r.returncode == 1, (r.returncode, r.stdout, r.stderr)
         assert "policy" in r.stderr
 
+
+def test_scan_truncation_never_reads_as_clean():
+    # codex r93: a --max-files cap smaller than the eligible files SILENTLY truncated the scan, so the rollup
+    # read "all clear" (exit 0) while unscanned files could hold anything. A truncated scan now (a) rejects a
+    # <1 cap, (b) flags scan_truncated in the JSON, (c) fails closed: exit 1 under any --fail-on, else exit 2.
+    with tempfile.TemporaryDirectory() as td:
+        # several eligible files, one a runaway, so a full scan would NOT be clean
+        make(td, "a.py", FIX_DEFAULT)
+        make(td, "b.py", FIX_RUNAWAY)
+        make(td, "c.py", FIX_DEFAULT)
+        assert run("check", td, "--max-files", "0").returncode == 2          # 0/negative cap rejected
+        assert run("check", td, "--max-files", "1").returncode == 2          # truncated, no policy → incomplete
+        r = run("check", td, "--max-files", "1", "--fail-on", "non-certifiable")
+        assert r.returncode == 1 and "truncated" in r.stderr.lower(), (r.returncode, r.stderr)
+        rep = json.loads(run("check", td, "--max-files", "1", "--json").stdout)
+        assert rep["summary"]["scan_truncated"] is True
+        # a cap that covers all files is NOT truncated and behaves normally
+        full = run("check", td, "--max-files", "50", "--json")
+        assert json.loads(full.stdout)["summary"]["scan_truncated"] is False
+
 FIX_NONCERT = '''
 from langgraph.graph import StateGraph, START, END
 g = StateGraph(dict)
@@ -322,7 +342,8 @@ def test_json_schema_golden():
         assert rep["schema"] == "costwright.v1"
         assert set(rep["summary"]) == {"total", "certifiable", "default_dependent",
                                        "non_certifiable", "runaway", "parse_error",
-                                       "vacuous_default_bounds"}
+                                       "vacuous_default_bounds", "scan_truncated"}
+        assert rep["summary"]["scan_truncated"] is False        # a full default scan is not truncated
         u = rep["units"][0]
         assert set(u) == {"unit_id", "file", "span", "framework", "category", "bound", "reasons"}
         assert u["category"] in ("certifiable", "default_dependent", "non_certifiable",

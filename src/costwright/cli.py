@@ -21,8 +21,11 @@ EXCLUDE_DIRS = {".venv", "venv", "node_modules", "site-packages", ".git", "__pyc
 
 
 def _find_units(root: Path, max_files: int):
-    """Detecta graph units (constructores LangGraph/CrewAI/AgentsSDK) en el árbol."""
+    """Detecta graph units (constructores LangGraph/CrewAI/AgentsSDK) en el árbol. Devuelve (units, truncated):
+    `truncated` es True si el cap `max_files` cortó el scan dejando archivos sin analizar — el caller NO puede
+    reportar 'todo limpio' sobre una cobertura incompleta (codex r93)."""
     units = []
+    truncated = False
     n = 0
     for py in sorted(root.rglob("*.py")):
         if any(part in EXCLUDE_DIRS for part in py.parts):
@@ -34,6 +37,7 @@ def _find_units(root: Path, max_files: int):
             continue
         n += 1
         if n > max_files:
+            truncated = True   # at least one eligible file beyond the cap was NOT scanned
             break
         try:
             src = py.read_text(encoding="utf-8", errors="ignore")
@@ -101,7 +105,7 @@ def _find_units(root: Path, max_files: int):
                 kind = "agents_sdk"
             if kind:
                 units.append({"file": py, "kind": kind, "line": node.lineno})
-    return units
+    return units, truncated
 
 
 def cmd_check(args) -> int:
@@ -109,8 +113,12 @@ def cmd_check(args) -> int:
     if not root.exists():
         print(f"costwright: path not found: {root}", file=sys.stderr)
         return 2
+    # a max-files of 0/negative scans nothing and would report a vacuous "all clear" (codex r93) — reject it.
+    if args.max_files < 1:
+        print("costwright: --max-files must be >= 1", file=sys.stderr)
+        return 2
     try:
-        found = _find_units(root, args.max_files)
+        found, truncated = _find_units(root, args.max_files)
         mapped = []
         for u in found:
             rel = str(u["file"].relative_to(root))
@@ -125,13 +133,27 @@ def cmd_check(args) -> int:
             r["line"] = u["line"]
             mapped.append(r)
         rep = report_mod.to_v1(mapped)
+        # a truncated scan left eligible files UN-analyzed — surface it in the record so a clean-looking summary
+        # is never read as full coverage (codex r93).
+        rep["summary"]["scan_truncated"] = truncated
         if args.json:
             print(report_mod.dumps(rep))
+        elif truncated:
+            if rep["units"]:
+                print(report_mod.pretty(rep, verbose=args.verbose))
+        elif not rep["units"]:
+            print("costwright: no graph units found")
+            return 0
         else:
-            if not rep["units"]:
-                print("costwright: no graph units found")
-                return 0
             print(report_mod.pretty(rep, verbose=args.verbose))
+        # a truncated scan CANNOT certify "clean": eligible files beyond the cap were not analyzed and could
+        # hold anything → fail closed (codex r93). Exit 1 under any policy, else 2 (incomplete coverage) —
+        # never a silent 0.
+        if truncated:
+            print(f"costwright: scan truncated at --max-files={args.max_files}; eligible .py files beyond the "
+                  "cap were NOT analyzed — coverage is incomplete, cannot certify clean. Raise --max-files.",
+                  file=sys.stderr)
+            return 1 if args.fail_on else 2
         # política opt-in (council 002 P0-1)
         s = rep["summary"]
         # "exit 1 on findings of this severity OR WORSE", MONOTONIC and complete (codex r72): a unit costwright
