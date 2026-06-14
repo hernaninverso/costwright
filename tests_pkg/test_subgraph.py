@@ -566,6 +566,29 @@ def test_e2e_cursor_alias_of_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_attribute_stored_alias_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-34 WITNESS: a compiled subgraph stored in an attribute and passed
+    # as `outer.add_node('sub', holder.c)`. The arg is an Attribute (not a Name, no inline compile) so it
+    # wasn't flagged → flat undercount (10). The add_node arg detection now flags an arg that Load-references
+    # a compiled var ANYWHERE (incl. `holder.c` where holder is compiled) → compose → fail closed.
+    src = (
+        "from types import SimpleNamespace\n"
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+        "compiled = inner.compile()\n"
+        "holder = SimpleNamespace(c=compiled)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('sub', holder.c)\n"
+        "outer.add_edge(START, 'sub'); outer.add_edge('sub', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 10})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount 10
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_tuple_unpack_alias_chain_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-33 WITNESS: `compiled = inner.compile(); (alias,) = (compiled,);
     # outer.add_node('sub', alias)`. The alias is bound via a tuple-unpack of a Name (r31 only handled

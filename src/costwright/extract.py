@@ -85,11 +85,14 @@ class Extractor(ast.NodeVisitor):
             # el costo del nodo no es 1 call (rev D5: u139). delegate() lo cubriría; el
             # harness v1 no lo implementa → feature medida.
             for a in list(n.args[1:]) + [k.value for k in n.keywords]:
-                aliased = isinstance(a, ast.Name) and (a.id in s.compiled_vars or a.id in s.pregel_vars)
-                if aliased or contains_compile(a):
-                    # subgraph node: a var bound to .compile()/Pregel, OR the arg CONTAINS a .compile() — inline
-                    # `g.compile()` or wrapped `identity(g.compile())` (Cursor r29). Must NOT certify as a
-                    # normal node; routes to compose (resolves a clean alias, else fails closed).
+                refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
+                                    and (x.id in s.compiled_vars or x.id in s.pregel_vars)
+                                    for x in ast.walk(a))
+                if refs_compiled or contains_compile(a):
+                    # subgraph node: the arg CONTAINS a .compile() (inline `g.compile()` / wrapped
+                    # `identity(g.compile())` — Cursor r29) OR Load-references a compiled var ANYWHERE — a bare
+                    # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
+                    # to compose (resolves a clean alias, else fails closed).
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
         elif last == "add_edge":
             a = const_or_endref(n.args[0]) if len(n.args) > 0 else None
