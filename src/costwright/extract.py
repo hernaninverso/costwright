@@ -583,6 +583,25 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                            and x.args[1].value == "add_node" for x in ast.walk(tree))
     if _escaped or _getattr_addnode:
         ex.features.append({"feature": "addnode-escaped", "line": 0})
+    # CONSTRUCT-ESCAPE GUARD (Cursor r66): a Send/Command/interrupt is normally detected as the CALLEE of a call
+    # (`Send(...)`) or via a tracked alias. If it is passed as an ARGUMENT to a function — `idfn(Send)(...)`,
+    # `functools.partial(Send, ...)`, `lst.append(Send)`, `setattr(o,'x',Send)` — it can be invoked indirectly,
+    # hiding a fan-out, and composition would emit a number → understatement. Any construct alias used as a call
+    # argument (not the callee) fails closed. (Direct `Send(...)`, `S = Send`, tuple-unpack aliases, and
+    # callees inside lists `[S(...)]` are NOT arguments, so legitimate detection is unaffected.)
+    _construct_aliases = ex.send_aliases | ex.command_aliases | ex.interrupt_aliases
+    _construct_escaped = False
+    for c in ast.walk(tree):
+        if isinstance(c, ast.Call):
+            for a in list(c.args) + [k.value for k in c.keywords]:
+                base = a.value if isinstance(a, ast.Starred) else a
+                if isinstance(base, ast.Name) and isinstance(base.ctx, ast.Load) and base.id in _construct_aliases:
+                    _construct_escaped = True
+                    break
+        if _construct_escaped:
+            break
+    if _construct_escaped:
+        ex.features.append({"feature": "construct-escaped", "line": 0})
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
     # si hay conditional-literal cuyos dsts incluyen un nodo definido, lo tratamos como posible ciclo

@@ -874,6 +874,55 @@ def test_e2e_bound_method_addnode_alias_fails_closed(tmp_path):
         assert "bound_factor" not in r
 
 
+def test_e2e_construct_passed_as_arg_fails_closed(tmp_path):
+    # audit-3 Cursor r66 WITNESS: a Send/Command/interrupt invoked through a HIGHER-ORDER function —
+    # `idfn(Send)("s1", {})` (idfn returns its arg), `functools.partial(Send)(...)`, `sends.append(Send);
+    # sends[0](...)` — hides the fan-out (no send-fanout feature) so composition emitted a finite bound. Now any
+    # construct alias used as a call ARGUMENT (not the callee) fails closed (no-mapeable:construct-escaped).
+    cases = (
+        "def idfn(x):\n    return x\ndef route(s):\n    return [idfn(Send)('sub', {}), idfn(Send)('sub', {})]\n",
+        "import functools\ndef route(s):\n    return [functools.partial(Send)('sub', {})]\n",
+        "sends = []\nsends.append(Send)\ndef route(s):\n    return [sends[0]('sub', {})]\n",
+    )
+    for defs in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "from langgraph.types import Send\n"
+            + defs +
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('i', lambda s: s)\n"
+            "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+            "outer = StateGraph(dict)\n"
+            "outer.add_node('r', lambda s: s)\n"
+            "outer.add_node('sub', inner.compile())\n"
+            "outer.add_conditional_edges('r', route)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:construct-escaped", (defs, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_direct_send_still_send_fanout(tmp_path):
+    # COVERAGE guard: a directly-called Send `Send(...)` (and bare-Name aliases) must STILL report send-fanout,
+    # not the broader construct-escaped — the construct-escape guard only fires on argument-position uses.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "from langgraph.types import Send\n"
+        "def route(s):\n    return [Send('sub', {}), Send('sub', {})]\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('r', lambda s: s)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.add_conditional_edges('r', route)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:send-fanout", r
+
+
 def test_e2e_obscured_addnode_call_fails_closed(tmp_path):
     # audit-3 codex r63 (escape guard): the add_node CALL itself can be obscured so node-counting silently
     # undercounts — `g.add_node` captured into a container/arg/attribute or reached via getattr. The r63 alias
