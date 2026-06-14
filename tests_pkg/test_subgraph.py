@@ -698,10 +698,37 @@ def test_e2e_cursor_invoke_before_compile_assign_is_read(tmp_path):
         "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
     )
     r = _check_file(tmp_path, src)
-    # the pre-pass links the invoke regardless of document order (no crash, composes). Under the r30 model
-    # inner's standalone 5000 is IGNORED (a separate run) → inner inherits max(outer 1, default 1000) = 1000
-    # → 1 × (n_total 1 + inner 1000) = 1001.
-    assert r["bound_factor"] == 1 * (1 + 1000)
+    # the pre-pass links the invoke regardless of document order (no crash, composes). The file has TWO
+    # top-level runs: (1) `prime()` runs inner STANDALONE at 5000 ⇒ 5000×1 = 5000; (2) outer runs at 1 with
+    # inner inheriting max(1, default 1000) = 1000 ⇒ 1×(1+1000) = 1001. The reported per-run ceiling is the MAX
+    # over all top-level runs (codex r82) = 5000 — NOT the outer composition (1001), which would understate the
+    # bigger standalone inner run.
+    assert r["bound_factor"] == 5000
+    assert r.get("composed") is True
+
+
+def test_e2e_three_level_standalone_middle_run_dominates(tmp_path):
+    # codex r82 BLOCKER WITNESS: a 3-level nest leaf→mid→outer where the MIDDLE subgraph is ALSO invoked
+    # STANDALONE at a far-larger limit than the outer. Before the fix, compose() reported only the unique outer
+    # composition (2×(1 + mid_composed) with mid inheriting 1000) and the bigger mid-standalone run was hidden.
+    # mid standalone at 9000, with leaf inheriting max(9000, 1000) = 9000 ⇒ 9000×(1 + 9000×1) = 81_009_000.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "leaf = StateGraph(dict)\n"
+        "leaf.add_node('l', lambda s: s)\n"
+        "leaf.add_edge(START, 'l'); leaf.add_edge('l', END)\n"
+        "mid = StateGraph(dict)\n"
+        "mid.add_node('m', leaf.compile())\n"
+        "mid.add_edge(START, 'm'); mid.add_edge('m', END)\n"
+        "mid.compile().invoke({}, config={'recursion_limit': 9000})\n"
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('s', mid.compile())\n"
+        "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 2})\n"
+    )
+    r = _check_file(tmp_path, src)
+    # the reported ceiling is the MAX over all top-level runs: max(outer, mid-standalone) = 81_009_000.
+    assert r["bound_factor"] == 9000 * (1 + 9000 * 1)
     assert r.get("composed") is True
 
 

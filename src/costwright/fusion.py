@@ -628,6 +628,16 @@ def fuse(costwright_v1_report: dict, verify_result_dict: dict, *, run_id: str,
 
 # --- human output -----------------------------------------------------------------------------------
 _RISK_BADGE = {"answered": "✓", "abstained": "↻", "uncertified": "∅"}
+# the ✓ for an ANSWERED risk certificate must depend on the VERDICT — a Refuted/Conflicting claim answered
+# within the SLA is NOT a green check (it would read as "safe" when the verifier says the claim is false /
+# the evidence conflicts — codex r81). Verdict-aware glyph; abstained/uncertified keep their status glyph.
+_VERDICT_BADGE = {"Supported": "✓", "Refuted": "✗", "Conflicting": "⚠", "Not Enough Evidence": "▲"}
+
+
+def _risk_glyph(status: str, verdict: str) -> str:
+    if status == "answered":
+        return _VERDICT_BADGE.get(verdict, "?")
+    return _RISK_BADGE.get(status, "?")
 _COST_BADGE = {"certifiable": "✓", "default_dependent": "▲", "non_certifiable": "✗",
                "runaway": "‼", "parse_error": "·", "no_graph_units": "·"}
 # NEUTRAL glyphs only — NEVER green ✓ for a conditional analysis (council P0-4: must not read as approval).
@@ -687,7 +697,7 @@ def pretty(bundle: dict) -> str:
         + (f"  [{vac} vacuous default bound(s)]" if vac else ""),
         f"      scope: {c['scope']}",
         f"      backing: {c['theorem']['mechanized']}",
-        f"  {_RISK_BADGE.get(r['status'], '?')} RISK  ({r['source']}, v{r['verify_version']})  "
+        f"  {_risk_glyph(r['status'], r['verdict'])} RISK  ({r['source']}, v{r['verify_version']})  "
         f"status={r['status']}  verdict={r['verdict']}  conf={r['calibrated_confidence']}  "
         f"SLA≤{r['sla_alpha']} ({r['sla_mode']}, certified={r['sla_certified']})"
         + ("  ⚠score-outlier" if r["score_outlier_warning"] else ""),

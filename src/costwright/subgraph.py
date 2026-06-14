@@ -653,12 +653,21 @@ def compose(ex_flat: dict) -> dict | None:
         return {**base, "category": "no-mapeable:subgraph-node",
                 "reason": f"no unique outer graph (candidates {sorted(outers)})"}
 
-    outer = outers[0]
-    res = _resolve(outer, A, seen=frozenset(), depth=0)
-    if res["category"] == "non_certifiable":
-        return {**base, "category": "no-mapeable:subgraph-node", "reason": res["prov"]}
-    if res["category"] == "runaway":
-        return {**base, "category": "rechaza-con-razon", "reason": res["prov"]}
+    # TOP-LEVEL RUNS (codex r82): the unique outer, PLUS any inner subgraph that is ALSO invoked STANDALONE
+    # (`mid.compile().invoke(recursion_limit=9000)` while mid is also a node of outer). A standalone invoke is a
+    # SEPARATE top-level run whose per-run bound the outer composition does NOT cover (mid runs at its own,
+    # possibly-LARGER, limit — not the inherited one). The reported ceiling is the MAX over all top-level runs;
+    # reporting only the outer would hide a bigger standalone subgraph run.
+    toplevel = [outers[0]] + [iv for iv in sorted(inner_vars) if iv in A["invoke_limit"]]
+    results = []
+    for v in toplevel:
+        r = _resolve(v, A, seen=frozenset(), depth=0)
+        if r["category"] == "non_certifiable":
+            return {**base, "category": "no-mapeable:subgraph-node", "reason": r["prov"]}
+        if r["category"] == "runaway":
+            return {**base, "category": "rechaza-con-razon", "reason": r["prov"]}
+        results.append(r)
+    res = max(results, key=lambda r: r["bound_factor"])
     # the EFFECTIVE outer steps that _resolve actually used (e.g. the default 1000 when a no-config invoke
     # dominates an explicit 50 — Cursor r32) drive `supersteps`, kept consistent with the bound and the
     # composition string. The composed total is the node-executions ceiling (aggregation=sum renders it as
