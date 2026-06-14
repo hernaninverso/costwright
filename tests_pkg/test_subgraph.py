@@ -358,6 +358,30 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_container_passed_graph_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-12 WITNESS: a graph passed inside a CONTAINER (`mutate([inner])`)
+    # evades the bare-Name passed_as_arg check; the helper mutates inner via `gs[0].add_node(...)`, so inner
+    # is undercounted (composed 3 vs true 4). Any use of a graph that is NOT a method-call receiver →
+    # escaped → fail closed.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def n(state): return state\n"
+        "def mutate(gs):\n"
+        "    gs[0].add_node('i2', n)\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i1', n)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 1})\n"
+        "mutate([inner])\n"                       # inner passed inside a list → not a method-call receiver
+        "outer = StateGraph(dict)\n"
+        "outer.add_node('a', n)\n"
+        "outer.add_node('sub', inner.compile())\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 1})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT composed bound 3
+    assert "bound_factor" not in r
+
+
 def test_e2e_graph_passed_to_helper_fails_closed(tmp_path):
     # nodes added by a helper the graph is passed INTO are attributed to the helper's param, not `inner`,
     # so inner's node count is undercounted → fail closed (codex r8 follow-on).

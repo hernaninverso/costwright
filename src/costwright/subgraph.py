@@ -71,7 +71,7 @@ class _GraphReceivers(ast.NodeVisitor):
         self.loop_bound = set()     # names bound to a compiled graph INSIDE a loop/comprehension (codex r8)
         self._loop_depth = 0        # >0 while visiting a For/While/comprehension body
         self.passed_as_arg = set()  # StateGraph vars passed as a bare-Name argument → may be mutated elsewhere
-        self.method_escaped = set() # StateGraph vars whose method/attr is captured as a value (not called)
+        self.method_escaped = set() # StateGraph vars used as anything other than a method-call receiver
 
     def _g(self, var):
         return self.graphs.setdefault(var, {"nodes": [], "edges": [], "unmodeled": None})
@@ -285,15 +285,22 @@ def analyze(tree) -> dict:
         elif isinstance(nd, ast.MatchMapping):
             bump(nd.rest)                                 # case {**rest}
 
-    # A StateGraph var whose method/attribute is captured as a VALUE (not called) — e.g. `add = inner.add_node`
-    # — can mutate the graph through the alias, invisible to per-call attribution → node count undercounted
-    # (Cursor gpt-5.3-codex r11, verified). The SAFE, recognized form is `X.m(...)` where the Attribute is the
-    # func of a Call; ANY other `X.attr` (bound-method capture, attribute read) marks X escaped → fail closed.
-    called_funcs = {id(nd.func) for nd in ast.walk(tree)
-                    if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute)}
+    # A graph var is SAFE to count only when EVERY load-use is a METHOD-CALL receiver `X.m(...)`. ANY other
+    # use can mutate or alias the graph out of view of per-call node attribution → undercount: a bound-method
+    # / attribute capture (`f = X.add_node`, Cursor codex r11), passing the graph as a VALUE even nested in a
+    # container (`mutate([X])`, r12), or aliasing it (`y = X`). Mark such names escaped → fail closed.
+    # `attr_value[id(Name)]` = the Attribute it is the `.value` of; `called_attrs` = Attributes that are a
+    # Call.func. A use is safe iff it's an Attribute value AND that Attribute is called.
+    attr_value, called_attrs = {}, set()
     for nd in ast.walk(tree):
-        if isinstance(nd, ast.Attribute) and isinstance(nd.value, ast.Name) and id(nd) not in called_funcs:
-            R.method_escaped.add(nd.value.id)
+        if isinstance(nd, ast.Attribute) and isinstance(nd.value, ast.Name):
+            attr_value[id(nd.value)] = id(nd)
+        if isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute):
+            called_attrs.add(id(nd.func))
+    for nd in ast.walk(tree):
+        if isinstance(nd, ast.Name) and isinstance(nd.ctx, ast.Load):
+            if not (id(nd) in attr_value and attr_value[id(nd)] in called_attrs):
+                R.method_escaped.add(nd.id)
     R.visit(tree)
     return R.to_dict()
 
@@ -327,9 +334,11 @@ def _resolve(var, A, seen, depth, parent_limit=0):
         # parameter instead of this var → node count undercounted (codex r8 follow-on). Fail closed.
         return _nc(f"{var}: graph passed as an argument to a function (may be mutated out of view — fail closed)")
     if g.get("method_escaped"):
-        # a method/attribute of this graph is captured as a value (e.g. `f = {var}.add_node; f(...)`) →
-        # mutations through the alias are invisible to per-call attribution (Cursor codex r11). Fail closed.
-        return _nc(f"{var}: a method/attribute is captured as a value (alias may mutate it out of view — fail closed)")
+        # this graph is used as something other than a method-call receiver — a bound-method/attr capture
+        # (`f = {var}.add_node`), passed as a value (even nested: `mutate([{var}])`), or aliased (`y = {var}`)
+        # — so mutations/aliases are invisible to per-call attribution (Cursor codex r11/r12). Fail closed.
+        return _nc(f"{var}: graph used as a value, not just a method-call receiver (may be mutated/aliased "
+                   f"out of view — fail closed)")
     # RetryPolicy / error_handler (per-node or graph-wide via set_node_defaults) re-execute beyond our
     # ≤1-per-super-step model ⇒ understatement. v1 fails closed with the reason (audit-3 codex, verified
     # vs langgraph state.py). The flat path's same retry gap is a documented follow-up.
