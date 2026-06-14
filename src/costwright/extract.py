@@ -294,6 +294,16 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         return any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in names
                    for x in ast.walk(value))
 
+    def _refs_construct(value, name_set, attr_set):
+        # value references a langgraph construct either by a known alias Name OR by an attribute `mod.Send`
+        # (Cursor r41) — so `S = lgtypes.Send` is recognized as a Send alias.
+        for x in ast.walk(value):
+            if isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in name_set:
+                return True
+            if isinstance(x, ast.Attribute) and x.attr in attr_set:
+                return True
+        return False
+
     # A name is a POSSIBLE compiled subgraph if its binding value contains a `.compile()` OR Load-references
     # another compiled var — covering ALL alias chains in one fixpoint: `alias = compiled`, `(a,) = (c,)`,
     # `a = c[0]`, `a = wrap(c)`, … (Cursor r31/r33). A flagged name reaching add_node routes to compose
@@ -311,17 +321,17 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
             # aliasing of Send/Command through ANY binding shape (`S = Send`, `S, = (Send,)`, `S = (Send,)[0]`,
             # `T = S`, …) — propagate so the fan-out / dynamic-goto blocking can't be bypassed (Cursor r38/r39).
             # Over-flagging only makes a call block (fail closed), which is the safe direction.
-            if _loads_any(value, ex.send_aliases):
+            if _refs_construct(value, ex.send_aliases, {"Send"}):
                 for nm in names:
                     if nm not in ex.send_aliases:
                         ex.send_aliases.add(nm)
                         changed = True
-            if _loads_any(value, ex.command_aliases):
+            if _refs_construct(value, ex.command_aliases, {"Command"}):
                 for nm in names:
                     if nm not in ex.command_aliases:
                         ex.command_aliases.add(nm)
                         changed = True
-            if _loads_any(value, ex.interrupt_aliases):
+            if _refs_construct(value, ex.interrupt_aliases, {"interrupt", "NodeInterrupt"}):
                 for nm in names:
                     if nm not in ex.interrupt_aliases:
                         ex.interrupt_aliases.add(nm)
