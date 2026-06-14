@@ -244,6 +244,24 @@ def _check_file(tmp_path, src):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_flat_nonpositive_recursion_limit_fails_closed(tmp_path):
+    # audit-3 r69 (flat path): an explicit recursion_limit <= 0 yielded a zero/NEGATIVE ceiling (bf=-5 for
+    # recursion_limit=-5), which is nonsensical and understates any real run. The framework rejects <1 at
+    # runtime; costwright now fails closed (extractor-failure: nonpositive-bound). The valid minimum (1) still
+    # certifies.
+    base = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+    )
+    for lim in (0, -5):
+        r = _check_file(tmp_path, base + f"g.compile().invoke({{}}, config={{'recursion_limit': {lim}}})\n")
+        assert r["category"] == "extractor-failure" and "bound_factor" not in r, (lim, r)
+    r1 = _check_file(tmp_path, base + "g.compile().invoke({}, config={'recursion_limit': 1})\n")
+    assert r1["category"] == "tipa:explicit" and r1["bound_factor"] == 1, r1
+
+
 def test_e2e_flat_add_node_in_loop_fails_closed(tmp_path):
     # audit-3 codex r68 (flat path): add_node inside a for/while/comprehension builds N runtime nodes from ONE
     # textual site — `for i in range(100): g.add_node('leaf'+str(i), ...)` — so the static node count undercounts

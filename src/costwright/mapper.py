@@ -56,6 +56,14 @@ def map_unit(ex: dict, meta: dict) -> dict:
         return {**base, "category": "extractor-failure", "reason": "unresolved-bound",
                 "params": sorted({b["param"] for b in unresolved})}
     explicit = [b for b in explicit_all if b["value"] is not None]
+    # an explicit bound < 1 (recursion_limit / max_iter / max_turns ≤ 0) is not a valid run budget — the
+    # framework rejects it at runtime — and would yield a zero/NEGATIVE ceiling, which is nonsensical and
+    # understates any real run. Fail closed (codex/Cursor r69; mirrors the subgraph v≥1 guard).
+    nonpositive = [b for b in explicit if isinstance(b["value"], int) and not isinstance(b["value"], bool)
+                   and b["value"] < 1]
+    if nonpositive:
+        return {**base, "category": "extractor-failure", "reason": "nonpositive-bound",
+                "params": sorted({b["param"] for b in nonpositive})}
     cyclic = ex["has_static_cycle"] or ex["cond_may_cycle"] or bool(ex["while_true_invokes"])
 
     # 3 — rechaza-con-razon: genuinamente no acotado
