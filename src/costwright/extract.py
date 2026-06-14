@@ -309,6 +309,8 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                 continue   # a nested function's returns are ITS own, not fn's
             if isinstance(x, ast.Return) and x.value is not None:
                 out.append(x.value)
+            if isinstance(x, (ast.Yield, ast.YieldFrom)) and x.value is not None:
+                out.append(x.value)   # a generator that yields a compiled subgraph is a factory too (codex r59)
             stack.extend(ast.iter_child_nodes(x))
         return out
 
@@ -329,9 +331,19 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         if (isinstance(nd, ast.Call) and isinstance(nd.func, ast.Attribute)
                 and isinstance(nd.func.value, ast.Name) and nd.func.attr not in _GRAPH_METHODS):
             method_stash.append((nd.func.value.id, list(nd.args) + [k.value for k in nd.keywords]))
+        # `setattr(obj, "sub", inner.compile())` is the dynamic form of `obj.sub = inner.compile()` — taint the
+        # object (its base Name) when the value carries a compiled subgraph, so a later `getattr(obj, "sub")` /
+        # `obj.sub` used as an add_node action Load-references it → flagged → fail closed (codex r59).
+        if (isinstance(nd, ast.Call) and isinstance(nd.func, ast.Name) and nd.func.id == "setattr"
+                and len(nd.args) >= 3):
+            base = _container_base(nd.args[0])
+            if base is not None:
+                method_stash.append((base, [nd.args[2]]))
         bs = []
         if isinstance(nd, ast.Assign):
             bs = [(t, nd.value) for t in nd.targets]
+        elif isinstance(nd, ast.AugAssign):
+            bs = [(nd.target, nd.value)]   # `subs += [c]` taints subs (codex r59)
         elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and nd.value is not None:
             bs = [(nd.target, nd.value)]
         elif isinstance(nd, (ast.For, ast.AsyncFor)):

@@ -788,6 +788,43 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_more_indirection_shapes_fail_closed(tmp_path):
+    # audit-3 codex r59: three further same-file indirections that were flat-counted — now all fail closed.
+    cases = {
+        # (1) augmented assignment `subs += [c]` (AugAssign was not in the binding loop)
+        "augassign": (
+            "subs = []\nsubs += [inner.compile()]\n", "subs[0]"),
+        # (2) a generator that YIELDS a compiled subgraph (factory detection looked at return, not yield)
+        "generator": (
+            "def gen():\n    yield make_inner()\nsub = next(gen())\n", "sub"),
+        # (3) setattr(obj, 'x', compiled) then getattr(obj, 'x') (dynamic attribute stash/read)
+        "setattr": (
+            "class H: pass\nh = H()\nsetattr(h, 'sub', inner.compile())\n", "getattr(h, 'sub')"),
+    }
+    base = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def make_inner():\n"
+        "    g = StateGraph(dict)\n"
+        "    g.add_node('a', lambda s: s)\n"
+        "    g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "    return g.compile()\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('a', lambda s: s)\n"
+        "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+    )
+    for name, (stash, action) in cases.items():
+        src = (
+            base + stash +
+            "outer = StateGraph(dict)\n"
+            f"outer.add_node('s', {action})\n"
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (name, r)
+        assert "bound_factor" not in r
+
+
 def test_e2e_compiled_subgraph_stashed_via_method_fails_closed(tmp_path):
     # audit-3 codex/Cursor r57: a compiled subgraph stashed into a container via a METHOD call —
     # `lst.append(inner.compile())`, `reg.add(c)`, `d.update({"k": c})` — then read back as an add_node action.
