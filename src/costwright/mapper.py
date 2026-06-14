@@ -6,13 +6,13 @@ Orden (primera que aplica):
 Bound global D2: n·Σ(nodos) default; n·max solo cadena lineal probada. Send → no-mapeable.
 Certifiability (ortogonal): % caps finitos.
 """
-import json
-from pathlib import Path
 
 from costwright.extract import DEFAULTS
 
-BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop",
-            "subgraph-node")  # subgraph-node: delegate() lo cubre en teoría; harness v1 no lo mapea (rev D5)
+# subgraph-node REMOVED from BLOCKING (feature 005): composed by costwright.subgraph.compose() under the
+# no-fan-out invariant. send-fanout/dynamic-goto stay BLOCKING — they ARE the fan-out vectors, so a
+# subgraph graph that also has them is non_certifiable at step 2 BEFORE composition (soundness guard).
+BLOCKING = ("send-fanout", "dynamic-goto", "hierarchical-manager", "interrupt-human-in-loop")
 HUGE_LIMIT = 10_000  # recursion_limit explícito ≥ esto = "efectivamente no acotado" (rechazo)
 
 def map_unit(ex: dict, meta: dict) -> dict:
@@ -30,6 +30,14 @@ def map_unit(ex: dict, meta: dict) -> dict:
     blocking = [f for f in feats if f in BLOCKING]
     if blocking:
         return {**base, "category": f"no-mapeable:{blocking[0]}", "all_blocking": blocking}
+
+    # 2b — feature 005: subgraph composition (only fires when a subgraph-node is present; no fan-out
+    # vectors got here since they're still BLOCKING above). compose() returns a mapping result or None.
+    if "subgraph-node" in feats:
+        from costwright.subgraph import compose
+        composed = compose(ex)
+        if composed is not None:
+            return composed
 
     # bounds según el kind (D2/D8)
     kind = ex["kind"]

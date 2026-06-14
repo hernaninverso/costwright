@@ -3,7 +3,7 @@
 Emite: nodos, edges (static/conditional-literal/conditional-fn/dynamic-goto/send), ciclos,
 bounds con fuente (D2/D8), caps de tokens, features no soportadas. 100% estático (D3).
 """
-import ast, json
+import ast
 from pathlib import Path
 
 # D8 — tabla verificada 2026-06-12 (fuentes en spec.md)
@@ -34,6 +34,12 @@ def const_of(node):
         return -node.operand.value
     return None
 
+def contains_compile(node):
+    """True if the AST subtree contains any `<...>.compile()` call — used to flag a possible compiled
+    subgraph wherever it appears (alias binding, or an add_node arg like `identity(g.compile())`)."""
+    return any(isinstance(x, ast.Call) and isinstance(x.func, ast.Attribute) and x.func.attr == "compile"
+               for x in ast.walk(node))
+
 class Extractor(ast.NodeVisitor):
     def __init__(s, src):
         s.src = src
@@ -45,6 +51,8 @@ class Extractor(ast.NodeVisitor):
         s.llm_calls = 0       # heurística: invocaciones a modelos dentro del archivo
         s.while_true_invokes = []
         s._in_while_true = 0
+        s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
+        s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
 
     def visit_While(s, n):
         is_true = isinstance(n.test, ast.Constant) and n.test.value is True
@@ -77,7 +85,14 @@ class Extractor(ast.NodeVisitor):
             # el costo del nodo no es 1 call (rev D5: u139). delegate() lo cubriría; el
             # harness v1 no lo implementa → feature medida.
             for a in list(n.args[1:]) + [k.value for k in n.keywords]:
-                if isinstance(a, ast.Call) and call_name(a).split(".")[-1] == "compile":
+                refs_compiled = any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load)
+                                    and (x.id in s.compiled_vars or x.id in s.pregel_vars)
+                                    for x in ast.walk(a))
+                if refs_compiled or contains_compile(a):
+                    # subgraph node: the arg CONTAINS a .compile() (inline `g.compile()` / wrapped
+                    # `identity(g.compile())` — Cursor r29) OR Load-references a compiled var ANYWHERE — a bare
+                    # alias, or an attribute `holder.c` (Cursor r34). Must NOT certify as a normal node; routes
+                    # to compose (resolves a clean alias, else fails closed).
                     s.features.append({"feature": "subgraph-node", "line": n.lineno})
         elif last == "add_edge":
             a = const_or_endref(n.args[0]) if len(n.args) > 0 else None
@@ -198,13 +213,60 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         tree = ast.parse(src)
     except SyntaxError:
         return {"unit_id": meta["unit_id"], "status": "extractor-failure", "reason": "syntax"}
-    ex = Extractor(src); ex.visit(tree)
+    ex = Extractor(src)
+    # prepass (order-independent): a name bound to an expression CONTAINING a `.compile()` (or to a Pregel)
+    # via ANY binding form — assign / annotated / walrus / for-target / with-as, incl. tuple/list targets —
+    # is treated as a possible compiled subgraph, so an aliased subgraph reaching add_node is flagged
+    # subgraph-node (→ compose, which resolves a clean `c = g.compile()` alias or FAILS CLOSED for an opaque
+    # binding) instead of silently counted as one normal node by the flat path (audit-3 codex r26/r27/r28).
+    def _names(t):
+        if isinstance(t, ast.Name): return [t.id]
+        if isinstance(t, ast.Starred): return _names(t.value)
+        if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
+        return []
+
+    all_binds = []   # (target_names, value_expr) over every binding form
+    for nd in ast.walk(tree):
+        bs = []
+        if isinstance(nd, ast.Assign):
+            bs = [(t, nd.value) for t in nd.targets]
+        elif isinstance(nd, (ast.AnnAssign, ast.NamedExpr)) and nd.value is not None:
+            bs = [(nd.target, nd.value)]
+        elif isinstance(nd, (ast.For, ast.AsyncFor)):
+            bs = [(nd.target, nd.iter)]
+        elif isinstance(nd, (ast.With, ast.AsyncWith)):
+            bs = [(it.optional_vars, it.context_expr) for it in nd.items if it.optional_vars is not None]
+        for tgt, src in bs:
+            all_binds.append((_names(tgt), src))
+            if isinstance(src, ast.Call) and call_name(src).split(".")[-1] == "Pregel":
+                for nm in _names(tgt):
+                    ex.pregel_vars.add(nm)
+
+    def _loads_any(value, names):
+        return any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in names
+                   for x in ast.walk(value))
+
+    # A name is a POSSIBLE compiled subgraph if its binding value contains a `.compile()` OR Load-references
+    # another compiled var — covering ALL alias chains in one fixpoint: `alias = compiled`, `(a,) = (c,)`,
+    # `a = c[0]`, `a = wrap(c)`, … (Cursor r31/r33). A flagged name reaching add_node routes to compose
+    # (resolves a clean `c = g.compile()`, else fails closed) — never the flat undercount. Over-flagging a
+    # non-graph derivation only fails closed (safe).
+    changed = True
+    while changed:
+        changed = False
+        for names, value in all_binds:
+            if contains_compile(value) or _loads_any(value, ex.compiled_vars):
+                for nm in names:
+                    if nm not in ex.compiled_vars:
+                        ex.compiled_vars.add(nm)
+                        changed = True
+    ex.visit(tree)
     has_cycle = find_cycles(ex.nodes, ex.edges)
     # ciclo "implícito" típico LangGraph: conditional edges que vuelven a un nodo previo —
     # si hay conditional-literal cuyos dsts incluyen un nodo definido, lo tratamos como posible ciclo
     cond_back = any(e["kind"] == "conditional-literal" and e.get("dsts") and
                     any(d for d in e["dsts"] if d and d != "END") for e in ex.edges)
-    return {
+    out = {
         "unit_id": meta["unit_id"], "kind": meta["kind"], "status": "ok",
         "n_nodes": len(ex.nodes), "n_nodes_named": sum(1 for n, _ in ex.nodes if n),
         "n_nodes_dynamic": sum(1 for n, _ in ex.nodes if n is None),
@@ -212,3 +274,9 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         "bounds": ex.bounds, "caps": ex.caps, "features": ex.features,
         "llm_constructors": ex.llm_calls, "while_true_invokes": ex.while_true_invokes,
     }
+    # feature 005: only when a subgraph-node is present, run the per-graph analysis for composition
+    # (lazy import avoids a circular dependency; the flat path above is untouched for normal files).
+    if any(f["feature"] == "subgraph-node" for f in ex.features):
+        from costwright.subgraph import analyze
+        out["subgraph_analysis"] = analyze(tree)
+    return out
