@@ -788,6 +788,49 @@ def test_e2e_cursor_module_attr_aliased_send_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_bound_method_addnode_alias_fails_closed(tmp_path):
+    # audit-3 codex r63 WITNESS: `add = outer.add_node; add("s", inner.compile())`. The FLAT extractor matched
+    # add_node by the call name's last segment, so a bound-method alias `add(...)` (last="add") was NOT
+    # recognized as add_node at all → the subgraph arg was never scanned and the node never counted → bf
+    # understated. Now names bound to `<g>.add_node` (directly, via alias chain, or functools.partial) are
+    # tracked and a call to them is treated as add_node → the compiled arg flags subgraph-node → fail closed.
+    cases = (
+        "add = outer.add_node\nadd('s', inner.compile())\n",
+        "import functools\nadd = functools.partial(outer.add_node)\nadd('s', inner.compile())\n",
+        "add = outer.add_node\nadd2 = add\nadd2('s', inner.compile())\n",
+    )
+    for stash in cases:
+        src = (
+            "from langgraph.graph import StateGraph, START, END\n"
+            "inner = StateGraph(dict)\n"
+            "inner.add_node('a', lambda s: s)\n"
+            "inner.add_edge(START, 'a'); inner.add_edge('a', END)\n"
+            "outer = StateGraph(dict)\n"
+            + stash +
+            "outer.add_edge(START, 's'); outer.add_edge('s', END)\n"
+            "outer.compile().invoke({}, config={'recursion_limit': 5})\n"
+        )
+        r = _check_file(tmp_path, src)
+        assert r["category"] == "no-mapeable:subgraph-node", (stash, r)
+        assert "bound_factor" not in r
+
+
+def test_e2e_plain_function_named_add_is_not_addnode(tmp_path):
+    # COVERAGE guard: a plain local function that happens to be named `add` (not bound to g.add_node) must NOT
+    # be treated as an add_node alias.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "def add(x, y):\n    return x + y\n"
+        "add(1, 2)\n"
+        "g = StateGraph(dict)\n"
+        "g.add_node('a', lambda s: s)\n"
+        "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+        "g.compile().invoke({}, config={'recursion_limit': 5})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "tipa:explicit" and r["bound_factor"] == 5, r
+
+
 def test_e2e_classvar_and_decorator_subgraph_fail_closed(tmp_path):
     # audit-3 r61: two further same-file shapes — (a) a class attribute holding a compiled subgraph
     # `class C: sub = inner.compile()` accessed `C.sub`; (b) a function whose DECORATOR returns a compiled

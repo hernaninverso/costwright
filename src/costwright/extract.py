@@ -72,6 +72,7 @@ class Extractor(ast.NodeVisitor):
         s._in_while_true = 0
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
         s.compiled_factory_names = set()  # function/method NAMES that return a compiled subgraph (r56/r58)
+        s.addnode_aliases = set()  # names bound to `g.add_node` (bound-method alias / partial) — r63
         s.pregel_vars = set()     # vars bound to Pregel(...)   — unresolvable subgraphs
         s.send_aliases = {"Send"}        # names that resolve to langgraph Send (incl. import aliases, r37)
         s.command_aliases = {"Command"}  # names that resolve to langgraph Command (incl. import aliases)
@@ -94,7 +95,7 @@ class Extractor(ast.NodeVisitor):
         name = call_name(n)
         last = name.split(".")[-1]
 
-        if last == "add_node":
+        if last == "add_node" or (isinstance(n.func, ast.Name) and n.func.id in s.addnode_aliases):
             arg0 = n.args[0] if n.args else None
             nname = const_of(arg0) if arg0 is not None else None
             if not isinstance(nname, str) and len(n.args) == 1:
@@ -408,6 +409,17 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         return any(isinstance(x, ast.Name) and isinstance(x.ctx, ast.Load) and x.id in names
                    for x in ast.walk(value))
 
+    def _is_addnode(v, aliases):
+        # value is a bound-method reference to `<graph>.add_node` — directly, via an existing alias, or wrapped
+        # in functools.partial — so a call to the bound name is really an add_node call (codex r63).
+        if isinstance(v, ast.Attribute) and v.attr == "add_node":
+            return True
+        if isinstance(v, ast.Name) and v.id in aliases:
+            return True
+        if isinstance(v, ast.Call) and call_name(v).split(".")[-1] == "partial" and v.args:
+            return _is_addnode(v.args[0], aliases)
+        return False
+
     def _refs_construct(value, name_set, attr_set):
         # value references a langgraph construct either by a known alias Name, an attribute `mod.Send`
         # (Cursor r41), OR a CONSTANT-LITERAL reflective access that statically resolves to a construct name
@@ -445,6 +457,11 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
                 for nm in names:
                     if nm not in ex.compiled_vars:
                         ex.compiled_vars.add(nm)
+                        changed = True
+            if _is_addnode(value, ex.addnode_aliases):
+                for nm in names:
+                    if nm not in ex.addnode_aliases:
+                        ex.addnode_aliases.add(nm)
                         changed = True
         # a compiled subgraph stashed in a CONTAINER/attribute (`d["k"] = inner.compile()`, `reg.sub = c`) taints
         # the base name: a later `add_node("s", d["k"])` Load-references `d` ∈ compiled_vars → flagged as a possible
