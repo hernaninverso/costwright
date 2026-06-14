@@ -53,25 +53,26 @@ def _find_units(root: Path, max_files: int):
         # discovered as a unit (codex/Cursor r81) — otherwise the graph is silently dropped from the report.
         alias = {a.asname: a.name for nd in _ast.walk(tree) if isinstance(nd, _ast.ImportFrom)
                  for a in nd.names if a.asname}
-        # a SUBCLASS of Runner inherits run/run_sync/run_streamed — `class UnboundedRunner(Runner): ...` then
-        # `UnboundedRunner.run_sync(..., max_turns=None)` is the SAME runaway, but the receiver is the subclass
-        # name, not `Runner` (codex r85). Collect Runner subclass names (fixpoint over transitive subclasses,
-        # base resolved through the import alias) and treat their .run* calls as agents_sdk.
-        runner_subclasses: set[str] = set()
+        # a SUBCLASS of a framework base inherits its behaviour — `class MyGraph(StateGraph)`,
+        # `class MyCrew(Crew)`, `class UnboundedRunner(Runner)` — but the constructor / receiver carries the
+        # SUBCLASS name, not the base, so by-name detection silently DROPS the unit (codex r85 Runner; Cursor
+        # r92 StateGraph). Collect subclass names per base (fixpoint over TRANSITIVE subclasses, base resolved
+        # through the import alias) so their constructor / .run* calls are still discovered.
+        _BASES = ("StateGraph", "Crew", "Runner")
+        subclasses = {b: set() for b in _BASES}
         _classdefs = [nd for nd in _ast.walk(tree) if isinstance(nd, _ast.ClassDef)]
         _changed = True
         while _changed:
             _changed = False
             for nd in _classdefs:
-                if nd.name in runner_subclasses:
-                    continue
                 for base in nd.bases:
                     bn = (alias.get(base.id, base.id) if isinstance(base, _ast.Name)
                           else base.attr if isinstance(base, _ast.Attribute) else None)
-                    if bn == "Runner" or bn in runner_subclasses:
-                        runner_subclasses.add(nd.name)
-                        _changed = True
-                        break
+                    for b in _BASES:
+                        if (bn == b or bn in subclasses[b]) and nd.name not in subclasses[b]:
+                            subclasses[b].add(nd.name)
+                            _changed = True
+        runner_subclasses = subclasses["Runner"]
         for node in _ast.walk(tree):
             if not isinstance(node, _ast.Call):
                 continue
@@ -92,9 +93,9 @@ def _find_units(root: Path, max_files: int):
             else:
                 nm = ""
             kind = None
-            if nm == "StateGraph":
+            if nm == "StateGraph" or nm in subclasses["StateGraph"]:
                 kind = "langgraph"
-            elif nm == "Crew":
+            elif nm == "Crew" or nm in subclasses["Crew"]:
                 kind = "crewai"
             elif nm in ("Runner.run", "Runner.run_sync", "Runner.run_streamed"):
                 kind = "agents_sdk"

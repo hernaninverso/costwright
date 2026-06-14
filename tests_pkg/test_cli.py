@@ -190,6 +190,39 @@ def test_runner_subclass_call_is_discovered(tmp_path):
     assert run("check", str(d3)).returncode == 0
 
 
+def test_stategraph_subclass_constructor_is_discovered(tmp_path):
+    # Cursor r92: a SUBCLASS of StateGraph (or Crew) is constructed under the subclass name, so by-name detection
+    # dropped it — a runaway `MyGraph(...).compile().invoke(recursion_limit=99999)` read as "no graph units" /
+    # exit 0. Subclass discovery is now generalized to StateGraph/Crew/Runner (transitive + import-alias base).
+    G = "from langgraph.graph import StateGraph, START, END\n"
+    shapes = {
+        "direct":      G + "class MyGraph(StateGraph): pass\ng = MyGraph(dict)\ng.add_node('a', lambda s: s)\n"
+                           "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+                           "g.compile().invoke({}, config={'recursion_limit': 99999})\n",
+        "transitive":  "from langgraph.graph import StateGraph as SG, START, END\nclass A(SG): pass\nclass B(A): pass\n"
+                       "g = B(dict)\ng.add_node('a', lambda s: s)\ng.add_edge(START, 'a'); g.add_edge('a', END)\n"
+                       "g.compile().invoke({}, config={'recursion_limit': 88888})\n",
+    }
+    for name, code in shapes.items():
+        d = tmp_path / ("sg_" + name); d.mkdir()
+        (d / "w.py").write_text(code)
+        r = run("check", str(d), "--fail-on", "reject")
+        assert r.returncode == 1, (name, r.returncode, r.stdout, r.stderr)        # runaway no longer dropped
+        rep = json.loads(run("check", str(d), "--json").stdout)
+        assert any(u["framework"] == "langgraph" for u in rep["units"]), (name, rep)
+    # a certifiable subclass graph is analyzed correctly (method calls are name-based) → ceiling 5
+    dc = tmp_path / "sg_ok"; dc.mkdir()
+    (dc / "w.py").write_text(G + "class Gg(StateGraph): pass\ng = Gg(dict)\ng.add_node('a', lambda s: s)\n"
+                                 "g.add_edge(START, 'a'); g.add_edge('a', END)\n"
+                                 "g.compile().invoke({}, config={'recursion_limit': 5})\n")
+    rep = json.loads(run("check", str(dc), "--json").stdout)
+    assert rep["units"][0]["category"] == "certifiable" and rep["units"][0]["bound"]["node_executions_ceiling"] == 5, rep
+    # no false positive: an unrelated class not subclassing a framework base is not a unit
+    dn = tmp_path / "sg_nofp"; dn.mkdir()
+    (dn / "w.py").write_text("class Graph:\n    def __init__(self, x): pass\ng = Graph(dict)\n")
+    assert run("check", str(dn)).returncode == 0
+
+
 def test_caps_dynamic_model_requires_max_completion_tokens(tmp_path):
     # codex r83: a Chat-API model name that is NOT a string constant — `"gpt-" + "5"` (BinOp concat), a Name
     # bound elsewhere, an f-string, os.environ[...] — could resolve to a reasoning model at runtime, where
