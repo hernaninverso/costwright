@@ -77,6 +77,7 @@ class Extractor(ast.NodeVisitor):
         # agent counts, or None when dynamic) — the mapper combines them and fails closed on any None.
         s.crewai_agent_budgets = []   # int | "default" | None, one per Agent() constructor
         s.crewai_crews = []           # {"tasks": int|None, "agents": int|None}, one per Crew() constructor
+        s.agent_vars = set()          # Names bound to an Agent() ctor — a Task referencing an unknown agent fails closed
         s.compiled_vars = set()   # vars bound to X.compile()  — aliased subgraphs (audit-3 codex)
         s.compiled_factory_names = set()  # function/method NAMES that return a compiled subgraph (r56/r58)
         s.addnode_aliases = set()  # names bound to `g.add_node` (bound-method alias / partial) — r63
@@ -285,6 +286,25 @@ class Extractor(ast.NodeVisitor):
             tasks_kw = next((k for k in n.keywords if k.arg == "tasks"), None)
             agents_kw = next((k for k in n.keywords if k.arg == "agents"), None)
             s.crewai_crews.append({"tasks": _lit_count(tasks_kw), "agents": _lit_count(agents_kw)})
+        elif last == "Task":
+            # a guardrail RE-RUNS the task on a failed check (up to max_retries, default ≥1) ⇒ a guarded task
+            # runs its agent loop (1 + retries)× — the n_tasks × max model does NOT bound that (codex r87). Fail
+            # closed on any guardrail.
+            if any(k.arg == "guardrail" for k in n.keywords):
+                s.features.append({"feature": "crewai-task-retry", "line": n.lineno})
+            # a Task whose agent is NOT a visible Agent() ctor (imported / dynamically built / a non-Name expr)
+            # could carry a far larger max_iter than the visible agents ⇒ max(visible budgets) understates. Fail
+            # closed (Cursor r87). An inline Agent(...) or a Name bound to an Agent() ctor is fine; an absent
+            # agent= is covered by max over the visible crew agents.
+            ag = next((k for k in n.keywords if k.arg == "agent"), None)
+            if ag is not None:
+                v = ag.value
+                inline = isinstance(v, ast.Call) and (
+                    (isinstance(v.func, ast.Name) and v.func.id == "Agent")
+                    or (isinstance(v.func, ast.Attribute) and v.func.attr == "Agent"))
+                known = isinstance(v, ast.Name) and v.id in s.agent_vars
+                if not (inline or known):
+                    s.features.append({"feature": "crewai-agent-unknown", "line": n.lineno})
 
         # caps de tokens en cualquier call (constructores de modelos, llamadas)
         for k in n.keywords:
@@ -390,6 +410,26 @@ def extract_unit(unit_dir: Path, meta: dict) -> dict:
         if isinstance(t, ast.Starred): return _names(t.value)
         if isinstance(t, (ast.Tuple, ast.List)): return [n for e in t.elts for n in _names(e)]
         return []
+
+    # CrewAI: collect Names bound to an Agent() constructor (order-independent). A Task that references an agent
+    # we CANNOT see — `Task(agent=imported_heavy)` where imported_heavy is not a visible Agent() ctor — would
+    # otherwise be bounded by only the VISIBLE agents' max_iter, but the unseen agent could have a far larger
+    # budget (codex/Cursor r87). Such a Task fails closed (crewai-agent-unknown).
+    def _is_agent_ctor(v):
+        return isinstance(v, ast.Call) and (
+            (isinstance(v.func, ast.Name) and v.func.id == "Agent")
+            or (isinstance(v.func, ast.Attribute) and v.func.attr == "Agent"))
+    for nd in ast.walk(tree):
+        _val, _tgts = None, []
+        if isinstance(nd, ast.Assign):
+            _val, _tgts = nd.value, nd.targets
+        elif isinstance(nd, ast.AnnAssign) and nd.value is not None:
+            _val, _tgts = nd.value, [nd.target]
+        elif isinstance(nd, ast.NamedExpr):
+            _val, _tgts = nd.value, [nd.target]
+        if _is_agent_ctor(_val):
+            for _t in _tgts:
+                ex.agent_vars.update(_names(_t))
 
     def _container_base(t):
         # root Name of a Subscript/Attribute assignment-target chain: `d["k"]`→"d", `obj.sub`→"obj",

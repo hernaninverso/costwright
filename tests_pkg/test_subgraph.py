@@ -343,13 +343,25 @@ def test_e2e_crewai_n_tasks_and_default_budget(tmp_path):
          "crewai-tasks-unpinned"),
         ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\nCrew(agents=[a], process=Process.sequential)",
          "crewai-tasks-unpinned"),
-        ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\nCrew(agents=[a,b], tasks=[Task(description='t', agent=a)], process=Process.sequential)",
+        ("a=Agent(role='a', goal='g', backstory='b', max_iter=2)\nCrew(agents=[a,b], tasks=[Task(description='t')], process=Process.sequential)",
          "crewai-agents-not-visible"),
-        ("Crew(agents=[r], tasks=[Task(description='t', agent=r)], process=Process.sequential)",
+        ("Crew(agents=[], tasks=[Task(description='t')], process=Process.sequential)",
          "crewai-no-visible-agents"),
     ):
         rf = _check_kind(tmp_path, H + body + "\n", "crewai")
         assert rf["category"] == "extractor-failure" and rf.get("reason") == why and "bound_factor" not in rf, (body, rf)
+    # a Task referencing an agent that is NOT a visible Agent() ctor (imported / dynamic) fails closed — the
+    # unseen agent could carry a far larger max_iter than the visible ones (codex/Cursor r87).
+    rimp = _check_kind(tmp_path, H +
+                       "a=Agent(role='a', goal='g', backstory='b', max_iter=2)\n"
+                       "Crew(agents=[a], tasks=[Task(description='t', agent=imported_heavy)], process=Process.sequential)\n", "crewai")
+    assert rimp["category"] == "no-mapeable:crewai-agent-unknown" and "bound_factor" not in rimp, rimp
+    # a Task with a guardrail RE-RUNS on failure (up to max_retries) → its agent loop runs (1+retries)× → the
+    # n_tasks × max model does not bound it → fail closed (codex r87).
+    rg = _check_kind(tmp_path, H +
+                     "a=Agent(role='a', goal='g', backstory='b', max_iter=5)\n"
+                     "Crew(agents=[a], tasks=[Task(description='t', agent=a, guardrail=lambda r:(False,'x'), max_retries=3)], process=Process.sequential)\n", "crewai")
+    assert rg["category"] == "no-mapeable:crewai-task-retry" and "bound_factor" not in rg, rg
     # allow_delegation=True (or a non-constant flag) makes an agent invoke ANOTHER agent's max_iter loop inside
     # a task — a recursive delegation tree that n_tasks × max(budget) does not bound → fail closed (Cursor r86).
     for deleg in ("True", "flag"):
