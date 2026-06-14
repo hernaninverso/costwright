@@ -265,6 +265,25 @@ def test_canonical_rejects_non_finite():
             pass
 
 
+def test_canonical_rejects_ambiguous_keys_no_digest_collision():
+    # codex r92: json.dumps(sort_keys=True) COERCES a non-string dict key to a string, so {1:"x"} and {"1":"x"}
+    # canonicalize identically and COLLIDE → two structurally-distinct bundles share a digest = false tamper-
+    # evidence. canonical now fails closed on a non-string key (and on a tuple, which serializes as a list).
+    for bad in ({"a": {1: "x"}}, {"a": {True: "x"}}, {"a": {None: "x"}}, {"a": (1, 2)}, {1: "top"}):
+        try:
+            fusion.canonical(bad)
+            assert False, f"canonical must reject {bad}"
+        except ValueError:
+            pass
+    # the colliding pair now produces DISTINCT outcomes: the str-key form canonicalizes, the int-key form raises
+    assert fusion.canonical({"a": {"1": "x"}}) == '{"a":{"1":"x"}}'
+    try:
+        fusion.digest({"a": {1: "x"}})
+        assert False, "digest of an int-keyed dict must reject, not collide"
+    except ValueError:
+        pass
+
+
 def test_pretty_surfaces_disclaimer_and_two_statuses():
     out = fusion.pretty(_fuse())
     assert "COST" in out and "RISK" in out

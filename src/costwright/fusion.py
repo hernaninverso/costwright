@@ -221,9 +221,30 @@ def _cp_upper(k: int, m: int, eta: float) -> float:
 
 
 # --- canonical JSON + digests -----------------------------------------------------------------------
+def _require_canonicalizable(obj) -> None:
+    """Reject inputs JSON cannot represent UNAMBIGUOUSLY, so the digest is a true tamper-evidence fingerprint.
+    `json.dumps` silently COERCES a non-string dict key (int/float/bool/None) to a string — `{1: "x"}` and
+    `{"1": "x"}` then canonicalize identically and COLLIDE (codex r92). A tuple serializes as a list, colliding
+    with the list. Both are structurally-distinct inputs sharing a digest ⇒ false tamper-evidence. Fail closed."""
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if not isinstance(k, str):
+                raise ValueError(f"canonical: non-string dict key {k!r} (type {type(k).__name__}) would be "
+                                 "coerced to a string and collide — reject for tamper-evidence")
+            _require_canonicalizable(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            _require_canonicalizable(v)
+    elif isinstance(obj, tuple):
+        raise ValueError("canonical: a tuple serializes as a JSON list and would collide with the list — "
+                         "use a list explicitly")
+
+
 def canonical(obj) -> str:
     """Deterministic, interoperable JSON: sorted keys, no whitespace, UTF-8, NO NaN/Infinity (those are
-    not valid JSON — `allow_nan=False` raises instead of emitting them). The basis for every digest."""
+    not valid JSON — `allow_nan=False` raises instead of emitting them), and NO ambiguous non-string keys /
+    tuples (which JSON would coerce into a colliding form — codex r92). The basis for every digest."""
+    _require_canonicalizable(obj)
     return json.dumps(obj, sort_keys=True, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
 
 
