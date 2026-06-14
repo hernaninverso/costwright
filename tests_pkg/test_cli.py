@@ -121,6 +121,14 @@ def test_caps_syntax_error_not_all_capped(tmp_path):
     assert "all LLM constructors capped" not in r.stdout, r.stdout
 
 
+def test_caps_patch_rejects_nonpositive_cap(tmp_path):
+    # codex r75: --patch --cap 0 would insert an inert max_tokens=0 (which costwright itself flags ineffective).
+    make(tmp_path, "a.py", "from x import ChatOpenAI\nllm=ChatOpenAI(model='gpt-4')\n")
+    assert run("caps", str(tmp_path), "--patch", "-", "--cap", "0").returncode == 2
+    r = run("caps", str(tmp_path), "--patch", "-", "--cap", "256")
+    assert r.returncode == 0 and "max_tokens=256" in r.stdout
+
+
 def test_exit_2_bad_path():
     r = run("check", "/nonexistent/xyz")
     assert r.returncode == 2

@@ -143,6 +143,11 @@ def cmd_caps(args) -> int:
             print(f"\n  {total} finding(s) in {len(per_file)} file(s) "
                   f"({scanned} scanned). Use --patch to emit a unified diff.")
         if args.patch:
+            if args.cap < 1:
+                # a cap of 0/negative is not an effective token bound — the patch would insert an inert kwarg
+                # that costwright itself flags `ineffective` (codex r75). Refuse instead of suggesting it.
+                print(f"costwright: --cap must be a positive integer (got {args.cap})", file=sys.stderr)
+                return 2
             chunks = []
             for p, (fs, src) in sorted(per_file.items()):
                 d = caps_mod.make_patch(p.relative_to(root), src, fs, args.cap)

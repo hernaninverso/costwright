@@ -251,6 +251,33 @@ def _check_kind(tmp_path, src, kind):
     return map_unit(extract_unit(tmp_path, meta), meta)
 
 
+def test_e2e_crewai_hierarchical_alias_fails_closed(tmp_path):
+    # audit-3 codex r75: a CrewAI hierarchical process runs a MANAGER that re-delegates (unbounded). The
+    # detection caught the literal `process=Process.hierarchical` but NOT an aliased `mode =
+    # Process.hierarchical; process=mode` (enum or string) — those certified a finite bound (false assurance).
+    # Now only a confirmed-sequential LITERAL is safe; a hierarchical literal/alias/variable fails closed.
+    blocked = (
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=Process.hierarchical)",
+        "mode = Process.hierarchical\nCrew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=mode)",
+        "mode = 'hierarchical'\nCrew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=mode)",
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process='hierarchical')",
+    )
+    for body in blocked:
+        src = "from crewai import Crew, Agent, Process\n" + body + "\n"
+        r = _check_kind(tmp_path, src, "crewai")
+        assert r["category"] == "no-mapeable:hierarchical-manager" and "bound_factor" not in r, (body, r)
+
+    # sequential (literal, string, or default) is NOT a manager loop ⇒ certifiable
+    for body in (
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process=Process.sequential)",
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)], process='sequential')",
+        "Crew(agents=[Agent(role='r', goal='g', backstory='b', max_iter=2)])",
+    ):
+        src = "from crewai import Crew, Agent, Process\n" + body + "\n"
+        r = _check_kind(tmp_path, src, "crewai")
+        assert r["category"] == "tipa:explicit" and r["bound_factor"] == 2, (body, r)
+
+
 def test_e2e_multiple_explicit_bounds_combine(tmp_path):
     # audit-3 codex r70: MULTIPLE explicit bounds of the same param were collapsed to the FIRST → understated.
     # LangGraph invokes are separate runs ⇒ per-run worst case = MAX recursion_limit. CrewAI agents / Agents-SDK

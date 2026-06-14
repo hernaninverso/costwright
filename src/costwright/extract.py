@@ -227,8 +227,16 @@ class Extractor(ast.NodeVisitor):
             # CrewAI Agent sin max_iter → default 20 (lo decide el mapper por-kind)
         elif last == "Crew":
             proc = next((k for k in n.keywords if k.arg == "process"), None)
-            if proc is not None and "hierarchical" in ast.dump(proc.value):
-                s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
+            if proc is not None:
+                # a hierarchical Crew runs a MANAGER that re-delegates (an unbounded loop) → fail closed. The
+                # only SAFE value is a confirmed-sequential LITERAL (`Process.sequential` / "sequential"). A
+                # hierarchical literal, a VARIABLE (`mode = Process.hierarchical; process=mode` — codex r75), or
+                # any computed expression could be the manager → conservatively flag hierarchical-manager.
+                dump = ast.dump(proc.value)
+                confirmed_sequential = (isinstance(proc.value, (ast.Attribute, ast.Constant))
+                                        and "sequential" in dump and "hierarchical" not in dump)
+                if not confirmed_sequential:
+                    s.features.append({"feature": "hierarchical-manager", "line": n.lineno})
 
         # caps de tokens en cualquier call (constructores de modelos, llamadas)
         for k in n.keywords:
