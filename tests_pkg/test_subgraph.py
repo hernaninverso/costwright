@@ -358,6 +358,27 @@ def test_e2e_cursor_bound_method_alias_is_non_certifiable(tmp_path):
     assert "bound_factor" not in r
 
 
+def test_e2e_cursor_container_receiver_is_non_certifiable(tmp_path):
+    # audit-3 Cursor gpt-5.3-codex round-14 WITNESS: the subgraph is added on a CONTAINER receiver
+    # (`box[0].add_node("sub", inner.compile())`); the receiver is a Subscript, not a Name, so the per-graph
+    # analyzer can't attribute the subgraph node → A["subgraph_nodes"] is empty → compose used to return None
+    # and the FLAT path counted "sub" as ONE ordinary node (bound 3 vs true 12). Must fail closed, not flat.
+    src = (
+        "from langgraph.graph import StateGraph, START, END\n"
+        "inner = StateGraph(dict)\n"
+        "inner.add_node('i', lambda s: s)\n"
+        "inner.add_edge(START, 'i'); inner.add_edge('i', END)\n"
+        "inner.compile().invoke({}, config={'recursion_limit': 3})\n"
+        "outer = StateGraph(dict)\n"
+        "box = [outer]\n"
+        "box[0].add_node('sub', inner.compile())\n"
+        "outer.compile().invoke({}, config={'recursion_limit': 3})\n"
+    )
+    r = _check_file(tmp_path, src)
+    assert r["category"] == "no-mapeable:subgraph-node"   # fail closed, NOT the flat undercount bound 3
+    assert "bound_factor" not in r
+
+
 def test_e2e_cursor_closure_in_loop_is_non_certifiable(tmp_path):
     # audit-3 Cursor gpt-5.3-codex round-13 WITNESS: a closure `grow()` mutates an enclosing `inner` and is
     # called in a loop. `inner.add_node` is a method-call receiver (not escaped) and is NOT lexically in the

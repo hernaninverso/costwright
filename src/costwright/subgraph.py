@@ -415,13 +415,22 @@ def compose(ex_flat: dict) -> dict | None:
     attached by extract_unit (`ex_flat["subgraph_analysis"]`). Returns a mapping-result dict (the shape
     map_unit returns) or None to fall back to the flat path. Refuses to compose (honest non_certifiable)
     when the no-fan-out invariant can't be held or the inner graph isn't resolvable."""
-    A = ex_flat.get("subgraph_analysis")
-    if not A or not A.get("subgraph_nodes"):
-        return None
     base = {"unit_id": ex_flat.get("unit_id"), "kind": ex_flat.get("kind", "langgraph")}
+    A = ex_flat.get("subgraph_analysis")
+    feats = {fe["feature"] for fe in ex_flat.get("features", [])}
+    if not A or not A.get("subgraph_nodes"):
+        # The flat extractor flagged a subgraph-node (a compiled graph passed to add_node), but the per-graph
+        # analyzer could NOT attribute it to a StateGraph var — e.g. the receiver is a container/subscript
+        # (`box[0].add_node(...)`, Cursor codex r14), not a bare Name. We must NOT fall back to the flat path
+        # (which would count the subgraph node as ONE ordinary node = undercount). Fail closed.
+        if "subgraph-node" in feats:
+            return {**base, "category": "no-mapeable:subgraph-node",
+                    "reason": "a compiled subgraph is added through a receiver we cannot attribute to a "
+                              "StateGraph (e.g. a container/subscript) — fail closed"}
+        return None
 
     # NO-FAN-OUT INVARIANT (council P0 / FR-007): any Send / dynamic-goto ⇒ composition unsound.
-    bad = {fe["feature"] for fe in ex_flat.get("features", [])} & _FANOUT_FEATURES
+    bad = feats & _FANOUT_FEATURES
     if bad:
         return {**base, "category": "no-mapeable:subgraph-node",
                 "reason": f"fan-out present ({sorted(bad)}) — composition unsound, not attempted",
