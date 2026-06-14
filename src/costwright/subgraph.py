@@ -276,17 +276,20 @@ class _GraphReceivers(ast.NodeVisitor):
                     if k.arg == "config":
                         cfg = k.value
                 if cfg is not None:
-                    if isinstance(cfg, ast.Dict) and all(kk is not None for kk in cfg.keys):
-                        # inline dict literal, no ** spread → read recursion_limit (non-constant value →
-                        # unresolved). An ABSENT key means the framework default applies (leave unset →
-                        # default handling) — that IS the real runtime limit, so it's sound.
+                    if isinstance(cfg, ast.Dict) and all(kk is not None and const_of(kk) is not None
+                                                         for kk in cfg.keys):
+                        # inline dict literal whose EVERY key is a constant (no ** spread, no computed key
+                        # like `'recursion_' + 'limit'` — Cursor r21 — which could be recursion_limit at
+                        # runtime). Read recursion_limit (non-constant value → unresolved). An ABSENT key
+                        # means the framework default applies (leave unset) — the real runtime limit, sound.
                         for kk, vv in zip(cfg.keys, cfg.values):
                             if const_of(kk) == "recursion_limit":
                                 self._merge_invoke_limit(src, const_of(vv) if const_of(vv) is not None
                                                          else "unresolved")
                     else:
-                        # config is a named variable / call / has a ** spread → we can't read the
-                        # recursion_limit; it could exceed the default → unresolved → fail closed (Cursor r16).
+                        # config is a named variable / call, has a ** spread, or a non-constant key → we can't
+                        # be sure of the recursion_limit; it could exceed the default → unresolved → fail
+                        # closed (Cursor r16/r21).
                         self._merge_invoke_limit(src, "unresolved")
         self.generic_visit(n)
 
