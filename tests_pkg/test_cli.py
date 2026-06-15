@@ -451,12 +451,23 @@ def test_symlink_no_se_sigue():
         assert json.loads(r.stdout)["summary"]["total"] == 0 if r.stdout.strip().startswith("{") else "no graph units" in r.stdout
 
 if __name__ == "__main__":
+    import inspect as _inspect
+    import tempfile as _tempfile
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
     bad = 0
     for fn in fns:
         try:
-            fn(); print(f"  ✓ {fn.__name__}")
+            # los tests que declaran el fixture pytest `tmp_path` reciben un dir temporal fresco
+            # (este archivo se corre como script en CI: `python tests_pkg/test_cli.py`, sin pytest).
+            if "tmp_path" in _inspect.signature(fn).parameters:
+                with _tempfile.TemporaryDirectory() as _td:
+                    fn(Path(_td))
+            else:
+                fn()
+            print(f"  ✓ {fn.__name__}")
         except AssertionError as e:
             bad += 1; print(f"  ✗ {fn.__name__}: {str(e)[:160]}")
+        except Exception as e:  # un error de runtime cuenta como fallo, no crashea el runner entero
+            bad += 1; print(f"  ✗ {fn.__name__}: {type(e).__name__}: {str(e)[:140]}")
     print(f"{len(fns)-bad}/{len(fns)} PASS")
     sys.exit(1 if bad else 0)
